@@ -1,0 +1,863 @@
+import { useState } from "react"
+import "./index.css"
+
+import DashboardLayout from "./layouts/DashboardLayout"
+import Panel from "./components/Panel"
+import AppBackground from "./components/AppBackground"
+
+import Dashboard from "./pages/Dashboard"
+import Budget from "./pages/Budget"
+import Transactions from "./pages/Transactions"
+import NetWorth from "./pages/NetWorth"
+import CurrencyCenter from "./pages/Currencycenter"
+import Goals from "./pages/Goals"
+import EmergencyFund from "./pages/EmergencyFund"
+import DebtManager from "./pages/DebtManager"
+import SavingsPlanner from "./pages/SavingsPlanner"
+import Bills from "./pages/Bills"
+import FinancialCalendar from "./pages/FinancialCalendar"
+import CashFlowForecast from "./pages/CashFlowForecast"
+import Reports from "./pages/Reports"
+import Charts from "./pages/Charts"
+import FinancialHealth from "./pages/FinancialHealth"
+import InvestmentTracker from "./pages/InvestmentTracker"
+import RetirementPlanner from "./pages/RetirementPlanner"
+import DividendTracker from "./pages/DividendTracker"
+import PortfolioDashboard from "./pages/PortfolioDashboard"
+import DividendDashboard from "./pages/DividendDashboard"
+import InflationCalculator from "./pages/InflationCalculator"
+import LoanPayoffCalculator from "./pages/LoanPayoffCalculator"
+import Settings from "./pages/Settings"
+import ExportCenter from "./pages/ExportCenter"
+import KPIDashboard from "./pages/KPIDashboard"
+import MoneyAI from "./pages/AIFinancialCoach"
+import AuthIntro from "./components/AuthIntro"
+
+import useAuth from "./hooks/useAuth"
+import useBudget from "./hooks/useBudget"
+import useTransactions from "./hooks/useTransactions"
+import useAssets from "./hooks/useAssets"
+import useGoals from "./hooks/useGoals"
+import useDebt from "./hooks/useDebt"
+import useSavings from "./hooks/useSavings"
+import useBills from "./hooks/useBills"
+import useInvestments from "./hooks/useInvestments"
+import useCurrency from "./hooks/useCurrency"
+import useEmergencyFund from "./hooks/useEmergencyFund"
+import useFormState from "./hooks/useFormState"
+import useProfile from "./hooks/useProfile"
+import useSettings from "./hooks/useSettings"
+import { convertCurrency } from "./utils/currencyConversion"
+
+export default function App() {
+  const [activePage, setActivePage] = useState("dashboard")
+  let content
+
+  const budget = useBudget()
+  const transaction = useTransactions()
+  const asset = useAssets()
+  const goal = useGoals()
+  const debt = useDebt()
+  const saving = useSavings()
+  const bill = useBills()
+  const investment = useInvestments()
+  const currency = useCurrency()
+  const emergency = useEmergencyFund()
+  const form = useFormState()
+  const settingsHook = useSettings()
+
+  async function loadAllData(userId) {
+    await Promise.all([
+      budget.loadBudgets(userId),
+      transaction.loadTransactions(userId),
+      asset.loadAssets(userId),
+      asset.loadLiabilities(userId),
+      goal.loadGoals(userId),
+      debt.loadDebts(userId),
+      saving.loadSavingsPlans(userId),
+      bill.loadBills(userId),
+      investment.loadInvestments(userId),
+    ])
+  }
+
+  const auth = useAuth(loadAllData)
+  const profile = useProfile(auth.user?.uid)
+
+  function getUserId() {
+    return auth.user?.uid || null
+  }
+
+  async function handleAddBudget(e) {
+    e.preventDefault()
+    const userId = getUserId()
+    if (!userId || !form.budgetCategory || !form.budgetAmount) return
+
+    await budget.addBudget(userId, {
+      category: form.budgetCategory,
+      amount: Number(form.budgetAmount),
+      currency: form.budgetCurrency,
+      income: Number(form.income),
+    })
+
+    form.setBudgetCategory("")
+    form.setBudgetAmount("")
+    form.setBudgetCurrency(settingsHook.settings.currency || "SRD")
+  }
+
+  function startEditBudget(item) {
+    form.setEditingBudgetId(item.id)
+    form.setEditBudgetCategory(item.category)
+    form.setEditBudgetAmount(String(item.amount))
+    form.setEditBudgetCurrency(item.currency || "SRD")
+  }
+
+  function cancelEditBudget() {
+    form.setEditingBudgetId(null)
+    form.setEditBudgetCategory("")
+    form.setEditBudgetAmount("")
+    form.setEditBudgetCurrency(settingsHook.settings.currency || "SRD")
+  }
+
+  async function handleUpdateBudget(id) {
+    const userId = getUserId()
+    if (!userId || !form.editBudgetCategory || !form.editBudgetAmount) return
+
+    await budget.updateBudget(userId, id, {
+      category: form.editBudgetCategory,
+      amount: Number(form.editBudgetAmount),
+      currency: form.editBudgetCurrency,
+      income: Number(form.income),
+    })
+
+    cancelEditBudget()
+  }
+
+  async function handleDeleteBudget(id) {
+    const userId = getUserId()
+    if (!userId) return
+    await budget.deleteBudget(userId, id)
+  }
+
+  async function handleAddTransaction(e) {
+    e.preventDefault()
+    const userId = getUserId()
+    if (!userId || !form.transactionCategory || !form.transactionAmount) return
+
+    await transaction.addTransaction(userId, {
+      type: form.transactionType,
+      category: form.transactionCategory,
+      amount: Number(form.transactionAmount),
+      description: form.transactionDescription,
+      date: form.transactionDate,
+    })
+
+    form.setTransactionType("expense")
+    form.setTransactionCategory("")
+    form.setTransactionAmount("")
+    form.setTransactionDescription("")
+    form.setTransactionDate(new Date().toISOString().slice(0, 10))
+  }
+
+  function startEditTransaction(item) {
+    form.setEditingTransactionId(item.id)
+    form.setEditTransactionType(item.type)
+    form.setEditTransactionCategory(item.category)
+    form.setEditTransactionAmount(String(item.amount))
+    form.setEditTransactionDescription(item.description || "")
+    form.setEditTransactionDate(item.date || new Date().toISOString().slice(0, 10))
+  }
+
+  function cancelEditTransaction() {
+    form.setEditingTransactionId(null)
+  }
+
+  async function handleUpdateTransaction(id) {
+    const userId = getUserId()
+    if (!userId || !form.editTransactionCategory || !form.editTransactionAmount) return
+
+    await transaction.updateTransaction(userId, id, {
+      type: form.editTransactionType,
+      category: form.editTransactionCategory,
+      amount: Number(form.editTransactionAmount),
+      description: form.editTransactionDescription,
+      date: form.editTransactionDate,
+    })
+
+    cancelEditTransaction()
+  }
+
+  async function handleDeleteTransaction(id) {
+    const userId = getUserId()
+    if (!userId) return
+    await transaction.deleteTransaction(userId, id)
+  }
+
+  async function handleAddAsset(e) {
+    e.preventDefault()
+    const userId = getUserId()
+    if (!userId || !form.assetName || !form.assetValue) return
+
+    await asset.addAsset(userId, {
+      name: form.assetName,
+      value: Number(form.assetValue),
+    })
+
+    form.setAssetName("")
+    form.setAssetValue("")
+  }
+
+  async function handleAddLiability(e) {
+    e.preventDefault()
+    const userId = getUserId()
+    if (!userId || !form.liabilityName || !form.liabilityValue) return
+
+    await asset.addLiability(userId, {
+      name: form.liabilityName,
+      value: Number(form.liabilityValue),
+    })
+
+    form.setLiabilityName("")
+    form.setLiabilityValue("")
+  }
+
+  async function handleDeleteAsset(id) {
+    const userId = getUserId()
+    if (!userId) return
+    await asset.deleteAsset(userId, id)
+  }
+
+  async function handleDeleteLiability(id) {
+    const userId = getUserId()
+    if (!userId) return
+    await asset.deleteLiability(userId, id)
+  }
+
+  async function handleAddGoal(e) {
+    e.preventDefault()
+    const userId = getUserId()
+    if (!userId || !form.goalName || !form.goalTarget) return
+
+    await goal.addGoal(userId, {
+      name: form.goalName,
+      target: Number(form.goalTarget),
+      saved: Number(form.goalSaved || 0),
+    })
+
+    form.setGoalName("")
+    form.setGoalTarget("")
+    form.setGoalSaved("")
+  }
+
+  async function handleDeleteGoal(id) {
+    const userId = getUserId()
+    if (!userId) return
+    await goal.deleteGoal(userId, id)
+  }
+
+  async function handleAddDebt(e) {
+    e.preventDefault()
+    const userId = getUserId()
+    if (!userId || !form.debtName || !form.debtBalance) return
+
+    await debt.addDebt(userId, {
+      name: form.debtName,
+      balance: Number(form.debtBalance),
+      rate: Number(form.debtRate || 0),
+      payment: Number(form.debtPayment || 0),
+    })
+
+    form.setDebtName("")
+    form.setDebtBalance("")
+    form.setDebtRate("")
+    form.setDebtPayment("")
+  }
+
+  async function handleDeleteDebt(id) {
+    const userId = getUserId()
+    if (!userId) return
+    await debt.deleteDebt(userId, id)
+  }
+
+  async function handleAddSavingPlan(e) {
+    e.preventDefault()
+    const userId = getUserId()
+    if (!userId || !form.savingName || !form.savingTarget) return
+
+    await saving.addSavingPlan(userId, {
+      name: form.savingName,
+      target: Number(form.savingTarget),
+      current: Number(form.savingCurrent || 0),
+      monthly: Number(form.savingMonthly || 0),
+    })
+
+    form.setSavingName("")
+    form.setSavingTarget("")
+    form.setSavingCurrent("")
+    form.setSavingMonthly("")
+  }
+
+  async function handleDeleteSavingPlan(id) {
+    const userId = getUserId()
+    if (!userId) return
+    await saving.deleteSavingPlan(userId, id)
+  }
+
+  async function handleAddBill(e) {
+    e.preventDefault()
+    const userId = getUserId()
+    if (!userId || !form.billName || !form.billAmount) return
+
+    await bill.addBill(userId, {
+      name: form.billName,
+      category: form.billCategory,
+      amount: Number(form.billAmount),
+      dueDate: form.billDueDate,
+    })
+
+    form.setBillName("")
+    form.setBillAmount("")
+    form.setBillCategory("")
+    form.setBillDueDate(new Date().toISOString().slice(0, 10))
+  }
+
+  async function handleDeleteBill(id) {
+    const userId = getUserId()
+    if (!userId) return
+    await bill.deleteBill(userId, id)
+  }
+
+  async function handleAddInvestment(e) {
+    e.preventDefault()
+    const userId = getUserId()
+    if (!userId || !form.investmentName || !form.investmentCost) return
+
+    await investment.addInvestment(userId, {
+      name: form.investmentName,
+      type: form.investmentType,
+      cost: Number(form.investmentCost),
+      value: Number(form.investmentValue || 0),
+    })
+
+    form.setInvestmentName("")
+    form.setInvestmentType("Stock")
+    form.setInvestmentCost("")
+    form.setInvestmentValue("")
+  }
+
+  async function handleDeleteInvestment(id) {
+    const userId = getUserId()
+    if (!userId) return
+    await investment.deleteInvestment(userId, id)
+  }
+
+  if (auth.loading) {
+    content = (
+      <div className="relative z-10 flex min-h-screen items-center justify-center text-white">
+        <p className="text-[#C9CDD3]">Loading Money Mind...</p>
+      </div>
+    )
+  } else if (!auth.user) {
+    content = (
+      <AuthIntro>
+        <form
+          onSubmit={auth.handleAuth}
+          className="glass-login-card w-full overflow-hidden rounded-3xl p-8"
+        >
+          <p className="mb-8 text-center text-[#A5ADB8]">
+            {auth.mode === "login" ? "Login to your dashboard" : "Create your account"}
+          </p>
+
+          <label className="mb-2 block text-sm text-[#D5D8DD]">Email</label>
+          <input
+            className="mb-4 w-full rounded-xl border border-[#BFC4CC]/25 bg-black/35 p-3 text-white outline-none backdrop-blur-xl"
+            type="email"
+            value={auth.email}
+            onChange={(event) => auth.setEmail(event.target.value)}
+            required
+          />
+
+          <label className="mb-2 block text-sm text-[#D5D8DD]">Password</label>
+          <input
+            className="mb-6 w-full rounded-xl border border-[#BFC4CC]/25 bg-black/35 p-3 text-white outline-none backdrop-blur-xl"
+            type="password"
+            value={auth.password}
+            onChange={(event) => auth.setPassword(event.target.value)}
+            required
+          />
+
+          <button className="metallic-button w-full rounded-xl p-3 font-semibold text-black transition">
+            {auth.mode === "login" ? "Login" : "Create Account"}
+          </button>
+
+          <button
+            type="button"
+            onClick={auth.handleGoogleLogin}
+            className="mt-4 flex w-full items-center justify-center gap-3 rounded-xl border border-[#BFC4CC]/30 bg-black/35 p-3 font-semibold text-white backdrop-blur-xl transition hover:bg-white/10"
+          >
+            <span className="font-bold" style={{ color: "#4285F4" }}>G</span>
+            Continue with Google
+          </button>
+
+          <button
+            type="button"
+            onClick={() => auth.setMode(auth.mode === "login" ? "register" : "login")}
+            className="mt-4 w-full text-[#D5D8DD] transition hover:text-white"
+          >
+            {auth.mode === "login" ? "No account? Register" : "Already have an account? Login"}
+          </button>
+        </form>
+      </AuthIntro>
+    )
+  } else {
+  const baseCurrency = settingsHook.settings.currency || "SRD"
+
+  const totalBudget = budget.budgets.reduce((sum, item) => {
+    const itemCurrency = item.currency || "SRD"
+    const amountInBase =
+      itemCurrency === baseCurrency
+        ? Number(item.amount || 0)
+        : convertCurrency({ amount: item.amount, fromCurrency: itemCurrency, toCurrency: baseCurrency, rates: currency.rates })
+    return sum + amountInBase
+  }, 0)
+
+  const transactionIncome = transaction.transactions
+    .filter((item) => item.type === "income")
+    .reduce((sum, item) => sum + Number(item.amount || 0), 0)
+
+  const transactionExpenses = transaction.transactions
+    .filter((item) => item.type === "expense")
+    .reduce((sum, item) => sum + Number(item.amount || 0), 0)
+
+  const cashFlow = transactionIncome - transactionExpenses
+  const remainingBudget = Number(form.income || 0) - totalBudget
+
+  content = (
+    <DashboardLayout
+      user={auth.user}
+      profile={profile.profile}
+      settings={settingsHook.settings}
+      handleLogout={auth.handleLogout}
+      activePage={activePage}
+      setActivePage={setActivePage}
+    >
+      {activePage === "dashboard" && (
+        <Dashboard
+          transactionIncome={transactionIncome}
+          transactionExpenses={transactionExpenses}
+          cashFlow={cashFlow}
+          totalBudget={totalBudget}
+          remainingBudget={remainingBudget}
+          transactions={transaction.transactions}
+          budgets={budget.budgets}
+          assets={asset.assets}
+          liabilities={asset.liabilities}
+          goals={goal.goals}
+          debts={debt.debts}
+          savingsPlans={saving.savingsPlans}
+          bills={bill.bills}
+          investments={investment.investments}
+          emergencySavings={emergency.emergencySavings}
+          monthlyExpenses={emergency.monthlyExpenses}
+          monthlyIncome={form.income}
+          setActivePage={setActivePage}
+          rates={currency.rates}
+          numberFormat={settingsHook.settings.numberFormat}
+          baseCurrency={baseCurrency}
+        />
+      )}
+
+      {activePage === "budget" && (
+        <Budget
+          income={form.income}
+          setIncome={form.setIncome}
+          budgetCategory={form.budgetCategory}
+          setBudgetCategory={form.setBudgetCategory}
+          budgetAmount={form.budgetAmount}
+          setBudgetAmount={form.setBudgetAmount}
+          budgetCurrency={form.budgetCurrency}
+          setBudgetCurrency={form.setBudgetCurrency}
+          handleAddBudget={handleAddBudget}
+          budgets={budget.budgets}
+          remainingBudget={remainingBudget}
+          baseCurrency={baseCurrency}
+          rates={currency.rates}
+          numberFormat={settingsHook.settings.numberFormat}
+          editingBudgetId={form.editingBudgetId}
+          editBudgetCategory={form.editBudgetCategory}
+          setEditBudgetCategory={form.setEditBudgetCategory}
+          editBudgetAmount={form.editBudgetAmount}
+          setEditBudgetAmount={form.setEditBudgetAmount}
+          editBudgetCurrency={form.editBudgetCurrency}
+          setEditBudgetCurrency={form.setEditBudgetCurrency}
+          startEditBudget={startEditBudget}
+          cancelEditBudget={cancelEditBudget}
+          handleUpdateBudget={handleUpdateBudget}
+          handleDeleteBudget={handleDeleteBudget}
+        />
+      )}
+
+      {activePage === "transactions" && (
+        <Transactions
+          transactionType={form.transactionType}
+          setTransactionType={form.setTransactionType}
+          transactionCategory={form.transactionCategory}
+          setTransactionCategory={form.setTransactionCategory}
+          transactionAmount={form.transactionAmount}
+          setTransactionAmount={form.setTransactionAmount}
+          transactionDate={form.transactionDate}
+          setTransactionDate={form.setTransactionDate}
+          transactionDescription={form.transactionDescription}
+          setTransactionDescription={form.setTransactionDescription}
+          handleAddTransaction={handleAddTransaction}
+          transactions={transaction.transactions}
+          transactionIncome={transactionIncome}
+          transactionExpenses={transactionExpenses}
+          cashFlow={cashFlow}
+          editingTransactionId={form.editingTransactionId}
+          editTransactionType={form.editTransactionType}
+          setEditTransactionType={form.setEditTransactionType}
+          editTransactionCategory={form.editTransactionCategory}
+          setEditTransactionCategory={form.setEditTransactionCategory}
+          editTransactionAmount={form.editTransactionAmount}
+          setEditTransactionAmount={form.setEditTransactionAmount}
+          editTransactionDate={form.editTransactionDate}
+          setEditTransactionDate={form.setEditTransactionDate}
+          editTransactionDescription={form.editTransactionDescription}
+          setEditTransactionDescription={form.setEditTransactionDescription}
+          startEditTransaction={startEditTransaction}
+          cancelEditTransaction={cancelEditTransaction}
+          handleUpdateTransaction={handleUpdateTransaction}
+          handleDeleteTransaction={handleDeleteTransaction}
+        />
+      )}
+
+      {activePage === "networth" && (
+        <NetWorth
+          assets={asset.assets}
+          liabilities={asset.liabilities}
+          assetName={form.assetName}
+          setAssetName={form.setAssetName}
+          assetValue={form.assetValue}
+          setAssetValue={form.setAssetValue}
+          liabilityName={form.liabilityName}
+          setLiabilityName={form.setLiabilityName}
+          liabilityValue={form.liabilityValue}
+          setLiabilityValue={form.setLiabilityValue}
+          handleAddAsset={handleAddAsset}
+          handleAddLiability={handleAddLiability}
+          handleDeleteAsset={handleDeleteAsset}
+          handleDeleteLiability={handleDeleteLiability}
+          rates={currency.rates}
+          numberFormat={settingsHook.settings.numberFormat}
+          baseCurrency={baseCurrency}
+        />
+      )}
+
+      {activePage === "goals" && (
+        <Goals
+          goals={goal.goals}
+          goalName={form.goalName}
+          setGoalName={form.setGoalName}
+          goalTarget={form.goalTarget}
+          setGoalTarget={form.setGoalTarget}
+          goalSaved={form.goalSaved}
+          setGoalSaved={form.setGoalSaved}
+          handleAddGoal={handleAddGoal}
+          handleDeleteGoal={handleDeleteGoal}
+          rates={currency.rates}
+          numberFormat={settingsHook.settings.numberFormat}
+          baseCurrency={baseCurrency}
+        />
+      )}
+
+      {activePage === "currency" && (
+        <CurrencyCenter
+          rates={currency.rates}
+          rateStatus={currency.rateStatus}
+          updatedAt={currency.updatedAt}
+          rateError={currency.rateError}
+          refreshRates={currency.refreshRates}
+          numberFormat={settingsHook.settings.numberFormat}
+          converterAmount={currency.converterAmount}
+          setConverterAmount={currency.setConverterAmount}
+          fromCurrency={currency.fromCurrency}
+          setFromCurrency={currency.setFromCurrency}
+          toCurrency={currency.toCurrency}
+          setToCurrency={currency.setToCurrency}
+        />
+      )}
+
+      {activePage === "emergency" && (
+        <EmergencyFund
+          emergencySavings={emergency.emergencySavings}
+          setEmergencySavings={emergency.setEmergencySavings}
+          monthlyExpenses={emergency.monthlyExpenses}
+          setMonthlyExpenses={emergency.setMonthlyExpenses}
+        />
+      )}
+
+      {activePage === "debt" && (
+        <DebtManager
+          debts={debt.debts}
+          debtName={form.debtName}
+          setDebtName={form.setDebtName}
+          debtBalance={form.debtBalance}
+          setDebtBalance={form.setDebtBalance}
+          debtRate={form.debtRate}
+          setDebtRate={form.setDebtRate}
+          debtPayment={form.debtPayment}
+          setDebtPayment={form.setDebtPayment}
+          handleAddDebt={handleAddDebt}
+          handleDeleteDebt={handleDeleteDebt}
+          rates={currency.rates}
+          numberFormat={settingsHook.settings.numberFormat}
+          baseCurrency={baseCurrency}
+        />
+      )}
+
+      {activePage === "savings" && (
+        <SavingsPlanner
+          savingsPlans={saving.savingsPlans}
+          savingName={form.savingName}
+          setSavingName={form.setSavingName}
+          savingTarget={form.savingTarget}
+          setSavingTarget={form.setSavingTarget}
+          savingCurrent={form.savingCurrent}
+          setSavingCurrent={form.setSavingCurrent}
+          savingMonthly={form.savingMonthly}
+          setSavingMonthly={form.setSavingMonthly}
+          handleAddSavingPlan={handleAddSavingPlan}
+          handleDeleteSavingPlan={handleDeleteSavingPlan}
+          rates={currency.rates}
+          numberFormat={settingsHook.settings.numberFormat}
+          baseCurrency={baseCurrency}
+        />
+      )}
+
+      {activePage === "bills" && (
+        <Bills
+          bills={bill.bills}
+          billName={form.billName}
+          setBillName={form.setBillName}
+          billAmount={form.billAmount}
+          setBillAmount={form.setBillAmount}
+          billDueDate={form.billDueDate}
+          setBillDueDate={form.setBillDueDate}
+          billCategory={form.billCategory}
+          setBillCategory={form.setBillCategory}
+          handleAddBill={handleAddBill}
+          handleDeleteBill={handleDeleteBill}
+          rates={currency.rates}
+          numberFormat={settingsHook.settings.numberFormat}
+          baseCurrency={baseCurrency}
+        />
+      )}
+      
+      {activePage === "dividends" && <DividendTracker />}
+
+      {activePage === "dividendDashboard" && <DividendDashboard />}
+
+      {activePage === "inflation" && (
+        <InflationCalculator
+          rates={currency.rates}
+          rateStatus={currency.rateStatus}
+          numberFormat={settingsHook.settings.numberFormat}
+          defaultCurrency={baseCurrency}
+        />
+      )}
+
+      {activePage === "loanpayoff" && <LoanPayoffCalculator />}
+
+      {activePage === "calendar" && (
+        <FinancialCalendar bills={bill.bills} />
+      )}
+
+      {activePage === "cashflowforecast" && (
+        <CashFlowForecast transactions={transaction.transactions} bills={bill.bills} />
+      )}
+
+      {activePage === "reports" && (
+        <Reports
+          transactions={transaction.transactions}
+          budgets={budget.budgets}
+          income={form.income}
+          rates={currency.rates}
+          numberFormat={settingsHook.settings.numberFormat}
+          baseCurrency={baseCurrency}
+        />
+      )}
+
+      {activePage === "charts" && (
+        <Charts
+          transactions={transaction.transactions}
+          budgets={budget.budgets}
+          assets={asset.assets}
+          liabilities={asset.liabilities}
+          savingsPlans={saving.savingsPlans}
+        />
+      )}
+
+      {activePage === "health" && (
+        <FinancialHealth
+          transactions={transaction.transactions}
+          debts={debt.debts}
+          emergencySavings={emergency.emergencySavings}
+          monthlyExpenses={emergency.monthlyExpenses}
+        />
+      )}
+
+      {activePage === "investments" && (
+        <InvestmentTracker
+          investments={investment.investments}
+          investmentName={form.investmentName}
+          setInvestmentName={form.setInvestmentName}
+          investmentType={form.investmentType}
+          setInvestmentType={form.setInvestmentType}
+          investmentCost={form.investmentCost}
+          setInvestmentCost={form.setInvestmentCost}
+          investmentValue={form.investmentValue}
+          setInvestmentValue={form.setInvestmentValue}
+          handleAddInvestment={handleAddInvestment}
+          handleDeleteInvestment={handleDeleteInvestment}
+          rates={currency.rates}
+          numberFormat={settingsHook.settings.numberFormat}
+          baseCurrency={baseCurrency}
+        />
+      )}
+      
+      {activePage === "portfolio" && (
+  <PortfolioDashboard investments={investment.investments} />
+    )}
+
+      {activePage === "retirement" && (
+        <RetirementPlanner
+          transactions={transaction.transactions}
+          investments={investment.investments}
+          savingsPlans={saving.savingsPlans}
+          debts={debt.debts}
+        />
+      )}
+
+      {activePage === "export" && (
+        <ExportCenter
+          transactions={transaction.transactions}
+          budgets={budget.budgets}
+          assets={asset.assets}
+          liabilities={asset.liabilities}
+          goals={goal.goals}
+          debts={debt.debts}
+          savingsPlans={saving.savingsPlans}
+          investments={investment.investments}
+          bills={bill.bills}
+        />
+      )}
+
+      {activePage === "settings" && (
+        <Settings
+          user={auth.user}
+          profile={profile.profile}
+          updateProfile={profile.updateProfile}
+          saveProfile={profile.saveProfile}
+          resetProfile={profile.resetProfile}
+          settings={settingsHook.settings}
+          updateSetting={settingsHook.updateSetting}
+          updateNotificationPreference={settingsHook.updateNotificationPreference}
+          updateMoneyAIVoiceSetting={settingsHook.updateMoneyAIVoiceSetting}
+          saveSettings={settingsHook.saveSettings}
+          resetSettings={settingsHook.resetSettings}
+          transactions={transaction.transactions}
+          bills={bill.bills}
+          debts={debt.debts}
+          goals={goal.goals}
+          investments={investment.investments}
+          emergencySavings={emergency.emergencySavings}
+          monthlyExpenses={emergency.monthlyExpenses}
+          monthlyIncome={form.income}
+          rateStatus={currency.rateStatus}
+          updatedAt={currency.updatedAt}
+          rateError={currency.rateError}
+          refreshRates={currency.refreshRates}
+        />
+      )}
+
+      {activePage === "kpis" && (
+        <KPIDashboard
+          user={auth.user}
+          transactions={transaction.transactions}
+          budgets={budget.budgets}
+          assets={asset.assets}
+          liabilities={asset.liabilities}
+          goals={goal.goals}
+          debts={debt.debts}
+          savingsPlans={saving.savingsPlans}
+          bills={bill.bills}
+          investments={investment.investments}
+          emergencySavings={emergency.emergencySavings}
+          monthlyExpenses={emergency.monthlyExpenses}
+          monthlyIncome={form.income}
+        />
+      )}
+
+      {activePage === "ai" && (
+        <MoneyAI
+          transactions={transaction.transactions}
+          budgets={budget.budgets}
+          assets={asset.assets}
+          liabilities={asset.liabilities}
+          goals={goal.goals}
+          debts={debt.debts}
+          savingsPlans={saving.savingsPlans}
+          bills={bill.bills}
+          investments={investment.investments}
+          emergencySavings={emergency.emergencySavings}
+          monthlyExpenses={emergency.monthlyExpenses}
+          monthlyIncome={form.income}
+          setActivePage={setActivePage}
+        />
+      )}
+
+      {![
+        "dashboard",
+        "budget",
+        "transactions",
+        "bills",
+        "calendar",
+        "cashflowforecast",
+        "networth",
+        "goals",
+        "emergency",
+        "debt",
+        "savings",
+        "currency",
+        "investments",
+        "portfolio",
+        "dividends",
+        "dividendDashboard",
+        "retirement",
+        "inflation",
+        "loanpayoff",
+        "reports",
+        "charts",
+        "health",
+        "kpis",
+        "export",
+        "settings",
+        "ai",
+      ].includes(activePage) && (
+        <Panel title="Coming Soon">
+          <p className="mt-4 text-[#A5ADB8]">
+            Deze module bouwen we in een volgende stap: {activePage}.
+          </p>
+        </Panel>
+      )}
+    </DashboardLayout>
+  )
+  }
+
+  return (
+    <>
+      <AppBackground />
+      {content}
+    </>
+  )
+}
