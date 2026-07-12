@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { DEFAULT_BACKGROUND_THEME } from "../constants/backgroundThemes"
 
 const STORAGE_KEY = "moneyMindSettings"
 
@@ -34,6 +35,7 @@ export const DEFAULT_SETTINGS = {
   monthlySavingsTarget: 1500,
   emergencyFundMonths: 6,
   retirementAge: 40,
+  backgroundTheme: DEFAULT_BACKGROUND_THEME,
   notificationPreferences: DEFAULT_NOTIFICATION_PREFERENCES,
   moneyAIVoice: DEFAULT_MONEY_AI_VOICE,
 }

@@ -1,9 +1,12 @@
 import { useState } from "react"
+import { Check } from "lucide-react"
 import Panel from "../components/Panel"
 import Input from "../components/Input"
 import Card from "../components/Card"
 import LiveDateTime from "../components/LiveDateTime"
 import RateStatus from "../components/RateStatus"
+import AppLockSettings from "../components/AppLockSettings"
+import { BACKGROUND_THEMES } from "../constants/backgroundThemes"
 import useFinancialNotifications from "../hooks/useFinancialNotifications"
 import useSpeechSynthesis from "../hooks/useSpeechSynthesis"
 
@@ -60,6 +63,7 @@ export default function Settings({
   updatedAt,
   rateError,
   refreshRates,
+  appLock,
 }) {
   const [savedMessage, setSavedMessage] = useState("")
   const [profileSavedMessage, setProfileSavedMessage] = useState("")
@@ -204,6 +208,66 @@ export default function Settings({
             already understands and replies in Dutch and English.
           </p>
         )}
+      </Panel>
+
+      <Panel title="Theme">
+        <p className="mt-2 text-[#A5ADB8]">
+          Choose the ambient background animation. It's used both here in the app and behind the
+          login screen.
+        </p>
+
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {BACKGROUND_THEMES.map((theme) => {
+            const isSelected = settings.backgroundTheme === theme.id
+
+            return (
+              <button
+                key={theme.id}
+                type="button"
+                onClick={() => updateSetting("backgroundTheme", theme.id)}
+                aria-pressed={isSelected}
+                className={`group relative overflow-hidden rounded-2xl border p-1 text-left transition ${
+                  isSelected ? "border-[#3aaf90]" : "border-[#BFC4CC]/25 hover:border-[#BFC4CC]/50"
+                }`}
+              >
+                <div className="relative aspect-video overflow-hidden rounded-xl bg-black">
+                  <video
+                    className="h-full w-full object-cover"
+                    src={theme.src}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    aria-hidden="true"
+                  />
+                  {isSelected && (
+                    <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[#3aaf90] text-black">
+                      <Check size={14} strokeWidth={3} />
+                    </span>
+                  )}
+                </div>
+
+                <div className="p-3">
+                  <p className="font-semibold text-[#FAFAFA]">{theme.label}</p>
+                  <p className="mt-1 text-xs text-[#A5ADB8]">{theme.description}</p>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+
+        <p className="mt-4 text-xs text-[#707680]">
+          Want more options? Send over additional background videos and they'll be added here.
+        </p>
+      </Panel>
+
+      <Panel title="App Lock">
+        <p className="mt-2 text-[#A5ADB8]">
+          Require biometrics, a PIN, a password, or a pattern to open Money Mind, on top of your
+          regular account sign-in.
+        </p>
+
+        <AppLockSettings appLock={appLock} displayName={profile.displayName} />
       </Panel>
 
       <Panel title="Profile">

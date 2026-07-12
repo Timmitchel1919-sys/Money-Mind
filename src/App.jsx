@@ -32,6 +32,7 @@ import ExportCenter from "./pages/ExportCenter"
 import KPIDashboard from "./pages/KPIDashboard"
 import MoneyAI from "./pages/AIFinancialCoach"
 import AuthIntro from "./components/AuthIntro"
+import AppLockScreen from "./components/AppLockScreen"
 
 import useAuth from "./hooks/useAuth"
 import useBudget from "./hooks/useBudget"
@@ -47,6 +48,7 @@ import useEmergencyFund from "./hooks/useEmergencyFund"
 import useFormState from "./hooks/useFormState"
 import useProfile from "./hooks/useProfile"
 import useSettings from "./hooks/useSettings"
+import useAppLock from "./hooks/useAppLock"
 import { convertCurrency } from "./utils/currencyConversion"
 
 export default function App() {
@@ -65,6 +67,7 @@ export default function App() {
   const emergency = useEmergencyFund()
   const form = useFormState()
   const settingsHook = useSettings()
+  const appLock = useAppLock()
 
   async function loadAllData(userId) {
     await Promise.all([
@@ -765,6 +768,7 @@ export default function App() {
           updateMoneyAIVoiceSetting={settingsHook.updateMoneyAIVoiceSetting}
           saveSettings={settingsHook.saveSettings}
           resetSettings={settingsHook.resetSettings}
+          appLock={appLock}
           transactions={transaction.transactions}
           bills={bill.bills}
           debts={debt.debts}
@@ -852,11 +856,24 @@ export default function App() {
       )}
     </DashboardLayout>
   )
+
+  if (appLock.isEnabled && appLock.isLocked) {
+    content = (
+      <AppLockScreen
+        appLock={appLock}
+        displayName={profile.profile?.displayName || "Shaquil"}
+        onForgot={() => {
+          appLock.disableLock()
+          auth.handleLogout()
+        }}
+      />
+    )
+  }
   }
 
   return (
     <>
-      <AppBackground />
+      <AppBackground themeId={settingsHook.settings.backgroundTheme} />
       {content}
     </>
   )

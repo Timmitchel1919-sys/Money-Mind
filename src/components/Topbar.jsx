@@ -17,8 +17,7 @@ export default function Topbar({ profile, settings, onMenuClick }) {
         </button>
 
         <div className="min-w-0">
-          <h1 className="truncate text-4xl font-bold">Welcome back {displayName}</h1>
-          <p className="mt-2 text-[#A5ADB8]">Here's where your money stands today.</p>
+          <h1 className="truncate text-4xl font-bold">{displayName}</h1>
         </div>
       </div>
 

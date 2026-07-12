@@ -8,17 +8,17 @@ export default function LiveDateTime({ timeFormat, dateFormat, language, classNa
 
   return (
     <div
-      className={`rounded-2xl border border-white/10 bg-black/25 px-5 py-3.5 text-right backdrop-blur-xl ${className}`}
+      className={`rounded-2xl border border-white/10 bg-black/25 px-4 py-2.5 text-right backdrop-blur-xl ${className}`}
     >
-      <p className="font-mono text-3xl font-semibold tracking-wider">
+      <p className="font-mono text-xl font-semibold tracking-wider">
         <span className="gold-text">{hours}</span>
         <span className="text-[#FBBF24]">:</span>
         <span className="gold-text">{minutes}</span>
-        {suffix && <span className="ml-1 text-base font-normal text-[#D9B45C]">{suffix}</span>}
-        <span className="ml-1.5 align-top text-sm font-normal text-[#D9B45C]">{formattedSeconds}</span>
+        {suffix && <span className="ml-1 text-sm font-normal text-[#C9CDD3]">{suffix}</span>}
+        <span className="ml-1 align-top text-xs font-normal text-[#C9CDD3]">{formattedSeconds}</span>
       </p>
 
-      <p className="mt-1 text-base text-[#E8C56B]">{formattedDate}</p>
+      <p className="mt-0.5 silver-text text-sm font-medium">{formattedDate}</p>
     </div>
   )
 }

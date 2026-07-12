@@ -1,6 +1,5 @@
 import { useState } from "react"
 import Panel from "../components/Panel"
-import StickyBar from "../components/StickyBar"
 import Card from "../components/Card"
 import Input from "../components/Input"
 import KPICard from "../components/KPICard"
@@ -244,7 +243,7 @@ export default function KPIDashboard({
 
   return (
     <div className="space-y-6">
-      <StickyBar title="Financial KPIs">
+      <Panel title="Financial KPIs">
         <p className="mt-2 text-[#A5ADB8]">
           A consolidated view of your financial performance, health, and risk — computed live from
           your Money Mind data.
@@ -284,7 +283,7 @@ export default function KPIDashboard({
             debt, and investments always reflect current values.
           </p>
         )}
-      </StickyBar>
+      </Panel>
 
       {editingTargets && (
         <Panel title="KPI Targets">

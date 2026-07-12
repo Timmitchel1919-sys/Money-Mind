@@ -110,7 +110,7 @@ body {
 }
 
 /* Gold brushed-metal text — same background-clip technique as
-   .metallic-button, warm gold tones. Used for the live clock/date. */
+   .metallic-button, warm gold tones. Used for the live clock's time. */
 .gold-text {
   background: linear-gradient(
     135deg,
@@ -119,6 +119,23 @@ body {
     #d4a017 55%,
     #f0c14b 78%,
     #8a6a1f 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Metallic-silver counterpart to .gold-text — same .metallic-button
+   gradient, clipped to text. Used for the live clock's date. */
+.silver-text {
+  background: linear-gradient(
+    135deg,
+    #f8fafc 0%,
+    #d5d8dd 28%,
+    #8a919a 55%,
+    #c9cdd3 78%,
+    #707680 100%
   );
   background-clip: text;
   -webkit-background-clip: text;
