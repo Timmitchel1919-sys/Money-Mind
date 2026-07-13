@@ -109,6 +109,32 @@ body {
     0 0 30px rgba(201, 205, 211, 0.24);
 }
 
+/* Money AI floating launcher — a darker, richer light-green than a flat
+   Tailwind swatch, brushed with the same glossy highlight/inset treatment
+   as .metallic-button so it reads as part of the app's button language. */
+.money-ai-fab {
+  background: linear-gradient(
+    135deg,
+    #4ade80 0%,
+    #22c55e 32%,
+    #16a34a 68%,
+    #14532d 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.3),
+    0 14px 30px rgba(0, 0, 0, 0.5),
+    0 0 26px rgba(22, 163, 74, 0.55);
+}
+
+.money-ai-fab:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.3),
+    0 16px 34px rgba(0, 0, 0, 0.55),
+    0 0 36px rgba(22, 163, 74, 0.8);
+}
+
 /* Gold brushed-metal text — same background-clip technique as
    .metallic-button, warm gold tones. Used for the live clock's time. */
 .gold-text {

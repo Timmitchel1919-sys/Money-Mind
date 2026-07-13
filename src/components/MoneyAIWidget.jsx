@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Bot, X } from "lucide-react"
+import { BotMessageSquare, X } from "lucide-react"
 import MoneyAI from "../pages/AIFinancialCoach"
 
 // Money AI is no longer its own page — it's reachable from anywhere in the
@@ -29,15 +29,24 @@ export default function MoneyAIWidget({ setActivePage, ...moneyAIProps }) {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setIsOpen((open) => !open)}
-        aria-label={isOpen ? "Close Money AI" : "Open Money AI"}
-        aria-expanded={isOpen}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#22C55E] text-black shadow-[0_0_24px_rgba(34,197,94,0.55)] transition hover:scale-105 hover:shadow-[0_0_32px_rgba(34,197,94,0.8)] active:scale-95"
-      >
-        {isOpen ? <X size={24} /> : <Bot size={26} />}
-      </button>
+      <div className="fixed bottom-6 right-6 z-50 h-14 w-14">
+        {!isOpen && (
+          <span
+            className="absolute inset-0 rounded-full bg-[#22C55E]/70 animate-ping"
+            aria-hidden="true"
+          />
+        )}
+
+        <button
+          type="button"
+          onClick={() => setIsOpen((open) => !open)}
+          aria-label={isOpen ? "Close Money AI" : "Open Money AI"}
+          aria-expanded={isOpen}
+          className="money-ai-fab relative flex h-14 w-14 items-center justify-center rounded-full text-white ring-1 ring-white/15 transition duration-300 hover:scale-105 active:scale-95"
+        >
+          {isOpen ? <X size={24} /> : <BotMessageSquare size={26} strokeWidth={1.9} />}
+        </button>
+      </div>
 
       {isOpen && (
         <div
