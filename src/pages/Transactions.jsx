@@ -1,6 +1,8 @@
 import Input from "../components/Input"
 import Panel from "../components/Panel"
 import SmallStat from "../components/SmallStat"
+import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
+import { formatCurrencyAmount } from "../utils/currencyConversion"
 
 export default function Transactions({
   transactionType,
@@ -33,6 +35,9 @@ export default function Transactions({
   cancelEditTransaction,
   handleUpdateTransaction,
   handleDeleteTransaction,
+  rates,
+  numberFormat,
+  baseCurrency = "SRD",
 }) {
   return (
     <section className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_1fr]">
@@ -64,9 +69,21 @@ export default function Transactions({
       <Panel title="Recent Transactions">
         <div className="mt-6 space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <SmallStat title="Income" value={`SRD ${transactionIncome.toFixed(2)}`} />
-            <SmallStat title="Expenses" value={`SRD ${transactionExpenses.toFixed(2)}`} />
-            <SmallStat title="Cash Flow" value={`SRD ${cashFlow.toFixed(2)}`} />
+            <SmallStat
+              title="Income"
+              value={formatCurrencyAmount(transactionIncome, baseCurrency, numberFormat)}
+              subtitle={<MultiCurrencyAmount amount={transactionIncome} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+            />
+            <SmallStat
+              title="Expenses"
+              value={formatCurrencyAmount(transactionExpenses, baseCurrency, numberFormat)}
+              subtitle={<MultiCurrencyAmount amount={transactionExpenses} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+            />
+            <SmallStat
+              title="Cash Flow"
+              value={formatCurrencyAmount(cashFlow, baseCurrency, numberFormat)}
+              subtitle={<MultiCurrencyAmount amount={cashFlow} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+            />
           </div>
 
           {transactions.length === 0 ? (

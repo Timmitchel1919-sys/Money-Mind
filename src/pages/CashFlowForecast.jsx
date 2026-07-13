@@ -1,7 +1,9 @@
 import Panel from "../components/Panel"
 import Card from "../components/Card"
+import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
+import { formatCurrencyAmount } from "../utils/currencyConversion"
 
-export default function CashFlowForecast({ transactions, bills }) {
+export default function CashFlowForecast({ transactions, bills, rates, numberFormat, baseCurrency = "SRD" }) {
   const income = transactions
     .filter((item) => item.type === "income")
     .reduce((sum, item) => sum + Number(item.amount || 0), 0)
@@ -17,10 +19,26 @@ export default function CashFlowForecast({ transactions, bills }) {
   return (
     <div className="space-y-6">
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card title="Projected Income" value={`SRD ${income.toFixed(2)}`} />
-        <Card title="Expenses" value={`SRD ${expenses.toFixed(2)}`} />
-        <Card title="Bills" value={`SRD ${billTotal.toFixed(2)}`} />
-        <Card title="Projected Cash Flow" value={`SRD ${projectedCashFlow.toFixed(2)}`} />
+        <Card
+          title="Projected Income"
+          value={formatCurrencyAmount(income, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={income} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
+        <Card
+          title="Expenses"
+          value={formatCurrencyAmount(expenses, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={expenses} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
+        <Card
+          title="Bills"
+          value={formatCurrencyAmount(billTotal, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={billTotal} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
+        <Card
+          title="Projected Cash Flow"
+          value={formatCurrencyAmount(projectedCashFlow, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={projectedCashFlow} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
       </section>
 
       <Panel title="Cash Flow Forecast">

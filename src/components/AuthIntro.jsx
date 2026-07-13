@@ -6,9 +6,14 @@ function prefersReducedMotion() {
 }
 
 // Cinematic, one-shot intro that plays once in front of the login/register
-// form: video -> logo reveal at the light-beam collision (~1.45s) -> auth
-// card reveal (~3.2s) -> video ends and only the static black/logo/card
-// state remains. Skipped entirely under prefers-reduced-motion.
+// form: silver/white beams collide at 3.0s in the source video (see
+// remotion/IntroComposition.tsx), the M mark holds from 4.5-5.5s, then the
+// video fades to black over 5.5-6.0s. This overlay's own logo/card are held
+// back until that final fade-to-black so they never sit on screen at the
+// same time as the video's own in-scene M (which would read as two stacked
+// logos) - they cross-fade in only as the video dissolves, landing on the
+// black/logo/card resting state the video's last frame already prepares.
+// Skipped entirely under prefers-reduced-motion.
 export default function AuthIntro({ children }) {
   const videoRef = useRef(null)
   const reducedMotion = useRef(prefersReducedMotion()).current
@@ -26,13 +31,16 @@ export default function AuthIntro({ children }) {
     function handleTimeUpdate() {
       const currentTime = video.currentTime
 
-      // Around the moment the two light beams collide.
-      if (currentTime >= 1.45 && !showLogo) {
+      // Hold off until the video itself starts dissolving to black
+      // (5.5-6.0s) so the static wordmark lockup cross-fades in as the
+      // in-video M fades out, instead of both being visible at once.
+      if (currentTime >= 5.5 && !showLogo) {
         setShowLogo(true)
       }
 
-      // Reveal the login/register card shortly after.
-      if (currentTime >= 3.2 && !showAuthCard) {
+      // Bring the login/register card in right behind the logo, finishing
+      // just as the video ends.
+      if (currentTime >= 5.7 && !showAuthCard) {
         setShowAuthCard(true)
       }
     }
@@ -92,7 +100,7 @@ export default function AuthIntro({ children }) {
           </div>
 
           <div
-            className={`mt-6 w-full max-w-md ${reducedMotion ? "" : "transition-all duration-1000 ease-out"} ${
+            className={`mt-6 w-full max-w-xl ${reducedMotion ? "" : "transition-all duration-1000 ease-out"} ${
               showAuthCard
                 ? "translate-y-0 opacity-100"
                 : "pointer-events-none translate-y-12 opacity-0"

@@ -10,15 +10,15 @@ export default function LiveDateTime({ timeFormat, dateFormat, language, classNa
     <div
       className={`rounded-2xl border border-white/10 bg-black/25 px-4 py-2.5 text-right backdrop-blur-xl ${className}`}
     >
-      <p className="font-mono text-xl font-semibold tracking-wider">
-        <span className="gold-text">{hours}</span>
-        <span className="text-[#FBBF24]">:</span>
-        <span className="gold-text">{minutes}</span>
-        {suffix && <span className="ml-1 text-sm font-normal text-[#C9CDD3]">{suffix}</span>}
-        <span className="ml-1 align-top text-xs font-normal text-[#C9CDD3]">{formattedSeconds}</span>
+      <p className="font-mono text-xl font-bold tracking-wider text-white">
+        <span>{hours}</span>
+        <span>:</span>
+        <span>{minutes}</span>
+        {suffix && <span className="ml-1 text-sm font-bold">{suffix}</span>}
+        <span className="ml-1 align-top text-xs font-bold">{formattedSeconds}</span>
       </p>
 
-      <p className="mt-0.5 silver-text text-sm font-medium">{formattedDate}</p>
+      <p className="mt-0.5 text-sm font-bold text-white">{formattedDate}</p>
     </div>
   )
 }

@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { DEFAULT_OPENAI_VOICE } from "../constants/openaiVoices"
+import { synthesizeOpenAIVoice } from "../services/openaiVoiceService"
 
 const STORAGE_KEY = "moneyMindVoicePrefs"
 
@@ -8,6 +10,8 @@ const DEFAULT_PREFS = {
   volume: 1.0,
   autoRead: false,
   voiceURIByLang: { en: null, nl: null },
+  engine: "browser", // "browser" | "openai"
+  openaiVoice: DEFAULT_OPENAI_VOICE,
 }
 
 function loadPrefs() {
@@ -47,15 +51,24 @@ function pickBestVoice(voices, language) {
 }
 
 // States: idle | speaking | paused. Preferences (rate, pitch, volume,
-// auto-read, chosen voice per language) persist in localStorage.
+// auto-read, chosen voice per language, engine) persist in localStorage.
+// Two engines: "browser" (free, uses the OS/browser's Web Speech API) and
+// "openai" (paid, human-sounding voices via the moneyAIVoiceSynthesize
+// Cloud Function — see functions/index.js). Both share the same
+// speak/pause/resume/stop surface so callers never branch on engine.
 export default function useSpeechSynthesis() {
-  const supported = isSynthesisSupported()
+  const browserSupported = isSynthesisSupported()
   const [voices, setVoices] = useState([])
   const [prefs, setPrefs] = useState(loadPrefs)
   const [status, setStatus] = useState("idle")
+  const [error, setError] = useState(null)
+  const audioRef = useRef(null)
+
+  const isOpenAI = prefs.engine === "openai"
+  const supported = isOpenAI ? typeof Audio !== "undefined" : browserSupported
 
   useEffect(() => {
-    if (!supported) return
+    if (!browserSupported) return
 
     function loadVoices() {
       setVoices(window.speechSynthesis.getVoices())
@@ -64,25 +77,33 @@ export default function useSpeechSynthesis() {
     loadVoices()
     window.speechSynthesis.addEventListener("voiceschanged", loadVoices)
     return () => window.speechSynthesis.removeEventListener("voiceschanged", loadVoices)
-  }, [supported])
+  }, [browserSupported])
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs))
   }, [prefs])
 
-  // Always cancel any in-flight utterance when unmounting (component
+  function stopAudioElement() {
+    const audio = audioRef.current
+    if (!audio) return
+    audio.pause()
+    audio.currentTime = 0
+    if (audio.src) URL.revokeObjectURL(audio.src)
+    audioRef.current = null
+  }
+
+  // Always cancel any in-flight speech when unmounting (component
   // unmount, navigating away from Money AI, logout — all unmount this
   // page) so speech never keeps playing after the page is gone.
   useEffect(() => {
     return () => {
-      if (supported) window.speechSynthesis.cancel()
+      if (browserSupported) window.speechSynthesis.cancel()
+      stopAudioElement()
     }
-  }, [supported])
+  }, [browserSupported])
 
-  const speak = useCallback(
-    (text, language = "en") => {
-      if (!supported || !text) return
-
+  const speakBrowser = useCallback(
+    (text, language) => {
       window.speechSynthesis.cancel()
 
       const langKey = language === "nl" ? "nl" : "en"
@@ -105,28 +126,80 @@ export default function useSpeechSynthesis() {
 
       window.speechSynthesis.speak(utterance)
     },
-    [supported, voices, prefs]
+    [voices, prefs]
+  )
+
+  const speakOpenAI = useCallback(
+    async (text) => {
+      stopAudioElement()
+      setError(null)
+      setStatus("speaking")
+
+      try {
+        const url = await synthesizeOpenAIVoice(text, prefs.openaiVoice)
+        const audio = new Audio(url)
+        audio.volume = prefs.volume
+        audio.playbackRate = prefs.rate
+
+        audio.onended = () => setStatus("idle")
+        audio.onerror = () => {
+          setStatus("idle")
+          setError("Voice playback failed.")
+        }
+
+        audioRef.current = audio
+        await audio.play()
+      } catch (err) {
+        setStatus("idle")
+        setError(err?.message || "Voice synthesis failed.")
+      }
+    },
+    [prefs.openaiVoice, prefs.volume, prefs.rate]
+  )
+
+  const speak = useCallback(
+    (text, language = "en") => {
+      if (!supported || !text) return
+      if (isOpenAI) {
+        speakOpenAI(text)
+      } else {
+        speakBrowser(text, language)
+      }
+    },
+    [supported, isOpenAI, speakOpenAI, speakBrowser]
   )
 
   const pause = useCallback(() => {
     if (!supported) return
-    window.speechSynthesis.pause()
+    if (isOpenAI) {
+      audioRef.current?.pause()
+    } else {
+      window.speechSynthesis.pause()
+    }
     setStatus("paused")
-  }, [supported])
+  }, [supported, isOpenAI])
 
   const resume = useCallback(() => {
     if (!supported) return
-    window.speechSynthesis.resume()
+    if (isOpenAI) {
+      audioRef.current?.play()
+    } else {
+      window.speechSynthesis.resume()
+    }
     setStatus("speaking")
-  }, [supported])
+  }, [supported, isOpenAI])
 
   // Hard stop, used for Stop, barge-in/interrupt, page unmount, logout,
   // and disabling voice mode.
   const stop = useCallback(() => {
     if (!supported) return
-    window.speechSynthesis.cancel()
+    if (isOpenAI) {
+      stopAudioElement()
+    } else {
+      window.speechSynthesis.cancel()
+    }
     setStatus("idle")
-  }, [supported])
+  }, [supported, isOpenAI])
 
   function updatePref(key, value) {
     setPrefs((prev) => ({ ...prev, [key]: value }))
@@ -144,6 +217,7 @@ export default function useSpeechSynthesis() {
     isSupported: supported,
     voices,
     status,
+    error,
     prefs,
     speak,
     pause,

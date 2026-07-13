@@ -7,6 +7,7 @@ import LiveDateTime from "../components/LiveDateTime"
 import RateStatus from "../components/RateStatus"
 import AppLockSettings from "../components/AppLockSettings"
 import { BACKGROUND_THEMES } from "../constants/backgroundThemes"
+import { OPENAI_VOICES } from "../constants/openaiVoices"
 import useFinancialNotifications from "../hooks/useFinancialNotifications"
 import useSpeechSynthesis from "../hooks/useSpeechSynthesis"
 
@@ -212,7 +213,7 @@ export default function Settings({
 
       <Panel title="Theme">
         <p className="mt-2 text-[#A5ADB8]">
-          Choose the ambient background animation. It's used both here in the app and behind the
+          Choose the ambient background (video or photo). It's used both here in the app and behind the
           login screen.
         </p>
 
@@ -231,15 +232,19 @@ export default function Settings({
                 }`}
               >
                 <div className="relative aspect-video overflow-hidden rounded-xl bg-black">
-                  <video
-                    className="h-full w-full object-cover"
-                    src={theme.src}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    aria-hidden="true"
-                  />
+                  {theme.type === "image" ? (
+                    <img className="h-full w-full object-cover" src={theme.src} alt="" aria-hidden="true" />
+                  ) : (
+                    <video
+                      className="h-full w-full object-cover"
+                      src={theme.src}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      aria-hidden="true"
+                    />
+                  )}
                   {isSelected && (
                     <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[#3aaf90] text-black">
                       <Check size={14} strokeWidth={3} />
@@ -257,7 +262,7 @@ export default function Settings({
         </div>
 
         <p className="mt-4 text-xs text-[#707680]">
-          Want more options? Send over additional background videos and they'll be added here.
+          Want more options? Send over additional background videos or photos and they'll be added here.
         </p>
       </Panel>
 
@@ -272,7 +277,14 @@ export default function Settings({
 
       <Panel title="Profile">
         <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <Card title="Account Email" value={user?.email || "N/A"} />
+          <Card
+            title="Account Email"
+            value={
+              <span className="block break-all text-lg leading-snug sm:text-xl">
+                {user?.email || "N/A"}
+              </span>
+            }
+          />
           <Card title="Financial Persona" value={profile.financialPersona} />
           <Card title="Country" value={profile.country || "Not set"} />
         </div>
@@ -435,6 +447,16 @@ export default function Settings({
           />
 
           <SettingSelect
+            label="Voice engine"
+            value={synthesis.prefs.engine}
+            onChange={(value) => synthesis.updatePref("engine", value)}
+            options={[
+              { value: "browser", label: "Browser (free, device voices)" },
+              { value: "openai", label: "OpenAI (premium, human-like)" },
+            ]}
+          />
+
+          <SettingSelect
             label="Voice language"
             value={voicePrefs.voiceLanguage}
             onChange={(value) => updateMoneyAIVoiceSetting("voiceLanguage", value)}
@@ -457,47 +479,45 @@ export default function Settings({
           />
         </div>
 
-        {synthesis.isSupported && (
-          <>
-            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm text-[#D5D8DD]">Preferred English voice</label>
-                <select
-                  className="w-full rounded-xl border border-[#BFC4CC]/25 bg-black/35 p-3 text-white outline-none"
-                  value={synthesis.prefs.voiceURIByLang.en || ""}
-                  onChange={(e) => synthesis.updateVoiceForLanguage("en", e.target.value)}
-                >
-                  <option value="">Automatic</option>
-                  {synthesis.voices
-                    .filter((voice) => voice.lang?.toLowerCase().startsWith("en"))
-                    .map((voice) => (
-                      <option key={voice.voiceURI} value={voice.voiceURI}>
-                        {voice.name}
-                      </option>
-                    ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm text-[#D5D8DD]">Preferred Dutch voice</label>
-                <select
-                  className="w-full rounded-xl border border-[#BFC4CC]/25 bg-black/35 p-3 text-white outline-none"
-                  value={synthesis.prefs.voiceURIByLang.nl || ""}
-                  onChange={(e) => synthesis.updateVoiceForLanguage("nl", e.target.value)}
-                >
-                  <option value="">Automatic</option>
-                  {synthesis.voices
-                    .filter((voice) => voice.lang?.toLowerCase().startsWith("nl"))
-                    .map((voice) => (
-                      <option key={voice.voiceURI} value={voice.voiceURI}>
-                        {voice.name}
-                      </option>
-                    ))}
-                </select>
-              </div>
+        {synthesis.prefs.engine === "openai" ? (
+          <div className="mt-6">
+            <label className="mb-2 block text-sm text-[#D5D8DD]">Voice</label>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {OPENAI_VOICES.map((voice) => {
+                const selected = synthesis.prefs.openaiVoice === voice.id
+                return (
+                  <button
+                    key={voice.id}
+                    type="button"
+                    onClick={() => synthesis.updatePref("openaiVoice", voice.id)}
+                    className={`flex items-center justify-between gap-2 rounded-2xl border p-4 text-left transition ${
+                      selected
+                        ? "border-[#3aaf90] bg-[#3aaf90]/10"
+                        : "border-[#BFC4CC]/20 bg-black/30 hover:border-[#BFC4CC]/40"
+                    }`}
+                  >
+                    <span>
+                      <span className="block text-sm font-semibold text-[#FAFAFA]">{voice.label}</span>
+                      <span className="block text-xs text-[#A5ADB8]">{voice.description}</span>
+                    </span>
+                    {selected && <Check size={18} className="shrink-0 text-[#3aaf90]" />}
+                  </button>
+                )
+              })}
             </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <button
+              type="button"
+              onClick={() => synthesis.speak("Hi, this is a preview of the Money AI voice.", "en")}
+              disabled={synthesis.status === "speaking"}
+              className="metallic-button mt-4 rounded-xl px-5 py-2.5 text-sm font-semibold text-black disabled:opacity-50"
+            >
+              {synthesis.status === "speaking" ? "Playing…" : "Test voice"}
+            </button>
+
+            {synthesis.error && <p className="mt-3 text-sm text-red-400">{synthesis.error}</p>}
+
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1 block text-xs text-[#A5ADB8]">Speech rate: {synthesis.prefs.rate.toFixed(2)}</label>
                 <input
@@ -507,19 +527,6 @@ export default function Settings({
                   step="0.05"
                   value={synthesis.prefs.rate}
                   onChange={(e) => synthesis.updatePref("rate", Number(e.target.value))}
-                  className="w-full accent-[#3aaf90]"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-xs text-[#A5ADB8]">Pitch: {synthesis.prefs.pitch.toFixed(2)}</label>
-                <input
-                  type="range"
-                  min="0.5"
-                  max="1.5"
-                  step="0.05"
-                  value={synthesis.prefs.pitch}
-                  onChange={(e) => synthesis.updatePref("pitch", Number(e.target.value))}
                   className="w-full accent-[#3aaf90]"
                 />
               </div>
@@ -537,7 +544,95 @@ export default function Settings({
                 />
               </div>
             </div>
-          </>
+
+            <p className="mt-6 text-xs text-[#A5ADB8]">
+              OpenAI voices are generated server-side (your API key never reaches the browser) and cost a small
+              amount per reply spoken. Requires the moneyAIVoiceSynthesize Cloud Function to be deployed.
+            </p>
+          </div>
+        ) : (
+          synthesis.isSupported && (
+            <>
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-sm text-[#D5D8DD]">Preferred English voice</label>
+                  <select
+                    className="w-full rounded-xl border border-[#BFC4CC]/25 bg-black/35 p-3 text-white outline-none"
+                    value={synthesis.prefs.voiceURIByLang.en || ""}
+                    onChange={(e) => synthesis.updateVoiceForLanguage("en", e.target.value)}
+                  >
+                    <option value="">Automatic</option>
+                    {synthesis.voices
+                      .filter((voice) => voice.lang?.toLowerCase().startsWith("en"))
+                      .map((voice) => (
+                        <option key={voice.voiceURI} value={voice.voiceURI}>
+                          {voice.name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm text-[#D5D8DD]">Preferred Dutch voice</label>
+                  <select
+                    className="w-full rounded-xl border border-[#BFC4CC]/25 bg-black/35 p-3 text-white outline-none"
+                    value={synthesis.prefs.voiceURIByLang.nl || ""}
+                    onChange={(e) => synthesis.updateVoiceForLanguage("nl", e.target.value)}
+                  >
+                    <option value="">Automatic</option>
+                    {synthesis.voices
+                      .filter((voice) => voice.lang?.toLowerCase().startsWith("nl"))
+                      .map((voice) => (
+                        <option key={voice.voiceURI} value={voice.voiceURI}>
+                          {voice.name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-xs text-[#A5ADB8]">Speech rate: {synthesis.prefs.rate.toFixed(2)}</label>
+                  <input
+                    type="range"
+                    min="0.6"
+                    max="1.4"
+                    step="0.05"
+                    value={synthesis.prefs.rate}
+                    onChange={(e) => synthesis.updatePref("rate", Number(e.target.value))}
+                    className="w-full accent-[#3aaf90]"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs text-[#A5ADB8]">Pitch: {synthesis.prefs.pitch.toFixed(2)}</label>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="1.5"
+                    step="0.05"
+                    value={synthesis.prefs.pitch}
+                    onChange={(e) => synthesis.updatePref("pitch", Number(e.target.value))}
+                    className="w-full accent-[#3aaf90]"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs text-[#A5ADB8]">Volume: {Math.round(synthesis.prefs.volume * 100)}%</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={synthesis.prefs.volume}
+                    onChange={(e) => synthesis.updatePref("volume", Number(e.target.value))}
+                    className="w-full accent-[#3aaf90]"
+                  />
+                </div>
+              </div>
+            </>
+          )
         )}
 
         <p className="mt-6 text-xs text-[#A5ADB8]">

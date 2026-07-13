@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import Sidebar from "../components/Sidebar"
 import Topbar from "../components/Topbar"
+import MoneyAIWidget from "../components/MoneyAIWidget"
 
 export default function DashboardLayout({
     user,
@@ -9,6 +10,7 @@ export default function DashboardLayout({
     handleLogout,
     activePage,
     setActivePage,
+    moneyAIProps,
     children,
 }) {
     const [isSidebarOpen, setSidebarOpen] = useState(false)
@@ -73,6 +75,8 @@ export default function DashboardLayout({
                 </div>
 
             </div>
+
+            <MoneyAIWidget {...moneyAIProps} setActivePage={setActivePage} />
 
         </div>
     )

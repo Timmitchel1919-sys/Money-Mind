@@ -22,7 +22,6 @@ import {
   ChartNoAxesCombined,
   HeartPulse,
   Gauge,
-  Bot,
   Download,
   Settings as SettingsIcon,
   LogOut,
@@ -55,7 +54,6 @@ const MAIN_NAV_ITEMS = [
   { label: "Charts", value: "charts", icon: ChartNoAxesCombined },
   { label: "Financial Health", value: "health", icon: HeartPulse },
   { label: "Financial KPIs", value: "kpis", icon: Gauge },
-  { label: "Money AI", value: "ai", icon: Bot },
   { label: "Export Center", value: "export", icon: Download },
 ]
 

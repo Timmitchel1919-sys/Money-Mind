@@ -2,8 +2,10 @@ import { useMemo, useState } from "react"
 import Input from "../components/Input"
 import Panel from "../components/Panel"
 import Card from "../components/Card"
+import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
+import { formatCurrencyAmount } from "../utils/currencyConversion"
 
-export default function DividendTracker() {
+export default function DividendTracker({ rates, numberFormat, baseCurrency = "SRD" }) {
   const [assetName, setAssetName] = useState("Staatsolie Bond")
   const [shares, setShares] = useState(10)
   const [dividendPerShare, setDividendPerShare] = useState(50)
@@ -26,7 +28,11 @@ export default function DividendTracker() {
         <Card title="Asset" value={assetName || "N/A"} />
         <Card title="Units" value={Number(shares || 0).toLocaleString()} />
         <Card title="Frequency" value={frequency} />
-        <Card title="Annual Dividend" value={`SRD ${annualDividend.toLocaleString()}`} />
+        <Card
+          title="Annual Dividend"
+          value={formatCurrencyAmount(annualDividend, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={annualDividend} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
       </section>
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_1fr]">

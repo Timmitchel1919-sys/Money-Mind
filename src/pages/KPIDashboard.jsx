@@ -12,6 +12,7 @@ import useFinancialKPIs, { KPI_PERIODS, getKpiStatus } from "../hooks/useFinanci
 import useKPITargets from "../hooks/useKPITargets"
 import useKPIInsights from "../hooks/useKPIInsights"
 import { exportKpiSummary } from "../utils/kpiExport"
+import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
 
 function formatCurrency(value) {
   return `SRD ${Number(value || 0).toFixed(2)}`
@@ -60,6 +61,9 @@ export default function KPIDashboard({
   emergencySavings = 0,
   monthlyExpenses = 0,
   monthlyIncome = 0,
+  rates,
+  numberFormat,
+  baseCurrency = "SRD",
 }) {
   const [period, setPeriod] = useState("All Time")
   const [editingTargets, setEditingTargets] = useState(false)
@@ -367,15 +371,39 @@ export default function KPIDashboard({
 
       <Panel title="Secondary Metrics">
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Card title="Total Income" value={formatCurrency(kpis.totalIncome)} />
-          <Card title="Total Expenses" value={formatCurrency(kpis.totalExpenses)} />
-          <Card title="Free Cash Flow" value={formatCurrency(kpis.freeCashFlow)} />
-          <Card title="Total Debt" value={formatCurrency(kpis.totalDebt)} />
-          <Card title="Monthly Debt Payments" value={formatCurrency(kpis.monthlyDebtPayments)} />
+          <Card
+            title="Total Income"
+            value={formatCurrency(kpis.totalIncome)}
+            subtitle={<MultiCurrencyAmount amount={kpis.totalIncome} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+          />
+          <Card
+            title="Total Expenses"
+            value={formatCurrency(kpis.totalExpenses)}
+            subtitle={<MultiCurrencyAmount amount={kpis.totalExpenses} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+          />
+          <Card
+            title="Free Cash Flow"
+            value={formatCurrency(kpis.freeCashFlow)}
+            subtitle={<MultiCurrencyAmount amount={kpis.freeCashFlow} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+          />
+          <Card
+            title="Total Debt"
+            value={formatCurrency(kpis.totalDebt)}
+            subtitle={<MultiCurrencyAmount amount={kpis.totalDebt} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+          />
+          <Card
+            title="Monthly Debt Payments"
+            value={formatCurrency(kpis.monthlyDebtPayments)}
+            subtitle={<MultiCurrencyAmount amount={kpis.monthlyDebtPayments} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+          />
           <Card title="Savings Goal Progress" value={formatPercent(kpis.savingsGoalProgress)} />
           <Card title="Goal Completion Rate" value={formatPercent(kpis.goalCompletionRate)} />
           <Card title="Investment Return" value={formatPercent(kpis.investmentReturn)} />
-          <Card title="Investment Profit/Loss" value={formatCurrency(kpis.investmentProfit)} />
+          <Card
+            title="Investment Profit/Loss"
+            value={formatCurrency(kpis.investmentProfit)}
+            subtitle={<MultiCurrencyAmount amount={kpis.investmentProfit} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+          />
           <Card
             title="Portfolio Concentration"
             value={`${kpis.portfolioConcentration.pct.toFixed(1)}%`}

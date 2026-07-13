@@ -38,7 +38,11 @@ export default function InvestmentTracker({
           value={formatCurrencyAmount(totalValue, baseCurrency, numberFormat)}
           subtitle={<MultiCurrencyAmount amount={totalValue} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
         />
-        <Card title="Profit / Loss" value={formatCurrencyAmount(profitLoss, baseCurrency, numberFormat)} />
+        <Card
+          title="Profit / Loss"
+          value={formatCurrencyAmount(profitLoss, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={profitLoss} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
         <Card title="Return" value={`${returnRate.toFixed(2)}%`} />
       </section>
 

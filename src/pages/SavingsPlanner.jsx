@@ -33,8 +33,16 @@ export default function SavingsPlanner({
           value={formatCurrencyAmount(totalTarget, baseCurrency, numberFormat)}
           subtitle={<MultiCurrencyAmount amount={totalTarget} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
         />
-        <Card title="Currently Saved" value={formatCurrencyAmount(totalCurrent, baseCurrency, numberFormat)} />
-        <Card title="Monthly Saving" value={formatCurrencyAmount(totalMonthly, baseCurrency, numberFormat)} />
+        <Card
+          title="Currently Saved"
+          value={formatCurrencyAmount(totalCurrent, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={totalCurrent} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
+        <Card
+          title="Monthly Saving"
+          value={formatCurrencyAmount(totalMonthly, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={totalMonthly} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
         <Card title="Progress" value={`${progress.toFixed(2)}%`} />
       </section>
 

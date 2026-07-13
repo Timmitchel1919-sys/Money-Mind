@@ -11,17 +11,27 @@ export default function AppBackground({ themeId = DEFAULT_BACKGROUND_THEME }) {
 
   return (
     <div className="fixed inset-0 -z-20" aria-hidden="true" tabIndex="-1">
-      <video
-        key={theme.src}
-        className="h-full w-full object-cover"
-        src={theme.src}
-        autoPlay
-        muted
-        loop
-        playsInline
-        aria-hidden="true"
-        tabIndex="-1"
-      />
+      {theme.type === "image" ? (
+        <img
+          key={theme.src}
+          className="h-full w-full object-cover"
+          src={theme.src}
+          alt=""
+          aria-hidden="true"
+        />
+      ) : (
+        <video
+          key={theme.src}
+          className="h-full w-full object-cover"
+          src={theme.src}
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-hidden="true"
+          tabIndex="-1"
+        />
+      )}
       <div className="absolute inset-0 bg-black/[0.42]" />
     </div>
   )

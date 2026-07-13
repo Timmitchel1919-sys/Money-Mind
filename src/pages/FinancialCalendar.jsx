@@ -1,7 +1,9 @@
 import Panel from "../components/Panel"
 import Card from "../components/Card"
+import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
+import { formatCurrencyAmount } from "../utils/currencyConversion"
 
-export default function FinancialCalendar({ bills }) {
+export default function FinancialCalendar({ bills, rates, numberFormat, baseCurrency = "SRD" }) {
   const sortedBills = [...bills].sort((a, b) =>
     String(a.dueDate).localeCompare(String(b.dueDate))
   )
@@ -12,7 +14,11 @@ export default function FinancialCalendar({ bills }) {
     <div className="space-y-6">
       <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card title="Upcoming Bills" value={bills.length} />
-        <Card title="Total Due" value={`SRD ${totalUpcoming.toFixed(2)}`} />
+        <Card
+          title="Total Due"
+          value={formatCurrencyAmount(totalUpcoming, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={totalUpcoming} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
         <Card title="Next Payment" value={sortedBills[0]?.dueDate || "N/A"} />
       </section>
 

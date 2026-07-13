@@ -1,12 +1,17 @@
 import Input from "../components/Input"
 import Panel from "../components/Panel"
 import Card from "../components/Card"
+import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
+import { formatCurrencyAmount } from "../utils/currencyConversion"
 
 export default function EmergencyFund({
   emergencySavings,
   setEmergencySavings,
   monthlyExpenses,
   setMonthlyExpenses,
+  rates,
+  numberFormat,
+  baseCurrency = "SRD",
 }) {
   const monthsCovered =
     Number(monthlyExpenses || 0) > 0
@@ -31,8 +36,16 @@ export default function EmergencyFund({
   return (
     <div className="space-y-6">
       <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card title="Emergency Savings" value={`SRD ${Number(emergencySavings || 0).toFixed(2)}`} />
-        <Card title="Monthly Expenses" value={`SRD ${Number(monthlyExpenses || 0).toFixed(2)}`} />
+        <Card
+          title="Emergency Savings"
+          value={formatCurrencyAmount(emergencySavings, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={emergencySavings} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
+        <Card
+          title="Monthly Expenses"
+          value={formatCurrencyAmount(monthlyExpenses, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={monthlyExpenses} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
         <Card title="Months Covered" value={`${monthsCovered.toFixed(1)} Months`} />
       </section>
 

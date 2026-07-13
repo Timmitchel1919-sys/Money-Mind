@@ -6,6 +6,10 @@ import {
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
+  sendPasswordResetEmail,
 } from "firebase/auth"
 import { auth } from "../firebase"
 
@@ -15,6 +19,8 @@ export default function useAuth(onLogin) {
   const [mode, setMode] = useState("login")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [rememberMe, setRememberMe] = useState(true)
+  const [resetMessage, setResetMessage] = useState("")
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -33,6 +39,10 @@ export default function useAuth(onLogin) {
     e.preventDefault()
 
     try {
+      // Remember me off -> session-only persistence (signed out when the
+      // browser/tab closes). On (default) -> persists across restarts.
+      await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence)
+
       if (mode === "register") {
         await createUserWithEmailAndPassword(auth, email, password)
       } else {
@@ -40,6 +50,22 @@ export default function useAuth(onLogin) {
       }
     } catch (error) {
       alert(error.message)
+    }
+  }
+
+  async function handleForgotPassword() {
+    setResetMessage("")
+
+    if (!email) {
+      setResetMessage("Enter your email address above first, then tap Forgot password.")
+      return
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email)
+      setResetMessage("Password reset email sent — check your inbox.")
+    } catch (error) {
+      setResetMessage(error.message)
     }
   }
 
@@ -65,8 +91,12 @@ export default function useAuth(onLogin) {
     setEmail,
     password,
     setPassword,
+    rememberMe,
+    setRememberMe,
+    resetMessage,
     handleAuth,
     handleGoogleLogin,
     handleLogout,
+    handleForgotPassword,
   }
 }

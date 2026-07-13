@@ -30,7 +30,6 @@ import LoanPayoffCalculator from "./pages/LoanPayoffCalculator"
 import Settings from "./pages/Settings"
 import ExportCenter from "./pages/ExportCenter"
 import KPIDashboard from "./pages/KPIDashboard"
-import MoneyAI from "./pages/AIFinancialCoach"
 import AuthIntro from "./components/AuthIntro"
 import AppLockScreen from "./components/AppLockScreen"
 
@@ -364,7 +363,7 @@ export default function App() {
       <AuthIntro>
         <form
           onSubmit={auth.handleAuth}
-          className="glass-login-card w-full overflow-hidden rounded-3xl p-8"
+          className="glass-login-card w-full overflow-hidden rounded-3xl p-10"
         >
           <p className="mb-8 text-center text-[#A5ADB8]">
             {auth.mode === "login" ? "Login to your dashboard" : "Create your account"}
@@ -381,12 +380,36 @@ export default function App() {
 
           <label className="mb-2 block text-sm text-[#D5D8DD]">Password</label>
           <input
-            className="mb-6 w-full rounded-xl border border-[#BFC4CC]/25 bg-black/35 p-3 text-white outline-none backdrop-blur-xl"
+            className="mb-4 w-full rounded-xl border border-[#BFC4CC]/25 bg-black/35 p-3 text-white outline-none backdrop-blur-xl"
             type="password"
             value={auth.password}
             onChange={(event) => auth.setPassword(event.target.value)}
             required
           />
+
+          <div className="mb-6 flex items-center justify-between">
+            <label className="flex items-center gap-2 text-sm text-[#D5D8DD]">
+              <input
+                type="checkbox"
+                checked={auth.rememberMe}
+                onChange={(event) => auth.setRememberMe(event.target.checked)}
+                className="h-4 w-4 accent-[#3aaf90]"
+              />
+              Remember me
+            </label>
+
+            <button
+              type="button"
+              onClick={auth.handleForgotPassword}
+              className="text-sm text-[#D5D8DD] transition hover:text-white"
+            >
+              Forgot password?
+            </button>
+          </div>
+
+          {auth.resetMessage && (
+            <p className="mb-4 text-sm text-[#A5ADB8]">{auth.resetMessage}</p>
+          )}
 
           <button className="metallic-button w-full rounded-xl p-3 font-semibold text-black transition">
             {auth.mode === "login" ? "Login" : "Create Account"}
@@ -442,6 +465,20 @@ export default function App() {
       handleLogout={auth.handleLogout}
       activePage={activePage}
       setActivePage={setActivePage}
+      moneyAIProps={{
+        transactions: transaction.transactions,
+        budgets: budget.budgets,
+        assets: asset.assets,
+        liabilities: asset.liabilities,
+        goals: goal.goals,
+        debts: debt.debts,
+        savingsPlans: saving.savingsPlans,
+        bills: bill.bills,
+        investments: investment.investments,
+        emergencySavings: emergency.emergencySavings,
+        monthlyExpenses: emergency.monthlyExpenses,
+        monthlyIncome: form.income,
+      }}
     >
       {activePage === "dashboard" && (
         <Dashboard
@@ -596,6 +633,9 @@ export default function App() {
           setEmergencySavings={emergency.setEmergencySavings}
           monthlyExpenses={emergency.monthlyExpenses}
           setMonthlyExpenses={emergency.setMonthlyExpenses}
+          rates={currency.rates}
+          numberFormat={settingsHook.settings.numberFormat}
+          baseCurrency={baseCurrency}
         />
       )}
 
@@ -656,9 +696,13 @@ export default function App() {
         />
       )}
       
-      {activePage === "dividends" && <DividendTracker />}
+      {activePage === "dividends" && (
+        <DividendTracker rates={currency.rates} numberFormat={settingsHook.settings.numberFormat} baseCurrency={baseCurrency} />
+      )}
 
-      {activePage === "dividendDashboard" && <DividendDashboard />}
+      {activePage === "dividendDashboard" && (
+        <DividendDashboard rates={currency.rates} numberFormat={settingsHook.settings.numberFormat} baseCurrency={baseCurrency} />
+      )}
 
       {activePage === "inflation" && (
         <InflationCalculator
@@ -669,14 +713,27 @@ export default function App() {
         />
       )}
 
-      {activePage === "loanpayoff" && <LoanPayoffCalculator />}
+      {activePage === "loanpayoff" && (
+        <LoanPayoffCalculator rates={currency.rates} numberFormat={settingsHook.settings.numberFormat} baseCurrency={baseCurrency} />
+      )}
 
       {activePage === "calendar" && (
-        <FinancialCalendar bills={bill.bills} />
+        <FinancialCalendar
+          bills={bill.bills}
+          rates={currency.rates}
+          numberFormat={settingsHook.settings.numberFormat}
+          baseCurrency={baseCurrency}
+        />
       )}
 
       {activePage === "cashflowforecast" && (
-        <CashFlowForecast transactions={transaction.transactions} bills={bill.bills} />
+        <CashFlowForecast
+          transactions={transaction.transactions}
+          bills={bill.bills}
+          rates={currency.rates}
+          numberFormat={settingsHook.settings.numberFormat}
+          baseCurrency={baseCurrency}
+        />
       )}
 
       {activePage === "reports" && (
@@ -697,6 +754,9 @@ export default function App() {
           assets={asset.assets}
           liabilities={asset.liabilities}
           savingsPlans={saving.savingsPlans}
+          rates={currency.rates}
+          numberFormat={settingsHook.settings.numberFormat}
+          baseCurrency={baseCurrency}
         />
       )}
 
@@ -729,8 +789,13 @@ export default function App() {
       )}
       
       {activePage === "portfolio" && (
-  <PortfolioDashboard investments={investment.investments} />
-    )}
+        <PortfolioDashboard
+          investments={investment.investments}
+          rates={currency.rates}
+          numberFormat={settingsHook.settings.numberFormat}
+          baseCurrency={baseCurrency}
+        />
+      )}
 
       {activePage === "retirement" && (
         <RetirementPlanner
@@ -799,24 +864,9 @@ export default function App() {
           emergencySavings={emergency.emergencySavings}
           monthlyExpenses={emergency.monthlyExpenses}
           monthlyIncome={form.income}
-        />
-      )}
-
-      {activePage === "ai" && (
-        <MoneyAI
-          transactions={transaction.transactions}
-          budgets={budget.budgets}
-          assets={asset.assets}
-          liabilities={asset.liabilities}
-          goals={goal.goals}
-          debts={debt.debts}
-          savingsPlans={saving.savingsPlans}
-          bills={bill.bills}
-          investments={investment.investments}
-          emergencySavings={emergency.emergencySavings}
-          monthlyExpenses={emergency.monthlyExpenses}
-          monthlyIncome={form.income}
-          setActivePage={setActivePage}
+          rates={currency.rates}
+          numberFormat={settingsHook.settings.numberFormat}
+          baseCurrency={baseCurrency}
         />
       )}
 
@@ -846,7 +896,6 @@ export default function App() {
         "kpis",
         "export",
         "settings",
-        "ai",
       ].includes(activePage) && (
         <Panel title="Coming Soon">
           <p className="mt-4 text-[#A5ADB8]">

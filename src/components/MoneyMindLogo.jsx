@@ -1,8 +1,14 @@
 import { useEffect, useRef, useState } from "react"
 
 const LOGIN_HEIGHT = "clamp(180px, 21vw, 280px)"
-const SIDEBAR_MARK_HEIGHT = "clamp(72px, 7.5vw, 104px)"
 const SIDEBAR_TEXT_SIZE = "clamp(22px, 2.4vw, 32px)"
+// The mark PNG (public/money-mind-mark.png) has the M glyph filling ~72%
+// of its square frame's height (soft glow padding around it). Scaling the
+// frame to ~2.9x the wordmark's font size makes the drawn glyph's visible
+// height match the two-line "MONEY / MIND" text block (2 lines * 1.05
+// leading) at every viewport width, since both are driven by the same
+// SIDEBAR_TEXT_SIZE clamp.
+const SIDEBAR_MARK_HEIGHT = `calc(${SIDEBAR_TEXT_SIZE} * 2.9)`
 const BASE_TRACKING_EM = 0.14
 const MAX_TRACKING_EM = 0.5
 
@@ -59,7 +65,7 @@ function useBalancedTracking() {
 export function LoginLogo({ className = "" }) {
   return (
     <img
-      src="/money-mind-logo 2.png"
+      src="/money-mind-logo.png"
       alt="Money Mind"
       className={`money-mind-logo object-contain ${className}`}
       style={{ height: LOGIN_HEIGHT, width: "auto" }}

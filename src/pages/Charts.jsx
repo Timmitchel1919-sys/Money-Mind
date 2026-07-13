@@ -11,6 +11,8 @@ import {
 } from "recharts"
 import Panel from "../components/Panel"
 import Card from "../components/Card"
+import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
+import { formatCurrencyAmount } from "../utils/currencyConversion"
 
 const COLORS = {
   cyan: "#06B6D4",
@@ -30,7 +32,7 @@ const tooltipStyle = {
   color: "#FFFFFF",
 }
 
-export default function Charts({ transactions, budgets, assets, liabilities, savingsPlans }) {
+export default function Charts({ transactions, budgets, assets, liabilities, savingsPlans, rates, numberFormat, baseCurrency = "SRD" }) {
   const income = transactions
     .filter((item) => item.type === "income")
     .reduce((sum, item) => sum + Number(item.amount || 0), 0)
@@ -70,10 +72,26 @@ export default function Charts({ transactions, budgets, assets, liabilities, sav
   return (
     <div className="space-y-6">
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card title="Income" value={`SRD ${income.toFixed(2)}`} />
-        <Card title="Expenses" value={`SRD ${expenses.toFixed(2)}`} />
-        <Card title="Net Worth" value={`SRD ${netWorth.toFixed(2)}`} />
-        <Card title="Savings" value={`SRD ${totalSavingsCurrent.toFixed(2)}`} />
+        <Card
+          title="Income"
+          value={formatCurrencyAmount(income, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={income} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
+        <Card
+          title="Expenses"
+          value={formatCurrencyAmount(expenses, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={expenses} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
+        <Card
+          title="Net Worth"
+          value={formatCurrencyAmount(netWorth, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={netWorth} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
+        <Card
+          title="Savings"
+          value={formatCurrencyAmount(totalSavingsCurrent, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={totalSavingsCurrent} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
       </section>
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">

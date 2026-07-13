@@ -55,8 +55,16 @@ export default function Dashboard({
           value={formatCurrencyAmount(transactionExpenses, baseCurrency, numberFormat)}
           subtitle={<MultiCurrencyAmount amount={transactionExpenses} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
         />
-        <Card title="Cash Flow" value={formatCurrencyAmount(cashFlow, baseCurrency, numberFormat)} />
-        <Card title="Budgeted" value={formatCurrencyAmount(totalBudget, baseCurrency, numberFormat)} />
+        <Card
+          title="Cash Flow"
+          value={formatCurrencyAmount(cashFlow, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={cashFlow} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
+        <Card
+          title="Budgeted"
+          value={formatCurrencyAmount(totalBudget, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={totalBudget} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
       </section>
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
@@ -70,6 +78,9 @@ export default function Dashboard({
           <p className="mt-4 text-[#A5ADB8]">
             Remaining budget: {formatCurrencyAmount(remainingBudget, baseCurrency, numberFormat)}
           </p>
+          <div className="mt-1">
+            <MultiCurrencyAmount amount={remainingBudget} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />
+          </div>
         </Panel>
       </section>
 

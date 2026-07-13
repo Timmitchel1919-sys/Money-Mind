@@ -1,4 +1,4 @@
-import { CURRENCIES, CURRENCY_CODES } from "../constants/currencies"
+import { CURRENCIES, CURRENCY_CODES, getCurrencyColorClass } from "../constants/currencies"
 import { getCurrencyEquivalents, formatCurrencyAmount, ratesAreUsable } from "../utils/currencyConversion"
 
 // Central "Excel-freeze-panes"-style companion for money values: shows the
@@ -34,18 +34,18 @@ export default function MultiCurrencyAmount({
     return (
       <span className={`text-sm text-[#A5ADB8] ${className}`}>
         {showPrimary && (
-          <span className="mr-2 font-semibold text-[#D5D8DD]">
+          <span className={`mr-2 font-semibold ${getCurrencyColorClass(currency)}`}>
             {formatCurrencyAmount(amount, currency, numberFormat)}
           </span>
         )}
         {showEquivalents &&
           (hasRates
-            ? otherCodes
-                .map(
-                  (code) =>
-                    `≈ ${CURRENCIES[code].flag} ${formatCurrencyAmount(equivalents[code], code, numberFormat)}`
-                )
-                .join("   ")
+            ? otherCodes.map((code, index) => (
+                <span key={code} className={getCurrencyColorClass(code)}>
+                  {index > 0 && "   "}≈ {CURRENCIES[code].flag}{" "}
+                  {formatCurrencyAmount(equivalents[code], code, numberFormat)}
+                </span>
+              ))
             : "Rates unavailable")}
       </span>
     )
@@ -54,7 +54,7 @@ export default function MultiCurrencyAmount({
   return (
     <div className={className}>
       {showPrimary && (
-        <p className="flex items-center gap-2 text-2xl font-bold text-[#FAFAFA]">
+        <p className={`flex items-center gap-2 text-2xl font-bold ${getCurrencyColorClass(currency)}`}>
           <span>{CURRENCIES[currency]?.flag}</span>
           <span>{formatCurrencyAmount(amount, currency, numberFormat)}</span>
         </p>
@@ -64,7 +64,7 @@ export default function MultiCurrencyAmount({
         <div className="mt-1 space-y-0.5">
           {hasRates ? (
             otherCodes.map((code) => (
-              <p key={code} className="text-sm text-[#A5ADB8]">
+              <p key={code} className={`text-sm ${getCurrencyColorClass(code)}`}>
                 ≈ {CURRENCIES[code].flag} {formatCurrencyAmount(equivalents[code], code, numberFormat)}
               </p>
             ))

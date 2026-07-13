@@ -2,8 +2,10 @@ import { useMemo, useState } from "react"
 import Input from "../components/Input"
 import Panel from "../components/Panel"
 import Card from "../components/Card"
+import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
+import { formatCurrencyAmount } from "../utils/currencyConversion"
 
-export default function LoanPayoffCalculator() {
+export default function LoanPayoffCalculator({ rates, numberFormat, baseCurrency = "SRD" }) {
   const [loanBalance, setLoanBalance] = useState(25000)
   const [annualRate, setAnnualRate] = useState(12)
   const [monthlyPayment, setMonthlyPayment] = useState(850)
@@ -37,10 +39,18 @@ export default function LoanPayoffCalculator() {
   return (
     <div className="space-y-6">
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card title="Loan Balance" value={`SRD ${Number(loanBalance).toLocaleString()}`} />
+        <Card
+          title="Loan Balance"
+          value={formatCurrencyAmount(loanBalance, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={loanBalance} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
         <Card title="Interest Rate" value={`${annualRate}%`} />
         <Card title="Months Left" value={result.months} />
-        <Card title="Total Interest" value={`SRD ${result.totalInterest.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} />
+        <Card
+          title="Total Interest"
+          value={formatCurrencyAmount(result.totalInterest, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={result.totalInterest} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
       </section>
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_1fr]">

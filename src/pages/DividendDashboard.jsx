@@ -2,8 +2,10 @@ import { useMemo, useState } from "react"
 import Input from "../components/Input"
 import Panel from "../components/Panel"
 import Card from "../components/Card"
+import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
+import { formatCurrencyAmount } from "../utils/currencyConversion"
 
-export default function DividendDashboard() {
+export default function DividendDashboard({ rates, numberFormat, baseCurrency = "SRD" }) {
   const [portfolioValue, setPortfolioValue] = useState(50000)
   const [averageYield, setAverageYield] = useState(6)
   const [targetMonthlyIncome, setTargetMonthlyIncome] = useState(5000)
@@ -26,10 +28,22 @@ export default function DividendDashboard() {
   return (
     <div className="space-y-6">
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card title="Portfolio Value" value={`SRD ${Number(portfolioValue).toLocaleString()}`} />
+        <Card
+          title="Portfolio Value"
+          value={formatCurrencyAmount(portfolioValue, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={portfolioValue} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
         <Card title="Average Yield" value={`${averageYield}%`} />
-        <Card title="Monthly Dividend" value={`SRD ${monthlyDividend.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} />
-        <Card title="Annual Dividend" value={`SRD ${annualDividend.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} />
+        <Card
+          title="Monthly Dividend"
+          value={formatCurrencyAmount(monthlyDividend, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={monthlyDividend} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
+        <Card
+          title="Annual Dividend"
+          value={formatCurrencyAmount(annualDividend, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={annualDividend} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
       </section>
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_1fr]">

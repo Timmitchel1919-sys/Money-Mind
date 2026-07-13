@@ -13,8 +13,10 @@ import {
 import Card from "../components/Card"
 import Panel from "../components/Panel"
 import Input from "../components/Input"
+import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
+import { formatCurrencyAmount } from "../utils/currencyConversion"
 const COLORS = ["#FBBF24", "#06B6D4", "#22C55E", "#8B5CF6", "#F97316", "#EC4899"]
-export default function PortfolioDashboard({ investments }) {
+export default function PortfolioDashboard({ investments, rates, numberFormat, baseCurrency = "SRD" }) {
   const [averageYield, setAverageYield] = useState(4)
 
   const totalCost = investments.reduce(
@@ -62,11 +64,20 @@ const performanceData = [
   return (
     <div className="space-y-6">
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card title="Total Invested" value={`SRD ${totalCost.toFixed(2)}`} />
-        <Card title="Portfolio Value" value={`SRD ${totalValue.toFixed(2)}`} />
+        <Card
+          title="Total Invested"
+          value={formatCurrencyAmount(totalCost, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={totalCost} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
+        <Card
+          title="Portfolio Value"
+          value={formatCurrencyAmount(totalValue, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={totalValue} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
         <Card
           title="Profit / Loss"
-          value={`SRD ${profitLoss.toFixed(2)}`}
+          value={formatCurrencyAmount(profitLoss, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={profitLoss} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
         />
         <Card title="Return" value={`${returnRate.toFixed(2)}%`} />
       </section>

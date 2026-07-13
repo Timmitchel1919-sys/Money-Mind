@@ -30,7 +30,11 @@ export default function Goals({
           value={formatCurrencyAmount(totalTarget, baseCurrency, numberFormat)}
           subtitle={<MultiCurrencyAmount amount={totalTarget} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
         />
-        <Card title="Total Saved" value={formatCurrencyAmount(totalSaved, baseCurrency, numberFormat)} />
+        <Card
+          title="Total Saved"
+          value={formatCurrencyAmount(totalSaved, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={totalSaved} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
         <Card title="Overall Progress" value={`${overallProgress.toFixed(2)}%`} />
       </section>
 

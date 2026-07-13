@@ -30,7 +30,11 @@ export default function DebtManager({
           value={formatCurrencyAmount(totalDebt, baseCurrency, numberFormat)}
           subtitle={<MultiCurrencyAmount amount={totalDebt} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
         />
-        <Card title="Monthly Payments" value={formatCurrencyAmount(totalMonthlyPayments, baseCurrency, numberFormat)} />
+        <Card
+          title="Monthly Payments"
+          value={formatCurrencyAmount(totalMonthlyPayments, baseCurrency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={totalMonthlyPayments} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
+        />
         <Card title="Debt Accounts" value={debts.length} />
       </section>
 

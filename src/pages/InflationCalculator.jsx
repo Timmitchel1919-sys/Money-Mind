@@ -26,10 +26,18 @@ export default function InflationCalculator({ rates, rateStatus, numberFormat, d
   return (
     <div className="space-y-6">
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card title="Current Amount" value={formatCurrencyAmount(currentAmount, currency, numberFormat)} />
+        <Card
+          title="Current Amount"
+          value={formatCurrencyAmount(currentAmount, currency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={currentAmount} currency={currency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" loading={loadingRates} />}
+        />
         <Card title="Inflation Rate" value={`${inflationRate}%`} />
         <Card title="Years" value={years} />
-        <Card title="Future Cost" value={formatCurrencyAmount(futureCost, currency, numberFormat)} />
+        <Card
+          title="Future Cost"
+          value={formatCurrencyAmount(futureCost, currency, numberFormat)}
+          subtitle={<MultiCurrencyAmount amount={futureCost} currency={currency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" loading={loadingRates} />}
+        />
       </section>
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_1fr]">
