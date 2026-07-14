@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react"
-import { Bot, Trash2 } from "lucide-react"
+import { Trash2 } from "lucide-react"
 import Panel from "../components/Panel"
 import Card from "../components/Card"
 import CoachInsightCard from "../components/CoachInsightCard"
 import MoneyAIChatShell from "../components/MoneyAIChatShell"
 import MoneyAIConversation from "../components/MoneyAIConversation"
 import MoneyAIComposer from "../components/MoneyAIComposer"
+import MoneyAIAvatar from "../components/MoneyAIAvatar"
 import useSettings from "../hooks/useSettings"
 import useMoneyAIContext from "../hooks/useMoneyAIContext"
 import useMoneyAI from "../hooks/useMoneyAI"
@@ -207,9 +208,7 @@ export default function MoneyAI({
       <MoneyAIChatShell>
         <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-black/20 px-4 py-4 backdrop-blur-xl md:px-6">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#8B5CF6]/30 bg-[#8B5CF6]/10 text-[#8B5CF6]">
-              <Bot size={20} />
-            </span>
+            <MoneyAIAvatar size={40} className="shrink-0" />
             <div className="min-w-0">
               <h1 className="truncate text-lg font-bold text-[#FAFAFA]">{t.title}</h1>
               <p className="truncate text-xs text-[#A5ADB8]">{t.subtitle}</p>

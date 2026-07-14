@@ -94,7 +94,7 @@ export default function Charts({ transactions, budgets, assets, liabilities, sav
         />
       </section>
 
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <Panel title="Income vs Expenses">
           <div className="mt-6 h-72">
             <ResponsiveContainer width="100%" height="100%">

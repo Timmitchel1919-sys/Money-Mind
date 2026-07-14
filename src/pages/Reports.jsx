@@ -36,7 +36,7 @@ export default function Reports({ transactions, budgets, income, rates, numberFo
         <Card title="Budget Usage" value={`${budgetUsage.toFixed(2)}%`} />
       </section>
 
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <Panel title="Financial Performance">
           <div className="mt-6 space-y-4">
             <ReportRow label="Income" value={formatCurrencyAmount(totalIncome, baseCurrency, numberFormat)} />

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react"
-import { Bot, ChevronDown } from "lucide-react"
+import { ChevronDown } from "lucide-react"
 import MoneyAIMessage from "./MoneyAIMessage"
 import MoneyAIQuickActions from "./MoneyAIQuickActions"
+import MoneyAIAvatar from "./MoneyAIAvatar"
 
 const NEAR_BOTTOM_THRESHOLD_PX = 120
 
@@ -56,9 +57,7 @@ export default function MoneyAIConversation({
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center gap-5 py-10 text-center">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full border border-[#8B5CF6]/30 bg-[#8B5CF6]/10 text-[#8B5CF6]">
-                <Bot size={26} />
-              </span>
+              <MoneyAIAvatar size={64} />
 
               <div>
                 <h2 className="text-xl font-semibold text-[#FAFAFA]">{t.title}</h2>

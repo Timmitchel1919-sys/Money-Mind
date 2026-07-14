@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
-import { BotMessageSquare, X } from "lucide-react"
+import { X } from "lucide-react"
 import MoneyAI from "../pages/AIFinancialCoach"
+import MoneyAIAvatar from "./MoneyAIAvatar"
 
 // Money AI is no longer its own page — it's reachable from anywhere in the
 // app via this floating launcher, which slides the exact same MoneyAI
@@ -32,7 +33,7 @@ export default function MoneyAIWidget({ setActivePage, ...moneyAIProps }) {
       <div className="fixed bottom-6 right-6 z-50 h-14 w-14">
         {!isOpen && (
           <span
-            className="absolute inset-0 rounded-full bg-[#22C55E]/70 animate-ping"
+            className="absolute inset-0 rounded-full bg-[#00B8FF]/60 animate-ping"
             aria-hidden="true"
           />
         )}
@@ -42,9 +43,15 @@ export default function MoneyAIWidget({ setActivePage, ...moneyAIProps }) {
           onClick={() => setIsOpen((open) => !open)}
           aria-label={isOpen ? "Close Money AI" : "Open Money AI"}
           aria-expanded={isOpen}
-          className="money-ai-fab relative flex h-14 w-14 items-center justify-center rounded-full text-white ring-1 ring-white/15 transition duration-300 hover:scale-105 active:scale-95"
+          className="relative flex h-14 w-14 items-center justify-center rounded-full transition duration-300 active:scale-95"
         >
-          {isOpen ? <X size={24} /> : <BotMessageSquare size={26} strokeWidth={1.9} />}
+          {isOpen ? (
+            <span className="money-ai-fab-close flex h-14 w-14 items-center justify-center rounded-full text-white ring-1 ring-white/15">
+              <X size={24} />
+            </span>
+          ) : (
+            <MoneyAIAvatar size={56} />
+          )}
         </button>
       </div>
 
