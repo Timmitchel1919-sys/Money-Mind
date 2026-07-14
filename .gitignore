@@ -59,3 +59,8 @@ Thumbs.db
 firebase-debug.log
 firestore-debug.log
 ui-debug.log
+
+# Claude Code / agent tooling (local, not shared)
+.agents/
+.claude/
+skills-lock.json
