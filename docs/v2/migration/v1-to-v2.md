@@ -2,11 +2,12 @@
 
 ## Baseline state
 
-- Repository baseline commit: `4ffa43d`
+- Original repository baseline commit: `4ffa43d`
+- Validated V1 baseline commit: `168e05e` (`v1.0.0`)
 - V1 working branch at inspection: `feature/real-money-ai`
 - V2 branch: `develop/v2`
-- The inspected working tree contained substantial uncommitted V1 work. It was preserved without reset, stash, overwrite, or inclusion in the V2 foundation commit.
-- No `v1.0.0` tag existed. The older commit was not labeled as validated because it does not include the current uncommitted V1 state.
+- The inspected working tree contained substantial uncommitted V1 work. It was preserved without reset, stash, or overwrite, validated, and committed on `backup/v1-pre-v2`.
+- The validated V1 baseline was tagged `v1.0.0` and merged into `develop/v2` without rewriting the V2 foundation commit.
 
 ## Preserved systems
 
@@ -44,4 +45,4 @@ Central feature flags, renderer-neutral spatial contracts, a financial-to-visual
 
 ## Rollback
 
-V2 runtime behavior can be disabled by leaving `VITE_V2_ENABLED` unset or false. The foundation commit can be reverted independently. A trustworthy V1 release tag should be created only after the pre-existing working changes are reviewed, validated, and committed by their owner.
+Restore V1 non-destructively with `git switch -c restore/v1 v1.0.0`. Runtime V2 behavior remains disabled when `VITE_V2_ENABLED` is unset or false.
