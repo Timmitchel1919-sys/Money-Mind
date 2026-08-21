@@ -1,6 +1,7 @@
 import Input from "../components/Input"
 import Panel from "../components/Panel"
 import Card from "../components/Card"
+import PageHeader from "../components/PageHeader"
 import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
 import { formatCurrencyAmount } from "../utils/currencyConversion"
 export default function DebtManager({
@@ -24,6 +25,8 @@ export default function DebtManager({
 
   return (
     <div className="space-y-6">
+      <PageHeader pageKey="debt" />
+
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

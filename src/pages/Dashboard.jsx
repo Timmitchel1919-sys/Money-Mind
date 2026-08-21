@@ -1,110 +1,40 @@
-import Card from "../components/Card"
+import { ArrowDownRight, ArrowUpRight, CalendarClock, Target, WalletCards } from "lucide-react"
 import Panel from "../components/Panel"
 import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
 import { formatCurrencyAmount } from "../utils/currencyConversion"
 import useFinancialKPIs from "../hooks/useFinancialKPIs"
 
-export default function Dashboard({
-  transactionIncome,
-  transactionExpenses,
-  cashFlow,
-  totalBudget,
-  remainingBudget,
-  transactions = [],
-  budgets = [],
-  assets = [],
-  liabilities = [],
-  goals = [],
-  debts = [],
-  savingsPlans = [],
-  bills = [],
-  investments = [],
-  emergencySavings = 0,
-  monthlyExpenses = 0,
-  monthlyIncome = 0,
-  setActivePage,
-  rates,
-  numberFormat,
-  baseCurrency = "SRD",
-}) {
-  const kpis = useFinancialKPIs({
-    transactions,
-    budgets,
-    assets,
-    liabilities,
-    goals,
-    debts,
-    savingsPlans,
-    bills,
-    investments,
-    emergencySavings,
-    monthlyExpenses,
-    monthlyIncome,
-  })
+const sum = (items, key) => items.reduce((total, item) => total + Number(item[key] || 0), 0)
 
-  return (
-    <>
-      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card
-          title="Income"
-          value={formatCurrencyAmount(transactionIncome, baseCurrency, numberFormat)}
-          subtitle={<MultiCurrencyAmount amount={transactionIncome} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
-        />
-        <Card
-          title="Expenses"
-          value={formatCurrencyAmount(transactionExpenses, baseCurrency, numberFormat)}
-          subtitle={<MultiCurrencyAmount amount={transactionExpenses} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
-        />
-        <Card
-          title="Cash Flow"
-          value={formatCurrencyAmount(cashFlow, baseCurrency, numberFormat)}
-          subtitle={<MultiCurrencyAmount amount={cashFlow} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
-        />
-        <Card
-          title="Budgeted"
-          value={formatCurrencyAmount(totalBudget, baseCurrency, numberFormat)}
-          subtitle={<MultiCurrencyAmount amount={totalBudget} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />}
-        />
-      </section>
+export default function Dashboard({ transactionIncome, transactionExpenses, cashFlow, totalBudget, remainingBudget, transactions = [], budgets = [], assets = [], liabilities = [], goals = [], debts = [], savingsPlans = [], bills = [], investments = [], emergencySavings = 0, monthlyExpenses = 0, monthlyIncome = 0, setActivePage, rates, numberFormat, baseCurrency = "SRD", displayName }) {
+  const kpis = useFinancialKPIs({ transactions, budgets, assets, liabilities, goals, debts, savingsPlans, bills, investments, emergencySavings, monthlyExpenses, monthlyIncome })
+  const money = (value) => formatCurrencyAmount(value, baseCurrency, numberFormat)
+  const totalAssets = sum(assets, "value")
+  const totalLiabilities = sum(liabilities, "value")
+  const upcomingBills = bills.slice().sort((a, b) => new Date(a.dueDate || 0) - new Date(b.dueDate || 0)).slice(0, 3)
+  const activeGoals = goals.slice(0, 3)
+  const recentTransactions = transactions.slice().sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 5)
+  const budgetUsed = totalBudget > 0 ? Math.min(100, (transactionExpenses / totalBudget) * 100) : 0
 
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <Panel title="Financial Summary">
-          <p className="mt-4 text-[#A5ADB8]">
-            Your current financial overview based on budgets and transactions.
-          </p>
-        </Panel>
+  return <div className="space-y-6">
+    <header className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><p className="text-sm font-medium text-[var(--brand-primary)]">Financial overview</p><h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">Welcome back{displayName ? `, ${displayName}` : ""}</h1><p className="mt-1 text-sm text-[var(--text-secondary)]">Here is your current money position based on saved records.</p></div><span className="w-fit rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--text-secondary)]">All-time snapshot</span></header>
 
-        <Panel title="Quick Insight">
-          <p className="mt-4 text-[#A5ADB8]">
-            Remaining budget: {formatCurrencyAmount(remainingBudget, baseCurrency, numberFormat)}
-          </p>
-          <div className="mt-1">
-            <MultiCurrencyAmount amount={remainingBudget} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />
-          </div>
-        </Panel>
-      </section>
+    <section aria-label="Financial summary" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <Metric title="Income" value={money(transactionIncome)} icon={<ArrowUpRight />} tone="positive" detail={<MultiCurrencyAmount amount={transactionIncome} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />} />
+      <Metric title="Expenses" value={money(transactionExpenses)} icon={<ArrowDownRight />} tone="negative" detail={<MultiCurrencyAmount amount={transactionExpenses} currency={baseCurrency} rates={rates} numberFormat={numberFormat} showPrimary={false} variant="inline" />} />
+      <Metric title="Net cash flow" value={money(cashFlow)} icon={<WalletCards />} tone={cashFlow >= 0 ? "positive" : "negative"} detail="Income minus expenses" />
+      <Metric title="Budget remaining" value={money(remainingBudget)} icon={<Target />} tone={remainingBudget >= 0 ? "positive" : "warning"} detail={`${budgetUsed.toFixed(0)}% of budget used`} />
+    </section>
 
-      <Panel title="Financial KPIs">
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Card
-            title="Financial Health Score"
-            value={`${Math.round(kpis.healthScore)}/100`}
-            subtitle={kpis.healthClassification.label}
-          />
-          <Card title="Savings Rate" value={`${kpis.savingsRate.toFixed(1)}%`} />
-          <Card title="Emergency Fund Coverage" value={`${kpis.emergencyFundCoverage.toFixed(1)} months`} />
-          <Card title="Debt-to-Income Ratio" value={`${kpis.debtToIncome.toFixed(1)}%`} />
-        </div>
+    <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.65fr_1fr]"><Panel title="Cash Flow Overview"><div className="mt-6 grid min-h-56 grid-cols-3 items-end gap-5 rounded-2xl border border-[var(--border)] bg-black/10 p-5"><FlowBar label="Income" value={transactionIncome} max={Math.max(transactionIncome, transactionExpenses, totalBudget, 1)} tone="bg-emerald-400" money={money} /><FlowBar label="Expenses" value={transactionExpenses} max={Math.max(transactionIncome, transactionExpenses, totalBudget, 1)} tone="bg-rose-400" money={money} /><FlowBar label="Budget" value={totalBudget} max={Math.max(transactionIncome, transactionExpenses, totalBudget, 1)} tone="bg-cyan-400" money={money} /></div></Panel><div className="space-y-6"><Panel title="Budget Progress"><div className="mt-5"><div className="flex justify-between text-sm"><span className="text-[var(--text-secondary)]">Spent</span><span>{budgetUsed.toFixed(0)}%</span></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[var(--brand-primary)]" style={{ width: `${budgetUsed}%` }} /></div><p className="mt-4 text-sm text-[var(--text-secondary)]">{money(transactionExpenses)} spent of {money(totalBudget)} budgeted.</p></div></Panel><Panel title="Money AI Insight"><p className="mt-4 text-sm leading-6 text-[var(--text-secondary)]">{cashFlow >= 0 ? `Your recorded cash flow is positive by ${money(cashFlow)}.` : `Your recorded expenses exceed income by ${money(Math.abs(cashFlow))}.`} Review the underlying transactions before making financial decisions.</p></Panel></div></section>
 
-        {setActivePage && (
-          <button
-            onClick={() => setActivePage("kpis")}
-            className="metallic-button mt-6 rounded-xl px-6 py-3 font-semibold text-black"
-          >
-            View Full KPI Dashboard
-          </button>
-        )}
-      </Panel>
-    </>
-  )
+    <section className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-4"><ListPanel title="Recent Transactions" empty="No transactions yet." items={recentTransactions.map((item) => ({ title: item.category || item.description || "Transaction", meta: item.date || item.type, value: `${item.type === "expense" ? "−" : "+"}${money(item.amount)}` }))} /><ListPanel title="Goals" empty="No goals yet." items={activeGoals.map((item) => ({ title: item.name || "Goal", meta: `${Math.min(100, ((Number(item.saved || item.current || 0) / Number(item.target || 1)) * 100)).toFixed(0)}% funded`, value: money(item.target) }))} /><ListPanel title="Upcoming Bills" empty="No upcoming bills." icon={<CalendarClock size={18} />} items={upcomingBills.map((item) => ({ title: item.name || "Bill", meta: item.dueDate || "No due date", value: money(item.amount) }))} /><ListPanel title="Net Worth" empty="Add assets and liabilities." items={[{ title: "Assets", value: money(totalAssets) }, { title: "Liabilities", value: money(totalLiabilities) }, { title: "Net position", value: money(totalAssets - totalLiabilities) }]} /></section>
+
+    <Panel title="Financial KPIs"><div className="mt-5 grid grid-cols-2 gap-4 xl:grid-cols-4"><Kpi label="Health score" value={`${Math.round(kpis.healthScore)}/100`} meta={kpis.healthClassification.label} /><Kpi label="Savings rate" value={`${kpis.savingsRate.toFixed(1)}%`} /><Kpi label="Emergency coverage" value={`${kpis.emergencyFundCoverage.toFixed(1)} mo`} /><Kpi label="Debt-to-income" value={`${kpis.debtToIncome.toFixed(1)}%`} /></div>{setActivePage && <button onClick={() => setActivePage("health")} className="mt-5 rounded-xl bg-[var(--brand-primary)] px-5 py-2.5 text-sm font-semibold text-slate-950 hover:brightness-110">View Financial Health</button>}</Panel>
+  </div>
 }
+
+function Metric({ title, value, detail, icon, tone }) { const colors = { positive: "text-emerald-400", negative: "text-rose-400", warning: "text-amber-300" }; return <article className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-lg shadow-black/10"><div className="flex items-center justify-between"><p className="text-sm font-medium text-[var(--text-secondary)]">{title}</p><span className={colors[tone]}>{icon}</span></div><p className="mt-3 break-words text-2xl font-semibold tracking-tight">{value}</p><div className="mt-2 text-xs text-[var(--text-muted)]">{detail}</div></article> }
+function FlowBar({ label, value, max, tone, money }) { return <div className="flex h-full min-w-0 flex-col justify-end"><p className="mb-2 truncate text-center text-xs text-[var(--text-secondary)]">{money(value)}</p><div className={`${tone} mx-auto w-full max-w-24 rounded-t-lg opacity-80`} style={{ height: `${Math.max(8, (value / max) * 135)}px` }} /><p className="mt-3 text-center text-xs font-medium">{label}</p></div> }
+function ListPanel({ title, items, empty, icon }) { return <Panel title={<span className="flex items-center gap-2">{icon}{title}</span>}><div className="mt-4 divide-y divide-[var(--border)]">{items.length ? items.map((item, index) => <div key={`${item.title}-${index}`} className="flex min-h-14 items-center justify-between gap-3 py-3"><div className="min-w-0"><p className="truncate text-sm font-medium">{item.title}</p>{item.meta && <p className="mt-1 truncate text-xs text-[var(--text-muted)]">{item.meta}</p>}</div><span className="shrink-0 text-sm font-semibold">{item.value}</span></div>) : <p className="py-5 text-sm text-[var(--text-muted)]">{empty}</p>}</div></Panel> }
+function Kpi({ label, value, meta }) { return <div className="rounded-2xl border border-[var(--border)] bg-black/10 p-4"><p className="text-xs text-[var(--text-muted)]">{label}</p><p className="mt-2 text-xl font-semibold">{value}</p>{meta && <p className="mt-1 text-xs text-[var(--brand-primary)]">{meta}</p>}</div> }

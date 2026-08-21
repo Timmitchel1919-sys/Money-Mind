@@ -1,10 +1,38 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light" data-theme-preference="system">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>money-mind</title>
+    <meta name="theme-color" content="#F3F1FF" />
+    <script>
+      (() => {
+        try {
+          const preference = JSON.parse(localStorage.getItem('moneyMindSettings') || '{}').themeMode || 'system';
+          const resolved = preference === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : preference;
+          document.documentElement.dataset.theme = resolved;
+          document.documentElement.dataset.themePreference = preference;
+          document.querySelector('meta[name="theme-color"]').content = resolved === 'dark' ? '#030712' : '#F3F1FF';
+        } catch {}
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <title>Money Mind — Master Your Money. Shape Your Future.</title>
+    <meta name="description" content="Plan, track and grow your finances with intelligent budgeting, cash-flow insights, goals, debt management and personalized financial guidance." />
+    <meta property="og:title" content="Money Mind — Master Your Money. Shape Your Future." />
+    <meta property="og:description" content="Plan, track and grow your finances from one private financial command center." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/money-mind-logo.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Money Mind — Master Your Money. Shape Your Future." />
+    <meta name="twitter:description" content="Plan, track and grow your finances from one private financial command center." />
+    <link rel="canonical" href="https://money-mind.app/" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Money Mind","applicationCategory":"FinanceApplication","operatingSystem":"Web"}</script>
   </head>
   <body>
     <div id="root"></div>

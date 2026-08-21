@@ -1,19 +1,23 @@
 import React from "react";
 import { AbsoluteFill, Easing, Img, interpolate, staticFile } from "remotion";
 
-const LOGO_SRC = staticFile("money-mind-mark.png");
+const DEFAULT_LOGO_SRC = staticFile("money-mind-mark.png");
 
 /**
- * Reveals the original, unmodified Money Mind M mark from the collision
- * flare. The <Img> itself is never distorted/cropped/recolored — all
- * "chrome" and "shimmer" effects are separate overlay layers, with the
+ * Reveals the original, unmodified Money Mind mark (or full lockup) from the
+ * collision flare. The <Img> itself is never distorted/cropped/recolored —
+ * all "chrome" and "shimmer" effects are separate overlay layers, with the
  * shimmer sweep masked to the logo's own alpha silhouette.
  */
 export const LogoReveal: React.FC<{
-  revealProgress: number; // 0..1 across the 3.0-4.5s reveal window
+  revealProgress: number; // 0..1 across the reveal window
   glowPhase: number; // continuous radians, drives the breathing glow
-  opacityMultiplier: number; // 0..1, for the final 5.5-6.0s fade-out
-}> = ({ revealProgress, glowPhase, opacityMultiplier }) => {
+  opacityMultiplier: number; // 0..1, for fade-outs
+  src?: string; // defaults to the standalone M mark
+  size?: number; // px, defaults to 520
+  showBackGlow?: boolean; // radial white halo behind the mark, defaults to true
+}> = ({ revealProgress, glowPhase, opacityMultiplier, src, size = 520, showBackGlow = true }) => {
+  const LOGO_SRC = src ?? DEFAULT_LOGO_SRC;
   const clamped = Math.max(0, Math.min(1, revealProgress));
 
   const scale = interpolate(clamped, [0, 1], [0.85, 1], {
@@ -41,24 +45,26 @@ export const LogoReveal: React.FC<{
       <div
         style={{
           position: "relative",
-          width: 520,
-          height: 520,
+          width: size,
+          height: size,
           transform: `scale(${scale})`,
           opacity,
         }}
       >
         {/* Soft ambient glow behind the mark */}
-        <div
-          style={{
-            position: "absolute",
-            inset: -70,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(255,255,255,0.85) 0%, rgba(198,212,222,0.32) 45%, rgba(198,212,222,0) 75%)",
-            opacity: glowOpacity,
-            filter: "blur(22px)",
-          }}
-        />
+        {showBackGlow && (
+          <div
+            style={{
+              position: "absolute",
+              inset: -70,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(255,255,255,0.85) 0%, rgba(198,212,222,0.32) 45%, rgba(198,212,222,0) 75%)",
+              opacity: glowOpacity,
+              filter: "blur(22px)",
+            }}
+          />
+        )}
 
         {/* Original, untouched logo asset */}
         <Img

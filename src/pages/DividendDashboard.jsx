@@ -2,6 +2,7 @@ import { useMemo, useState } from "react"
 import Input from "../components/Input"
 import Panel from "../components/Panel"
 import Card from "../components/Card"
+import PageHeader from "../components/PageHeader"
 import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
 import { formatCurrencyAmount } from "../utils/currencyConversion"
 
@@ -27,6 +28,8 @@ export default function DividendDashboard({ rates, numberFormat, baseCurrency = 
 
   return (
     <div className="space-y-6">
+      <PageHeader pageKey="dividendDashboard" />
+
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card
           title="Portfolio Value"

@@ -78,7 +78,7 @@ export default function MoneyAIVoiceStatus({
           isAlert
             ? "border-[#F87171]/40 bg-[#F87171]/10 text-[#F87171]"
             : isListening
-            ? "border-[#3aaf90]/40 bg-[#3aaf90]/10 text-[#3aaf90]"
+            ? "border-[var(--brand-primary)]/40 bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]"
             : isSpeaking
             ? "border-[#8B5CF6]/40 bg-[#8B5CF6]/10 text-[#8B5CF6]"
             : "border-[#BFC4CC]/25 bg-white/5 text-[#A5ADB8]"
@@ -105,7 +105,7 @@ export default function MoneyAIVoiceStatus({
             {[0, 1, 2, 3, 4].map((bar) => (
               <span
                 key={bar}
-                className="moneyai-waveform-bar h-3 w-0.5 rounded-full bg-[#3aaf90]/70"
+                className="moneyai-waveform-bar h-3 w-0.5 rounded-full bg-[var(--brand-primary)]/70"
                 style={{ animationDelay: `${bar * 0.12}s` }}
               />
             ))}

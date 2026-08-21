@@ -1,5 +1,6 @@
 import Input from "../components/Input"
 import Panel from "../components/Panel"
+import PageHeader from "../components/PageHeader"
 import CurrencySelect from "../components/CurrencySelect"
 import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
 import { convertCurrency, formatCurrencyAmount } from "../utils/currencyConversion"
@@ -32,7 +33,10 @@ export default function Budget({
   handleDeleteBudget,
 }) {
   return (
-    <section className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_1fr]">
+    <>
+      <PageHeader pageKey="budget" />
+
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_1fr]">
       <Panel title="Budget Planner">
         <form onSubmit={handleAddBudget} className="mt-6 space-y-4">
           <Input label="Monthly Income" type="number" value={income} onChange={setIncome} />
@@ -142,6 +146,7 @@ export default function Budget({
           )}
         </div>
       </Panel>
-    </section>
+      </section>
+    </>
   )
 }

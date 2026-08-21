@@ -7,10 +7,13 @@
 // VITE_MONEY_AI_PROVIDER acts as a feature flag naming which provider is
 // configured server-side.
 //
-// A production integration should call a secure backend (a Firebase
-// Cloud Function, for example) that holds the actual provider key and
-// proxies the request — the browser should only ever talk to that
-// function, never directly to a paid AI API.
+// When enabled, this calls the `agentQuery` Firebase Cloud Function
+// (functions/index.js), which holds the real OpenAI key server-side,
+// re-reads the user's financial data straight from Firestore (never
+// trusting whatever the client happens to have in memory), and returns
+// a generated answer. The browser never talks to OpenAI directly.
+import { httpsCallable } from "firebase/functions"
+import { functions } from "../firebase"
 
 const PROVIDER = (typeof import.meta !== "undefined" && import.meta.env?.VITE_MONEY_AI_PROVIDER) || "local"
 
@@ -25,31 +28,63 @@ export function getAIProviderStatus(language = "en") {
   return language === "nl" ? "Lokale analyse" : "Local analysis"
 }
 
-// generateAIResponse({ question, language, financialContext, answerLocally })
+const FALLBACK_NOTE = {
+  en: "Money AI's live connection is temporarily unavailable — showing the local answer instead.",
+  nl: "Money AI's live-verbinding is tijdelijk niet beschikbaar — lokaal antwoord getoond in plaats daarvan.",
+}
+
+// generateAIResponse({ question, language, financialContext, answerLocally, conversationId, recentMessages })
 //
 // answerLocally is injected by the caller (financialQuestionParser's
 // answerQuestion) so this module stays free of app-specific financial
 // logic and can be swapped for a real provider without touching the
-// rules engine.
-export async function generateAIResponse({ question, language, financialContext, answerLocally }) {
+// rules engine. financialContext is only used here to read the user's
+// preferred currency (financialContext.settings.currency) — the actual
+// financial figures sent to the model are re-fetched server-side from
+// Firestore, not taken from the client.
+export async function generateAIResponse({
+  question,
+  language,
+  financialContext,
+  answerLocally,
+  conversationId,
+  recentMessages,
+}) {
   if (!isExternalAIEnabled()) {
     return answerLocally({ question, language, financialContext })
   }
 
-  // No external provider is wired up yet in this build. When one is
-  // added, this branch should call the secure backend proxy described
-  // above — never a paid API directly from the browser — and fall back
-  // to the local engine on any failure so Money AI never goes silent.
   try {
-    throw new Error("External AI provider is not connected yet.")
-  } catch {
+    const agentQuery = httpsCallable(functions, "agentQuery")
+
+    const response = await agentQuery({
+      message: question,
+      language,
+      currency: financialContext?.settings?.currency,
+      conversationId,
+      recentMessages: Array.isArray(recentMessages)
+        ? recentMessages.map((message) => ({
+            role: message.role === "assistant" ? "assistant" : "user",
+            content: message.text,
+          }))
+        : [],
+    })
+
+    const data = response.data || {}
+    if (!data.success || !data.answer) {
+      throw new Error("agentQuery returned no answer.")
+    }
+
+    return {
+      text: data.answer,
+      disclaimer: Array.isArray(data.warnings) ? data.warnings.join(" ") : null,
+      providerNote: null,
+    }
+  } catch (error) {
     const fallback = answerLocally({ question, language, financialContext })
     return {
       ...fallback,
-      providerNote:
-        language === "nl"
-          ? "Externe AI is geconfigureerd maar nog niet verbonden — lokaal antwoord getoond."
-          : "External AI is configured but not yet connected — showing the local answer instead.",
+      providerNote: `${FALLBACK_NOTE[language] || FALLBACK_NOTE.en} (${error?.message || "unknown error"})`,
     }
   }
 }

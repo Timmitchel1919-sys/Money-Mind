@@ -13,6 +13,7 @@ const NEAR_BOTTOM_THRESHOLD_PX = 120
 export default function MoneyAIConversation({
   messages,
   isProcessing,
+  isLoadingHistory,
   error,
   onCopy,
   onPlay,
@@ -55,7 +56,12 @@ export default function MoneyAIConversation({
         aria-live="polite"
       >
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
-          {messages.length === 0 ? (
+          {isLoadingHistory ? (
+            <div className="flex flex-col items-center gap-4 py-10 text-center">
+              <MoneyAIAvatar size={64} />
+              <p className="text-sm text-[#A5ADB8]">{t.loadingHistory}</p>
+            </div>
+          ) : messages.length === 0 ? (
             <div className="flex flex-col items-center gap-5 py-10 text-center">
               <MoneyAIAvatar size={64} />
 

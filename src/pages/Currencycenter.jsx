@@ -1,6 +1,7 @@
 import Panel from "../components/Panel"
 import Card from "../components/Card"
 import Input from "../components/Input"
+import PageHeader from "../components/PageHeader"
 import CurrencySelect from "../components/CurrencySelect"
 import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
 import { CURRENCIES, CURRENCY_CODES } from "../constants/currencies"
@@ -45,6 +46,8 @@ export default function CurrencyCenter({
 
   return (
     <div className="space-y-6">
+      <PageHeader pageKey="currency" />
+
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <div className="space-y-6">
           {rateCard("USD")}

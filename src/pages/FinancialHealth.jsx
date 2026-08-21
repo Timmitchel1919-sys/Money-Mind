@@ -1,5 +1,6 @@
 import Card from "../components/Card"
 import Panel from "../components/Panel"
+import PageHeader from "../components/PageHeader"
 
 export default function FinancialHealth({
   transactions,
@@ -52,6 +53,8 @@ export default function FinancialHealth({
 
   return (
     <div className="space-y-6">
+      <PageHeader pageKey="health" />
+
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card title="Health Score" value={`${score}/100`} />
         <Card title="Status" value={status} />

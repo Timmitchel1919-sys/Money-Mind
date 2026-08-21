@@ -1,5 +1,6 @@
 import Card from "../components/Card"
 import Panel from "../components/Panel"
+import PageHeader from "../components/PageHeader"
 import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
 import { formatCurrencyAmount } from "../utils/currencyConversion"
 
@@ -21,6 +22,8 @@ export default function Reports({ transactions, budgets, income, rates, numberFo
 
   return (
     <div className="space-y-6">
+      <PageHeader pageKey="reports" />
+
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card
           title="Total Income"
