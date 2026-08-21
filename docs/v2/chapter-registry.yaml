@@ -1,0 +1,10 @@
+schemaVersion: 1
+statuses:
+  specification: [planned, skeleton, defined]
+  implementation: [not_started, foundation_only, implementing, implemented]
+  validation: [not_tested, validating, validated, blocked]
+chapters: []
+
+# Add only chapters confirmed by an approved specification. Each entry supports:
+# number, title, volume, specificationStatus, implementationStatus,
+# validationStatus, dependencies, implementedBy, and notes.
