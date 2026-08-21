@@ -56,12 +56,13 @@ import { featureFlags } from "./app/configuration/v2"
 const PROTECTED_PAGES = new Set([
   ...SEARCHABLE_NAVIGATION.map((item) => item.value),
   "settings",
-  ...(featureFlags.v2SpatialUI ? ["spatial"] : []),
 ])
+const DEVELOPMENT_PAGES = new Set(featureFlags.v2SpatialUI ? ["spatial"] : [])
+const APP_PAGES = new Set([...PROTECTED_PAGES, ...DEVELOPMENT_PAGES])
 
 function pageFromHash() {
   const page = window.location.hash.slice(1).split("/")[0]
-  return PROTECTED_PAGES.has(page) ? page : "dashboard"
+  return APP_PAGES.has(page) ? page : "dashboard"
 }
 
 export default function App() {
@@ -69,7 +70,7 @@ export default function App() {
   let content
 
   function setActivePage(page) {
-    if (!PROTECTED_PAGES.has(page)) return
+    if (!APP_PAGES.has(page)) return
     window.history.pushState(null, "", `#${page}`)
     setActivePageState(page)
   }
@@ -418,7 +419,9 @@ export default function App() {
     await investment.deleteInvestment(userId, id)
   }
 
-  if (!auth.user) {
+  if (!auth.user && activePage === "spatial" && featureFlags.v2SpatialUI) {
+    content = <SpatialExperience />
+  } else if (!auth.user) {
     content = (
       <PublicExperience auth={auth} settings={settingsHook.settings} updateSetting={settingsHook.updateSetting} />
     )

@@ -9,6 +9,10 @@
  * @property {string} label
  * @property {SpatialDomain} domain
  * @property {string=} entityId Reference to normalized application data, never persistence data.
+ * @property {[number, number, number]=} position Renderer-neutral world position.
+ * @property {"core"|"radial"=} kind
+ * @property {string=} detail
+ * @property {string=} tone
  */
 
 /**
@@ -19,7 +23,7 @@
  * @property {string=} relationship
  */
 
-/** @typedef {{ nodes: SpatialNode[], edges: SpatialEdge[] }} SpatialScene */
+/** @typedef {{ id?: string, nodes: SpatialNode[], edges: SpatialEdge[] }} SpatialScene */
 /** @typedef {{ nodeId: string|null, edgeId: string|null }} SpatialSelection */
 /** @typedef {{ targetId: string|null, zoom: number }} SpatialCameraState */
 /** @typedef {{ hoveredId: string|null, selected: SpatialSelection }} SpatialInteractionState */

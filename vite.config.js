@@ -38,14 +38,14 @@ export default defineConfig({
         // images get precached; videos are handled by the runtimeCaching
         // rule below instead, fetched from the network on first use.
         globPatterns: ['**/*.{js,css,html,svg,ico,woff,woff2}'],
-        globIgnores: ['**/videos/**', '**/SpatialRuntime-*.js'],
+        globIgnores: ['**/videos/**', '**/runtime-*.js'],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/videos\//],
         runtimeCaching: [
           // Cache the lazy V2 spatial chunk only after the feature is entered.
           {
-            urlPattern: ({ url }) => /\/assets\/SpatialRuntime-[^/]+\.js$/.test(url.pathname),
+            urlPattern: ({ url }) => /\/assets\/runtime-[^/]+\.js$/.test(url.pathname),
             handler: 'CacheFirst',
             options: {
               cacheName: 'money-mind-spatial-runtime',

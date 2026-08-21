@@ -1,8 +1,9 @@
 import { Component, lazy, Suspense, useState } from "react"
 import { featureFlags } from "../core/feature-flags/featureFlags"
 import { detectRenderingCapabilities } from "./performance/capabilities"
+import { createProofSpatialScene } from "../visualization/adapters/createProofSpatialScene"
 
-const SpatialRuntime = lazy(() => import("./runtime/SpatialRuntime"))
+const SpatialRuntime = lazy(() => import("./runtime"))
 
 function SpatialFallback({ reason }) {
   const detail = reason === "webgl"
@@ -31,6 +32,7 @@ class SpatialErrorBoundary extends Component {
 
 export default function SpatialExperience() {
   const [capabilities] = useState(() => detectRenderingCapabilities())
+  const [scene] = useState(createProofSpatialScene)
 
   if (!featureFlags.v2SpatialUI) return null
   if (!capabilities.webGL) return <SpatialFallback reason="webgl" />
@@ -39,8 +41,10 @@ export default function SpatialExperience() {
     <SpatialErrorBoundary>
       <Suspense fallback={<section className="panel" role="status">Loading spatial experience…</section>}>
         <SpatialRuntime
+          capabilities={capabilities}
           motionPreference={capabilities.reducedMotion ? "reduced" : "full"}
-          renderingQuality={capabilities.mobileClass ? "low" : "auto"}
+          renderingQuality="auto"
+          scene={scene}
         />
       </Suspense>
     </SpatialErrorBoundary>
