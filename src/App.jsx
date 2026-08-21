@@ -32,6 +32,7 @@ import ExportCenter from "./pages/ExportCenter"
 import KPIDashboard from "./pages/KPIDashboard"
 import PublicExperience from "./components/PublicExperience"
 import AppLockScreen from "./components/AppLockScreen"
+import SpatialExperience from "./spatial/SpatialExperience"
 
 import useAuth from "./hooks/useAuth"
 import useBudget from "./hooks/useBudget"
@@ -50,10 +51,12 @@ import useSettings from "./hooks/useSettings"
 import useAppLock from "./hooks/useAppLock"
 import { convertCurrency } from "./utils/currencyConversion"
 import { SEARCHABLE_NAVIGATION } from "./constants/navigation"
+import { featureFlags } from "./app/configuration/v2"
 
 const PROTECTED_PAGES = new Set([
   ...SEARCHABLE_NAVIGATION.map((item) => item.value),
   "settings",
+  ...(featureFlags.v2SpatialUI ? ["spatial"] : []),
 ])
 
 function pageFromHash() {
@@ -858,6 +861,10 @@ export default function App() {
         />
       )}
 
+      {activePage === "spatial" && featureFlags.v2SpatialUI && (
+        <SpatialExperience />
+      )}
+
       {![
         "dashboard",
         "budget",
@@ -884,6 +891,7 @@ export default function App() {
         "kpis",
         "export",
         "settings",
+        ...(featureFlags.v2SpatialUI ? ["spatial"] : []),
       ].includes(activePage) && (
         <Panel title="Coming Soon">
           <p className="mt-4 text-[#A5ADB8]">

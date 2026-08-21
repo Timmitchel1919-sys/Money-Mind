@@ -38,11 +38,21 @@ export default defineConfig({
         // images get precached; videos are handled by the runtimeCaching
         // rule below instead, fetched from the network on first use.
         globPatterns: ['**/*.{js,css,html,svg,ico,woff,woff2}'],
-        globIgnores: ['**/videos/**'],
+        globIgnores: ['**/videos/**', '**/SpatialRuntime-*.js'],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/videos\//],
         runtimeCaching: [
+          // Cache the lazy V2 spatial chunk only after the feature is entered.
+          {
+            urlPattern: ({ url }) => /\/assets\/SpatialRuntime-[^/]+\.js$/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'money-mind-spatial-runtime',
+              expiration: { maxEntries: 2, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           // Firebase Auth / Firestore / any Google API call — always hit
           // the network. Auth state and financial data must never be
           // served stale from a cache.
