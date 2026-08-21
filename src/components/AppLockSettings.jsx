@@ -209,7 +209,7 @@ export default function AppLockSettings({ appLock, displayName }) {
               type="button"
               onClick={() => handleSelectMethod(method.id)}
               className={`flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition ${
-                isActive ? "border-[#3aaf90]/60 bg-[#3aaf90]/10" : "border-[#BFC4CC]/20 hover:bg-white/5"
+                isActive ? "border-[var(--brand-primary)]/60 bg-[var(--brand-primary)]/10" : "border-[#BFC4CC]/20 hover:bg-white/5"
               }`}
             >
               <Icon size={20} className={isActive ? "text-[#3aaf90]" : "text-[#A5ADB8]"} />
@@ -269,7 +269,7 @@ export default function AppLockSettings({ appLock, displayName }) {
               value={passwordValue}
               onChange={(e) => setPasswordValue(e.target.value)}
               aria-label="App lock password"
-              className="w-full rounded-xl border border-[#BFC4CC]/25 bg-black/35 p-3 text-center text-white outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#3aaf90]"
+              className="w-full rounded-xl border border-[#BFC4CC]/25 bg-black/35 p-3 text-center text-white outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--brand-primary)]"
             />
             <button
               type="submit"

@@ -85,7 +85,7 @@ export default function MoneyAIComposer({
           </div>
         )}
 
-        <div className="rounded-2xl border border-white/10 bg-black/40 p-2 focus-within:border-[#3aaf90]/50">
+        <div className="rounded-2xl border border-white/10 bg-black/40 p-2 focus-within:border-[var(--brand-primary)]/50">
           <div className="relative">
             <textarea
               ref={textareaRef}
@@ -121,7 +121,7 @@ export default function MoneyAIComposer({
                   isSpeaking ? t.interruptAndAsk : isListening ? t.stopRecording : t.startRecording
                 }
                 title={isSpeaking ? t.interruptAndAsk : isListening ? t.stopRecording : t.startRecording}
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#3aaf90] disabled:cursor-not-allowed disabled:opacity-40 ${
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--brand-primary)] disabled:cursor-not-allowed disabled:opacity-40 ${
                   isListening
                     ? "animate-pulse border-[#F87171]/50 bg-[#F87171]/15 text-[#F87171]"
                     : isSpeaking
@@ -169,7 +169,7 @@ export default function MoneyAIComposer({
                       aria-label={t.voiceModeLabels[option]}
                       title={t.voiceModeLabels[option]}
                       className={`flex h-7 w-7 items-center justify-center rounded-full transition disabled:cursor-not-allowed disabled:opacity-40 ${
-                        voiceMode === option ? "bg-[#3aaf90]/20 text-[#3aaf90]" : "text-[#A5ADB8] hover:bg-white/5"
+                        voiceMode === option ? "bg-[var(--brand-primary)]/20 text-[var(--brand-primary)]" : "text-[#A5ADB8] hover:bg-white/5"
                       }`}
                     >
                       <OptionIcon size={13} />
@@ -196,7 +196,7 @@ export default function MoneyAIComposer({
                 aria-label={t.autoRead}
                 title={t.autoRead}
                 className={`flex h-7 w-7 items-center justify-center rounded-full border transition ${
-                  autoRead ? "border-[#3aaf90]/40 bg-[#3aaf90]/15 text-[#3aaf90]" : "border-[#BFC4CC]/20 text-[#A5ADB8] hover:bg-white/5"
+                  autoRead ? "border-[var(--brand-primary)]/40 bg-[var(--brand-primary)]/15 text-[var(--brand-primary)]" : "border-[#BFC4CC]/20 text-[#A5ADB8] hover:bg-white/5"
                 }`}
               >
                 <Volume2 size={13} />

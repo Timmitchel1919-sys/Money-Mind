@@ -42,6 +42,7 @@ const UI_TEXT = {
     plan: "Prioritized Coaching Plan",
     privacy: "Privacy",
     emptyConversation: "Ask a question about your finances, or pick one of the suggested questions below.",
+    loadingHistory: "Loading your conversation…",
     thinking: "Money AI is thinking…",
     listening: "Listening…",
     noPriorities: "No urgent priorities right now — your core KPIs are within healthy ranges.",
@@ -74,6 +75,7 @@ const UI_TEXT = {
     plan: "Prioritaire acties",
     privacy: "Privacy",
     emptyConversation: "Stel een vraag over je financiën of kies een van de voorgestelde vragen hieronder.",
+    loadingHistory: "Je gesprek wordt geladen…",
     thinking: "Money AI denkt na…",
     listening: "Luisteren…",
     noPriorities: "Geen urgente prioriteiten — je belangrijkste KPI's zijn gezond.",
@@ -94,6 +96,7 @@ const UI_TEXT = {
 // Function renamed to MoneyAI for clarity; the file path/import stays
 // AIFinancialCoach.jsx so App.jsx's import statement never has to change.
 export default function MoneyAI({
+  userId,
   transactions = [],
   budgets = [],
   assets = [],
@@ -146,7 +149,7 @@ export default function MoneyAI({
 
   const { actions } = useFinancialCoach(financialContext.kpis)
   const synthesis = useSpeechSynthesis()
-  const moneyAI = useMoneyAI(financialContext, languagePref)
+  const moneyAI = useMoneyAI(financialContext, languagePref, userId)
 
   const { recognition, interruptAndAsk } = useVoiceConversation({
     mode: voiceMode,
@@ -252,6 +255,7 @@ export default function MoneyAI({
         <MoneyAIConversation
           messages={moneyAI.messages}
           isProcessing={moneyAI.isProcessing}
+          isLoadingHistory={moneyAI.isLoadingHistory}
           error={moneyAI.error}
           onCopy={handleCopy}
           onPlay={(text, lang) => synthesis.speak(text, lang)}

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import "./index.css"
 
 import DashboardLayout from "./layouts/DashboardLayout"
@@ -30,7 +30,7 @@ import LoanPayoffCalculator from "./pages/LoanPayoffCalculator"
 import Settings from "./pages/Settings"
 import ExportCenter from "./pages/ExportCenter"
 import KPIDashboard from "./pages/KPIDashboard"
-import AuthIntro from "./components/AuthIntro"
+import PublicExperience from "./components/PublicExperience"
 import AppLockScreen from "./components/AppLockScreen"
 
 import useAuth from "./hooks/useAuth"
@@ -49,10 +49,27 @@ import useProfile from "./hooks/useProfile"
 import useSettings from "./hooks/useSettings"
 import useAppLock from "./hooks/useAppLock"
 import { convertCurrency } from "./utils/currencyConversion"
+import { SEARCHABLE_NAVIGATION } from "./constants/navigation"
+
+const PROTECTED_PAGES = new Set([
+  ...SEARCHABLE_NAVIGATION.map((item) => item.value),
+  "settings",
+])
+
+function pageFromHash() {
+  const page = window.location.hash.slice(1).split("/")[0]
+  return PROTECTED_PAGES.has(page) ? page : "dashboard"
+}
 
 export default function App() {
-  const [activePage, setActivePage] = useState("dashboard")
+  const [activePage, setActivePageState] = useState(pageFromHash)
   let content
+
+  function setActivePage(page) {
+    if (!PROTECTED_PAGES.has(page)) return
+    window.history.pushState(null, "", `#${page}`)
+    setActivePageState(page)
+  }
 
   const budget = useBudget()
   const transaction = useTransactions()
@@ -67,6 +84,20 @@ export default function App() {
   const form = useFormState()
   const settingsHook = useSettings()
   const appLock = useAppLock()
+
+  useEffect(() => {
+    const preference = settingsHook.settings.themeMode || "system"
+    const media = window.matchMedia("(prefers-color-scheme: dark)")
+    const applyTheme = () => {
+      const resolved = preference === "system" ? (media.matches ? "dark" : "light") : preference
+      document.documentElement.dataset.theme = resolved
+      document.documentElement.dataset.themePreference = preference
+      document.querySelector('meta[name="theme-color"]')?.setAttribute("content", resolved === "dark" ? "#030712" : "#F3F1FF")
+    }
+    applyTheme()
+    media.addEventListener?.("change", applyTheme)
+    return () => media.removeEventListener?.("change", applyTheme)
+  }, [settingsHook.settings.themeMode])
 
   async function loadAllData(userId) {
     await Promise.all([
@@ -84,6 +115,38 @@ export default function App() {
 
   const auth = useAuth(loadAllData)
   const profile = useProfile(auth.user?.uid)
+
+  useEffect(() => {
+    function syncRoute() {
+      setActivePageState(pageFromHash())
+    }
+    window.addEventListener("hashchange", syncRoute)
+    window.addEventListener("popstate", syncRoute)
+    return () => {
+      window.removeEventListener("hashchange", syncRoute)
+      window.removeEventListener("popstate", syncRoute)
+    }
+  }, [])
+
+  useEffect(() => {
+    const rawRoute = window.location.hash.slice(1).split("/")[0]
+    if (auth.user) {
+      const intended = sessionStorage.getItem("moneyMindIntendedPage")
+      const nextPage = PROTECTED_PAGES.has(rawRoute)
+        ? rawRoute
+        : PROTECTED_PAGES.has(intended)
+          ? intended
+          : "dashboard"
+      sessionStorage.removeItem("moneyMindIntendedPage")
+      if (rawRoute !== nextPage) window.history.replaceState(null, "", `#${nextPage}`)
+      setActivePageState(nextPage)
+      return
+    }
+    if (PROTECTED_PAGES.has(rawRoute)) {
+      sessionStorage.setItem("moneyMindIntendedPage", rawRoute)
+      window.history.replaceState(null, "", "#login")
+    }
+  }, [auth.user])
 
   function getUserId() {
     return auth.user?.uid || null
@@ -352,87 +415,9 @@ export default function App() {
     await investment.deleteInvestment(userId, id)
   }
 
-  if (auth.loading) {
+  if (!auth.user) {
     content = (
-      <div className="relative z-10 flex min-h-screen items-center justify-center text-white">
-        <p className="text-[#C9CDD3]">Loading Money Mind...</p>
-      </div>
-    )
-  } else if (!auth.user) {
-    content = (
-      <AuthIntro>
-        <form
-          onSubmit={auth.handleAuth}
-          className="glass-login-card w-full overflow-hidden rounded-3xl p-10"
-        >
-          <p className="mb-8 text-center text-[#A5ADB8]">
-            {auth.mode === "login" ? "Login to your dashboard" : "Create your account"}
-          </p>
-
-          <label className="mb-2 block text-sm text-[#D5D8DD]">Email</label>
-          <input
-            className="mb-4 w-full rounded-xl border border-[#BFC4CC]/25 bg-black/35 p-3 text-white outline-none backdrop-blur-xl"
-            type="email"
-            value={auth.email}
-            onChange={(event) => auth.setEmail(event.target.value)}
-            required
-          />
-
-          <label className="mb-2 block text-sm text-[#D5D8DD]">Password</label>
-          <input
-            className="mb-4 w-full rounded-xl border border-[#BFC4CC]/25 bg-black/35 p-3 text-white outline-none backdrop-blur-xl"
-            type="password"
-            value={auth.password}
-            onChange={(event) => auth.setPassword(event.target.value)}
-            required
-          />
-
-          <div className="mb-6 flex items-center justify-between">
-            <label className="flex items-center gap-2 text-sm text-[#D5D8DD]">
-              <input
-                type="checkbox"
-                checked={auth.rememberMe}
-                onChange={(event) => auth.setRememberMe(event.target.checked)}
-                className="h-4 w-4 accent-[#3aaf90]"
-              />
-              Remember me
-            </label>
-
-            <button
-              type="button"
-              onClick={auth.handleForgotPassword}
-              className="text-sm text-[#D5D8DD] transition hover:text-white"
-            >
-              Forgot password?
-            </button>
-          </div>
-
-          {auth.resetMessage && (
-            <p className="mb-4 text-sm text-[#A5ADB8]">{auth.resetMessage}</p>
-          )}
-
-          <button className="metallic-button w-full rounded-xl p-3 font-semibold text-black transition">
-            {auth.mode === "login" ? "Login" : "Create Account"}
-          </button>
-
-          <button
-            type="button"
-            onClick={auth.handleGoogleLogin}
-            className="mt-4 flex w-full items-center justify-center gap-3 rounded-xl border border-[#BFC4CC]/30 bg-black/35 p-3 font-semibold text-white backdrop-blur-xl transition hover:bg-white/10"
-          >
-            <span className="font-bold" style={{ color: "#4285F4" }}>G</span>
-            Continue with Google
-          </button>
-
-          <button
-            type="button"
-            onClick={() => auth.setMode(auth.mode === "login" ? "register" : "login")}
-            className="mt-4 w-full text-[#D5D8DD] transition hover:text-white"
-          >
-            {auth.mode === "login" ? "No account? Register" : "Already have an account? Login"}
-          </button>
-        </form>
-      </AuthIntro>
+      <PublicExperience auth={auth} settings={settingsHook.settings} updateSetting={settingsHook.updateSetting} />
     )
   } else {
   const baseCurrency = settingsHook.settings.currency || "SRD"
@@ -448,11 +433,11 @@ export default function App() {
 
   const transactionIncome = transaction.transactions
     .filter((item) => item.type === "income")
-    .reduce((sum, item) => sum + Number(item.amount || 0), 0)
+    .reduce((sum, item) => sum + convertCurrency({ amount: item.amount, fromCurrency: item.currency || "SRD", toCurrency: baseCurrency, rates: currency.rates }), 0)
 
   const transactionExpenses = transaction.transactions
     .filter((item) => item.type === "expense")
-    .reduce((sum, item) => sum + Number(item.amount || 0), 0)
+    .reduce((sum, item) => sum + convertCurrency({ amount: item.amount, fromCurrency: item.currency || "SRD", toCurrency: baseCurrency, rates: currency.rates }), 0)
 
   const cashFlow = transactionIncome - transactionExpenses
   const remainingBudget = Number(form.income || 0) - totalBudget
@@ -462,10 +447,12 @@ export default function App() {
       user={auth.user}
       profile={profile.profile}
       settings={settingsHook.settings}
+      updateSetting={settingsHook.updateSetting}
       handleLogout={auth.handleLogout}
       activePage={activePage}
       setActivePage={setActivePage}
       moneyAIProps={{
+        userId: auth.user?.uid,
         transactions: transaction.transactions,
         budgets: budget.budgets,
         assets: asset.assets,
@@ -499,6 +486,7 @@ export default function App() {
           emergencySavings={emergency.emergencySavings}
           monthlyExpenses={emergency.monthlyExpenses}
           monthlyIncome={form.income}
+          displayName={profile.profile?.displayName}
           setActivePage={setActivePage}
           rates={currency.rates}
           numberFormat={settingsHook.settings.numberFormat}
@@ -922,7 +910,7 @@ export default function App() {
 
   return (
     <>
-      <AppBackground themeId={settingsHook.settings.backgroundTheme} />
+      {auth.user && <AppBackground themeId={settingsHook.settings.backgroundTheme} />}
       {content}
     </>
   )

@@ -1,0 +1,52 @@
+:root {
+  /* Raw violet/blue palette — theme-agnostic constants, available for direct
+     utility use (bg-violet-600 etc. via the @theme mirror in index.css) and
+     for building theme-aware aliases below. */
+  --violet-900:#2E1065;--violet-700:#5B21B6;--violet-600:#7C3AED;--violet-400:#A78BFA;--violet-300:#C4B5FD;
+  --blue-600:#2563EB;--blue-500:#3B82F6;--blue-400:#60A5FA;--blue-300:#93C5FD;
+  --gradient-primary:linear-gradient(135deg,#7C3AED,#3B82F6);--gradient-secondary:linear-gradient(135deg,#60A5FA,#93C5FD);
+  --font-heading:"Plus Jakarta Sans",Inter,system-ui,sans-serif;--font-body:"Inter",system-ui,sans-serif;
+}
+:root, [data-theme="light"] {
+  color-scheme: light;
+  --background:#F3F1FF;--navigation:#FFFFFF;--surface:rgba(255,255,255,.58);--surface-strong:rgba(255,255,255,.72);--surface-elevated:#F1ECFF;
+  --border:rgba(255,255,255,.85);--border-strong:rgba(124,58,237,.24);--text-primary:#1E1B4B;--text-secondary:#4B4770;--text-muted:#6D6A8C;--text-disabled:rgba(109,106,140,.55);
+  --brand-primary:#7C3AED;--brand-hover:#5B21B6;--brand-contrast:#FFFFFF;--focus-ring:rgba(124,58,237,.30);--overlay:rgba(30,27,75,.48);
+  --glass-shadow:0 10px 40px rgba(76,58,196,.14),0 2px 8px rgba(76,58,196,.08),inset 0 1px 0 rgba(255,255,255,.94);--positive:#15803D;--negative:#DC2626;--warning:#B45309;--info:#2563EB;--investment:#5B21B6;
+  /* Glass panel tokens — literal spec values (ink/glass-bg/glass-border). */
+  --ink:#1E1B4B;--ink-soft:#6D6A8C;--glass-bg:rgba(255,255,255,.58);--glass-bg-strong:rgba(255,255,255,.72);--glass-border:rgba(255,255,255,.85);
+}
+[data-theme="light"] body{background-image:radial-gradient(circle at 8% 8%,rgba(167,139,250,.55),transparent 40%),radial-gradient(circle at 92% 4%,rgba(96,165,250,.5),transparent 38%),radial-gradient(circle at 85% 88%,rgba(124,58,237,.35),transparent 42%),radial-gradient(circle at 10% 92%,rgba(59,130,246,.3),transparent 40%),linear-gradient(135deg,#F3F1FF 0%,#EAF0FF 55%,#F5F3FF 100%)}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --background:#030712;--navigation:#111827;--surface:rgba(17,24,39,.72);--surface-strong:rgba(17,24,39,.85);--surface-elevated:#1F2937;
+  --border:rgba(210,214,225,.14);--border-strong:rgba(234,238,249,.20);--text-primary:#EAEEF9;--text-secondary:#D2D6E1;--text-muted:rgba(210,214,225,.65);--text-disabled:rgba(210,214,225,.48);
+  --brand-primary:#FFFFFF;--brand-hover:#EAEEF9;--brand-contrast:#030712;--focus-ring:rgba(234,238,249,.40);--overlay:rgba(3,7,18,.72);
+  --glass-shadow:0 20px 50px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.05);--positive:#34D399;--negative:#F87171;--warning:#FBBF24;--info:#60A5FA;--investment:#A78BFA;
+  /* Glass panel tokens — dark equivalents, so .glass-card stays theme-aware. */
+  --ink:#EAEEF9;--ink-soft:rgba(210,214,225,.65);--glass-bg:rgba(17,24,39,.72);--glass-bg-strong:rgba(17,24,39,.85);--glass-border:rgba(210,214,225,.14);
+}
+html,body,#root{min-height:100%;background:var(--background)}body{color:var(--text-primary);font-family:var(--font-body)}*{scrollbar-color:var(--border-strong) transparent}::selection{background:var(--focus-ring);color:var(--text-primary)}:focus-visible{outline:3px solid var(--focus-ring);outline-offset:2px}
+h1,h2,h3,h4,h5,h6{font-family:var(--font-heading)}
+.glass-card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:26px;backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);box-shadow:0 10px 40px rgba(76,58,196,.14),0 2px 8px rgba(76,58,196,.08)}
+.gradient-primary{background:var(--gradient-primary)}.gradient-secondary{background:var(--gradient-secondary)}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.glass-card{background:var(--glass-bg-strong)}}
+.money-mind-logo-text{color:var(--text-primary)!important}[data-theme="dark"] .money-mind-logo{filter:grayscale(1) brightness(2.35)}[data-theme="light"] .money-mind-logo{filter:sepia(1) saturate(6) hue-rotate(228deg) brightness(.85)}
+/* Migration bridge for existing arbitrary-value utilities. */
+.text-\[\#FAFAFA\],.text-white{color:var(--text-primary)!important}.text-\[\#D5D8DD\],.text-\[\#C9CDD3\]{color:var(--text-secondary)!important}.text-\[\#A5ADB8\],.text-\[\#707680\]{color:var(--text-muted)!important}.placeholder\:text-\[\#707680\]::placeholder{color:var(--text-disabled)!important}.text-\[\#3aaf90\]{color:var(--brand-primary)!important}
+.text-\[\#34D399\],.text-\[\#22C55E\]{color:var(--positive)!important}.text-\[\#F87171\],.text-\[\#EF4444\]{color:var(--negative)!important}.text-\[\#FBBF24\],.text-\[\#FACC15\],.text-\[\#FB923C\],.text-\[\#F97316\]{color:var(--warning)!important}.text-\[\#06B6D4\],.text-\[\#22D3EE\],.text-\[\#00B8FF\]{color:var(--info)!important}.text-\[\#8B5CF6\]{color:var(--investment)!important}
+.bg-\[\#0E1117\]\/70,.md\:bg-\[\#0E1117\]\/70,.bg-\[\#171B22\]\/70,.bg-\[\#1F242D\]\/60,.bg-\[\#1F242D\]\/70{background:var(--surface)!important}.bg-\[\#0E1117\]\/95,.bg-\[\#171B22\]\/90,.bg-\[\#171B22\]\/95{background:var(--surface-strong)!important}.bg-\[\#111827\]{background:var(--navigation)!important}.bg-\[\#1F242D\],.bg-\[\#2A313D\]{background:var(--surface-elevated)!important}
+.bg-black\/20,.bg-black\/25,.bg-black\/30,.bg-black\/35,.bg-black\/40{background:color-mix(in srgb,var(--surface-elevated) 68%,transparent)!important}.bg-black\/60,.bg-black\/70,.bg-black\/80,.bg-black\/90{background:var(--overlay)!important}.bg-white\/5,.bg-white\/10{background:color-mix(in srgb,var(--text-primary) 7%,transparent)!important}
+.border-\[\#707680\]\/30,.border-\[\#707680\]\/40,.border-\[\#707680\]\/50,.border-\[\#BFC4CC\]\/20,.border-\[\#BFC4CC\]\/25,.border-\[\#BFC4CC\]\/30,.border-\[\#BFC4CC\]\/35,.border-\[\#BFC4CC\]\/40,.border-\[\#BFC4CC\]\/50,.border-\[\#BFC4CC\]\/60,.border-\[\#C9CDD3\]\/40,.border-\[\#C9CDD3\]\/50,.border-\[\#C9CDD3\]\/60,.border-white\/10,.border-white\/20{border-color:var(--border)!important}
+.bg-\[\#3aaf90\],.bg-\[\#C9CDD3\]{background:var(--brand-primary)!important;color:var(--brand-contrast)!important}.border-\[\#3aaf90\]{border-color:var(--brand-primary)!important}.accent-\[\#3aaf90\]{accent-color:var(--brand-primary)!important}.bg-\[\#3aaf90\]\/10,.bg-\[\#3aaf90\]\/15,.bg-\[\#3aaf90\]\/20{background:var(--focus-ring)!important}
+.glass-login-card,.auth-login-shell,.bg-\[\#0E1117\]\/70,.bg-\[\#0E1117\]\/95,.bg-\[\#171B22\]\/70,.bg-\[\#171B22\]\/90,.bg-\[\#171B22\]\/95{border-color:var(--border)!important;box-shadow:var(--glass-shadow)!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important}.glass-login-card{min-width:0;background:var(--surface-strong)!important;color:var(--text-primary)}.auth-login-shell{width:min(100%,36rem);min-width:0;background:var(--surface)!important}
+button,input,select,textarea{font:inherit}input,select,textarea{color:var(--text-primary)!important}option{color:var(--text-primary);background:var(--navigation)}button:disabled,input:disabled,select:disabled,textarea:disabled{color:var(--text-disabled)!important;cursor:not-allowed}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.glass-login-card,.auth-login-shell,.bg-\[\#0E1117\]\/70,.bg-\[\#171B22\]\/70{background:var(--navigation)!important}}
+@media (max-width:480px){.auth-login-viewport{padding:1rem!important}.glass-login-card{padding:1.5rem!important}.glass-login-card button,.glass-login-card input{min-height:44px}.glass-login-card .flex{min-width:0}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+.navigation-glass{background:var(--surface-strong);border:1px solid var(--border);box-shadow:var(--glass-shadow);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.navigation-popover{background:var(--surface-strong);border:1px solid var(--border);box-shadow:var(--glass-shadow);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.search-results-popover{background:var(--navigation);border:1px solid var(--border-strong);box-shadow:0 24px 64px rgba(3,7,18,.34),inset 0 1px 0 rgba(255,255,255,.12);backdrop-filter:blur(30px) saturate(135%);-webkit-backdrop-filter:blur(30px) saturate(135%)}
+.nav-item-active{background:color-mix(in srgb,var(--brand-primary) 12%,transparent);color:var(--text-primary)!important}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.navigation-glass,.navigation-popover{background:var(--navigation)}}

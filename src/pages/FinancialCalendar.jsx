@@ -1,5 +1,6 @@
 import Panel from "../components/Panel"
 import Card from "../components/Card"
+import PageHeader from "../components/PageHeader"
 import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
 import { formatCurrencyAmount } from "../utils/currencyConversion"
 
@@ -12,6 +13,8 @@ export default function FinancialCalendar({ bills, rates, numberFormat, baseCurr
 
   return (
     <div className="space-y-6">
+      <PageHeader pageKey="calendar" />
+
       <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card title="Upcoming Bills" value={bills.length} />
         <Card

@@ -10,7 +10,9 @@ const DEFAULT_PREFS = {
   volume: 1.0,
   autoRead: false,
   voiceURIByLang: { en: null, nl: null },
-  engine: "browser", // "browser" | "openai"
+  engine: "openai", // "browser" | "openai" — OpenAI's premium voices are the
+  // professional, non-robotic default; "browser" (free OS/Google/Microsoft
+  // voices) remains available as a fallback/opt-out in Settings.
   openaiVoice: DEFAULT_OPENAI_VOICE,
 }
 

@@ -9,7 +9,9 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "remotion:studio": "remotion studio remotion/index.ts",
-    "render:intro": "remotion render remotion/index.ts IntroComposition out/money-mind-financial-energy-intro-1080p.mp4 --codec=h264"
+    "render:intro": "remotion render remotion/index.ts IntroComposition out/money-mind-financial-energy-intro-1080p.mp4 --codec=h264",
+    "render:cinematic-reveal": "remotion render remotion/index.ts CinematicLogoReveal out/money-mind-cinematic-logo-reveal-1440p.mp4 --codec=h264",
+    "render:cinematic-reveal-vertical": "remotion render remotion/index.ts CinematicLogoRevealVertical out/money-mind-cinematic-logo-reveal-vertical.mp4 --codec=h264"
   },
   "dependencies": {
     "firebase": "^12.15.0",

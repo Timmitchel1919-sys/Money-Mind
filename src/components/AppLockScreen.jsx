@@ -82,7 +82,7 @@ export default function AppLockScreen({ appLock, displayName, onForgot }) {
                 onClick={handleBiometric}
                 disabled={isVerifying}
                 aria-label="Unlock with biometrics"
-                className="flex h-20 w-20 items-center justify-center rounded-full border border-[#3aaf90]/40 bg-[#3aaf90]/10 text-[#3aaf90] transition hover:bg-[#3aaf90]/20 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-20 w-20 items-center justify-center rounded-full border border-[var(--brand-primary)]/40 bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] transition hover:bg-[var(--brand-primary)]/20 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Fingerprint size={36} />
               </button>
@@ -110,7 +110,7 @@ export default function AppLockScreen({ appLock, displayName, onForgot }) {
                 onChange={(e) => setPassword(e.target.value)}
                 autoFocus
                 aria-label="App lock password"
-                className="w-full rounded-xl border border-[#BFC4CC]/25 bg-black/35 p-3 text-center text-white outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#3aaf90]"
+                className="w-full rounded-xl border border-[#BFC4CC]/25 bg-black/35 p-3 text-center text-white outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--brand-primary)]"
               />
               <button
                 type="submit"

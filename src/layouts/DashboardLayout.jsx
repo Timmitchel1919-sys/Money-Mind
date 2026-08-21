@@ -3,8 +3,14 @@ import Sidebar from "../components/Sidebar"
 import Topbar from "../components/Topbar"
 import MoneyAIWidget from "../components/MoneyAIWidget"
 
+const SIDEBAR_STORAGE_KEY = "moneyMindSidebarState"
+
+function initialSidebarState() {
+    try { return localStorage.getItem(SIDEBAR_STORAGE_KEY) === "collapsed" }
+    catch { return false }
+}
+
 export default function DashboardLayout({
-    user,
     profile,
     settings,
     handleLogout,
@@ -14,6 +20,8 @@ export default function DashboardLayout({
     children,
 }) {
     const [isSidebarOpen, setSidebarOpen] = useState(false)
+    const [isMoneyAIOpen, setMoneyAIOpen] = useState(false)
+    const [isSidebarCollapsed, setSidebarCollapsed] = useState(initialSidebarState)
 
     function handleNavigate(page) {
         setActivePage(page)
@@ -30,17 +38,41 @@ export default function DashboardLayout({
         return () => document.removeEventListener("keydown", handleKeyDown)
     }, [isSidebarOpen])
 
-    return (
-        <div className="relative h-screen overflow-hidden p-4 text-[#FAFAFA] md:p-6">
+    useEffect(() => {
+        document.body.style.overflow = isSidebarOpen ? "hidden" : ""
+        return () => { document.body.style.overflow = "" }
+    }, [isSidebarOpen])
 
-            <div className="grid h-full grid-cols-1 gap-6 md:grid-cols-[280px_1fr]">
+    useEffect(() => {
+        function syncSidebar(event) {
+            if (event.key === SIDEBAR_STORAGE_KEY) setSidebarCollapsed(event.newValue === "collapsed")
+        }
+        window.addEventListener("storage", syncSidebar)
+        return () => window.removeEventListener("storage", syncSidebar)
+    }, [])
+
+    function updateCollapsed(value) {
+        setSidebarCollapsed(value)
+        localStorage.setItem(SIDEBAR_STORAGE_KEY, value ? "collapsed" : "expanded")
+    }
+
+    return (
+        <div className="relative h-dvh overflow-hidden text-[var(--text-primary)]">
 
                 <Sidebar
                     activePage={activePage}
-                    setActivePage={handleNavigate}
+                    onNavigate={handleNavigate}
                     handleLogout={handleLogout}
                     isOpen={isSidebarOpen}
                     onClose={() => setSidebarOpen(false)}
+                    isMoneyAIOpen={isMoneyAIOpen}
+                    onOpenMoneyAI={() => {
+                        setMoneyAIOpen(true)
+                        setSidebarOpen(false)
+                    }}
+                    collapsed={isSidebarCollapsed}
+                    onCollapsedChange={updateCollapsed}
+                    profile={profile}
                 />
 
                 {/* Mobile-only backdrop behind the sidebar drawer — clicking it
@@ -59,24 +91,30 @@ export default function DashboardLayout({
                     off-canvas drawer (opened via the Topbar's menu button)
                     below md, so it never has to share space with content on
                     a phone-width screen. */}
-                <div className="flex h-full min-h-0 min-w-0 flex-col gap-6">
+                <div className={`flex h-dvh min-w-0 flex-col transition-[margin] duration-200 ${isSidebarCollapsed ? "md:ml-[76px]" : "md:ml-[272px]"}`}>
 
-                    <Topbar
-                        user={user}
-                        profile={profile}
-                        settings={settings}
-                        onMenuClick={() => setSidebarOpen(true)}
-                    />
+                    <div className="shrink-0 px-4 md:px-6">
+                        <Topbar
+                            settings={settings}
+                            activePage={activePage}
+                            onNavigate={handleNavigate}
+                            onMenuClick={() => setSidebarOpen(true)}
+                            financialData={moneyAIProps}
+                        />
+                    </div>
 
-                    <main className="scrollbar-transparent min-h-0 min-w-0 flex-1 space-y-6 overflow-y-auto pr-1">
-                        {children}
+                    <main className="scrollbar-transparent min-h-0 min-w-0 flex-1 overflow-y-auto p-4 md:p-6">
+                        <div className="mx-auto w-full max-w-[1440px] space-y-6 pb-8">{children}</div>
                     </main>
 
                 </div>
 
-            </div>
-
-            <MoneyAIWidget {...moneyAIProps} setActivePage={setActivePage} />
+            <MoneyAIWidget
+                {...moneyAIProps}
+                setActivePage={setActivePage}
+                isOpen={isMoneyAIOpen}
+                onOpenChange={setMoneyAIOpen}
+            />
 
         </div>
     )

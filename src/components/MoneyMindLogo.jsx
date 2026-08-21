@@ -59,13 +59,12 @@ function useBalancedTracking() {
   return { primaryRef, secondaryRef, secondaryTracking }
 }
 
-// The full Money Mind logo (M mark + "MONEY MIND" wordmark), as uploaded
-// to public/. Used on the Login/Register screen. Static: no rotation,
-// flip, or animation; hover only lifts brightness slightly.
+// The full Money Mind logo (M mark + "MONEY MIND" wordmark), isolated on
+// transparency so it sits cleanly on the Login/Register glass surface.
 export function LoginLogo({ className = "" }) {
   return (
     <img
-      src="/money-mind-logo.png"
+      src="/money-mind-logo-clean.png"
       alt="Money Mind"
       className={`money-mind-logo object-contain ${className}`}
       style={{ height: LOGIN_HEIGHT, width: "auto" }}
@@ -77,26 +76,26 @@ export function LoginLogo({ className = "" }) {
 // (cropped from the same uploaded logo, public/money-mind-mark.png) on
 // the left, MONEY stacked above MIND on the right, both flush to the
 // same left edge with MIND's tracking balanced to match MONEY's width.
-export function SidebarLogo({ className = "" }) {
+export function SidebarLogo({ className = "", collapsed = false, markOnly = false }) {
   const { primaryRef, secondaryRef, secondaryTracking } = useBalancedTracking()
 
   return (
-    <div className={`money-mind-logo inline-flex items-center gap-3 ${className}`}>
+    <div className={`money-mind-logo inline-flex min-w-0 items-center ${collapsed || markOnly ? "justify-center" : "gap-3"} ${className}`}>
       <img
         src="/money-mind-mark.png"
         alt="Money Mind"
         className="shrink-0 object-contain"
-        style={{ height: SIDEBAR_MARK_HEIGHT, width: "auto" }}
+        style={{ height: collapsed ? "24px" : markOnly ? "48px" : SIDEBAR_MARK_HEIGHT, width: "auto" }}
       />
 
-      <div className="flex flex-col items-start leading-[1.05]" style={{ fontSize: SIDEBAR_TEXT_SIZE }}>
+      {!collapsed && !markOnly && <div className="flex flex-col items-start leading-[1.05]" style={{ fontSize: SIDEBAR_TEXT_SIZE }}>
         <span ref={primaryRef} className="money-mind-logo-text" style={{ letterSpacing: `${BASE_TRACKING_EM}em` }}>
           MONEY
         </span>
         <span ref={secondaryRef} className="money-mind-logo-text" style={{ letterSpacing: `${secondaryTracking}em` }}>
           MIND
         </span>
-      </div>
+      </div>}
     </div>
   )
 }

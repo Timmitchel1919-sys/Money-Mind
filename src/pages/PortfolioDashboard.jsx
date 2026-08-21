@@ -13,6 +13,7 @@ import {
 import Card from "../components/Card"
 import Panel from "../components/Panel"
 import Input from "../components/Input"
+import PageHeader from "../components/PageHeader"
 import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
 import { formatCurrencyAmount } from "../utils/currencyConversion"
 const COLORS = ["#FBBF24", "#06B6D4", "#22C55E", "#8B5CF6", "#F97316", "#EC4899"]
@@ -63,6 +64,8 @@ const performanceData = [
 
   return (
     <div className="space-y-6">
+      <PageHeader pageKey="portfolio" />
+
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card
           title="Total Invested"
