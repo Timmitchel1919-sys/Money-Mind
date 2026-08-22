@@ -1,20 +1,35 @@
-import { useMemo } from "react"
-import { useSpatialInteraction } from "../interaction/interactionContext"
+import { useFrame } from "@react-three/fiber"
+import { Color } from "three"
+import { useMemo, useRef } from "react"
+import { useMotionEngine } from "../../../motion/core/motionContext"
+import { resolveEdgeMotion } from "../../../motion/edges/edgeMotion"
+import { dampValue } from "../../../motion/performance/animationBudget"
 
-function SpatialEdge({ active, positions }) {
+function SpatialEdge({ active, connectedToSelection, positions }) {
   const positionBuffer = useMemo(() => new Float32Array(positions), [positions])
+  const material = useRef(null)
+  const targetColor = useMemo(() => new Color(), [])
+  const { activeTransition, getTransitionProgress, policy, selectedId } = useMotionEngine()
+
+  useFrame((_, delta) => {
+    if (!material.current) return
+    const target = resolveEdgeMotion({ active, activeTransition, connectedToSelection, policy, progress: getTransitionProgress(), selectedId })
+    material.current.opacity = dampValue(material.current.opacity, target.opacity, policy.edgeDamping, delta)
+    targetColor.set(target.color)
+    material.current.color.lerp(targetColor, policy.edgeDamping === Infinity ? 1 : 1 - Math.exp(-policy.edgeDamping * delta))
+  })
   return (
     <line>
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positionBuffer, 3]} count={2} />
       </bufferGeometry>
-      <lineBasicMaterial color={active ? "#a9c8ef" : "#45617e"} opacity={active ? 0.82 : 0.32} transparent />
+      <lineBasicMaterial ref={material} color="#45617e" opacity={0} transparent />
     </line>
   )
 }
 
 export default function SpatialEdges({ edges, nodes }) {
-  const { hoveredId, selectedId } = useSpatialInteraction()
+  const { hoveredId, selectedId } = useMotionEngine()
   const resolvedEdges = useMemo(() => {
     const nodeById = new Map(nodes.map((node) => [node.id, node]))
     return edges.flatMap((edge) => {
@@ -27,6 +42,7 @@ export default function SpatialEdges({ edges, nodes }) {
   return resolvedEdges.map((edge) => (
     <SpatialEdge
       active={[edge.sourceId, edge.targetId].includes(selectedId || hoveredId)}
+      connectedToSelection={Boolean(selectedId && [edge.sourceId, edge.targetId].includes(selectedId))}
       key={edge.id}
       positions={edge.positions}
     />

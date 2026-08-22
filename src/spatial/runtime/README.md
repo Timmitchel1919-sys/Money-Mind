@@ -2,6 +2,8 @@
 
 - `core`: Canvas lifecycle, renderer configuration, context loss, and public runtime composition.
 - `scene`: domain-agnostic world composition and coordinate scale.
+
+Semantic motion and interaction ownership lives in `src/motion`; runtime components consume coordinated targets and translate no raw input directly into animation timelines.
 - `camera`: the single product-controlled camera rig and pure camera-state calculations.
 - `lighting`: restrained quality-aware illumination.
 - `nodes`: reusable node geometry, materials, labels, and visual state.

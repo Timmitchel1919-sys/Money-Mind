@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react"
-import { SpatialInteractionProvider } from "../interaction/SpatialInteractionProvider"
-import { useSpatialInteraction } from "../interaction/interactionContext"
+import { MotionProvider } from "../../../motion/core/MotionProvider"
+import { useMotionEngine } from "../../../motion/core/motionContext"
+import { resetViewIntent } from "../../../motion/input/motionIntents"
 import NodeLabels from "../nodes/NodeLabels"
 import { QUALITY_OPTIONS, resolveQualityPreset } from "../quality/qualityPresets"
 import SpatialCanvas from "./SpatialCanvas"
@@ -10,7 +11,7 @@ import "../spatial-runtime.css"
 function SpatialWorkspace({ capabilities, initialQuality, motionPreference, scene }) {
   const [requestedQuality, setRequestedQuality] = useState(initialQuality)
   const [contextState, setContextState] = useState("initializing")
-  const { resetSelection, selectedId } = useSpatialInteraction()
+  const { activeTransition, dispatchIntent, sceneState, selectedId } = useMotionEngine()
   const quality = useMemo(() => resolveQualityPreset(requestedQuality, capabilities), [capabilities, requestedQuality])
   const selectedNode = scene.nodes.find((node) => node.id === selectedId)
   const handleContextStateChange = useCallback((state) => setContextState(state), [])
@@ -26,10 +27,10 @@ function SpatialWorkspace({ capabilities, initialQuality, motionPreference, scen
           <h2 id="spatial-runtime-title">Spatial Financial Workspace</h2>
         </div>
         <div className="spatial-toolbar__controls" aria-label="Spatial workspace controls">
-          <button className="spatial-control" disabled={!selectedId} onClick={resetSelection} type="button">
+          <button className="spatial-control" disabled={!selectedId} onClick={() => dispatchIntent(resetViewIntent())} type="button">
             Overview
           </button>
-          <button className="spatial-control" disabled={!selectedId} onClick={resetSelection} type="button">
+          <button className="spatial-control" disabled={!selectedId} onClick={() => dispatchIntent(resetViewIntent())} type="button">
             Reset camera
           </button>
           <label className="spatial-quality-control">
@@ -41,9 +42,8 @@ function SpatialWorkspace({ capabilities, initialQuality, motionPreference, scen
         </div>
       </header>
 
-      <div className="spatial-stage" data-context-state={contextState}>
+      <div className="spatial-stage" data-active-transition={activeTransition?.name || "none"} data-context-state={contextState} data-scene-state={sceneState}>
         <SpatialCanvas
-          motionPreference={motionPreference}
           onContextStateChange={handleContextStateChange}
           quality={quality}
           scene={scene}
@@ -78,13 +78,13 @@ export default function SpatialRuntime({ capabilities, motionPreference = "reduc
   }
 
   return (
-    <SpatialInteractionProvider>
+    <MotionProvider motionPreference={motionPreference}>
       <SpatialWorkspace
         capabilities={capabilities}
         initialQuality={renderingQuality}
         motionPreference={motionPreference}
         scene={scene}
       />
-    </SpatialInteractionProvider>
+    </MotionProvider>
   )
 }

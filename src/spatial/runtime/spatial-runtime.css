@@ -68,13 +68,20 @@
   pointer-events: auto;
   cursor: pointer;
   backdrop-filter: blur(10px);
-  transition: border-color 180ms ease, background 180ms ease, color 180ms ease, transform 180ms ease;
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease, transform 180ms ease, opacity 220ms ease;
 }
 .spatial-node-label small { margin-top: 2px; color: #7f95b0; font-size: 8px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
 .spatial-node-label--core { min-width: 128px; transform: translate(-50%, calc(-50% + 72px)); color: #eaf3fc; font-size: 12px; }
 .spatial-node-label:hover, .spatial-node-label:focus-visible, .spatial-node-label.is-hovered { border-color: rgba(181, 211, 244, 0.48); background: rgba(17, 31, 50, 0.9); color: #f5f9fd; transform: translate(-50%, calc(-50% + 40px)); outline: none; }
 .spatial-node-label--core:hover, .spatial-node-label--core:focus-visible, .spatial-node-label--core.is-hovered { transform: translate(-50%, calc(-50% + 69px)); }
 .spatial-node-label.is-active { border-color: rgba(205, 226, 250, 0.66); background: rgba(24, 43, 68, 0.94); color: #fff; box-shadow: 0 0 24px rgba(98, 143, 197, 0.18); }
+.spatial-node-label.is-muted { opacity: 0.38; }
+.spatial-node-label.is-entering { animation: spatial-label-entry var(--motion-entry-duration) cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: var(--motion-entry-delay); }
+
+@keyframes spatial-label-entry {
+  from { opacity: 0; filter: blur(3px); }
+  to { opacity: 1; filter: blur(0); }
+}
 
 .spatial-stage__status { position: absolute; right: 16px; bottom: 14px; z-index: 3; display: flex; gap: 6px; pointer-events: none; }
 .spatial-stage__status span { padding: 5px 8px; border: 1px solid rgba(151, 179, 214, 0.14); border-radius: 7px; background: rgba(4, 10, 20, 0.7); color: #7f94ad; font-size: 9px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; backdrop-filter: blur(8px); }
@@ -110,5 +117,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .spatial-node-label { transition-duration: 0ms; }
+  .spatial-node-label { animation-duration: 0ms; transition-duration: 0ms; }
 }

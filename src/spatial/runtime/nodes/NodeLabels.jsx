@@ -1,4 +1,6 @@
-import { useSpatialInteraction } from "../interaction/interactionContext"
+import { useMotionEngine } from "../../../motion/core/motionContext"
+import { TRANSITIONS } from "../../../motion/core/motionState"
+import { clearHoverIntent, hoverNodeIntent, selectNodeIntent } from "../../../motion/input/motionIntents"
 
 function labelPosition(node) {
   if (node.kind === "core") return { "--label-x": 50, "--label-y": 50 }
@@ -9,7 +11,7 @@ function labelPosition(node) {
 }
 
 export default function NodeLabels({ nodes }) {
-  const { hoveredId, selectedId, setHoveredId, toggleSelection } = useSpatialInteraction()
+  const { activeTransition, dispatchIntent, hoveredId, policy, selectedId } = useMotionEngine()
 
   return (
     <div className="spatial-label-layer" aria-label="Financial domains">
@@ -19,14 +21,14 @@ export default function NodeLabels({ nodes }) {
         return (
           <button
             aria-pressed={active}
-            className={`spatial-node-label spatial-node-label--${node.kind}${active ? " is-active" : ""}${hovered ? " is-hovered" : ""}`}
+            className={`spatial-node-label spatial-node-label--${node.kind}${active ? " is-active" : ""}${hovered ? " is-hovered" : ""}${selectedId && !active && node.kind !== "core" ? " is-muted" : ""}${activeTransition?.name === TRANSITIONS.entry ? " is-entering" : ""}`}
             key={node.id}
-            onBlur={() => setHoveredId(null)}
-            onClick={() => toggleSelection(node.id)}
-            onFocus={() => setHoveredId(node.id)}
-            onMouseEnter={() => setHoveredId(node.id)}
-            onMouseLeave={() => setHoveredId(null)}
-            style={labelPosition(node)}
+            onBlur={() => dispatchIntent(clearHoverIntent())}
+            onClick={() => dispatchIntent(selectNodeIntent(node.id))}
+            onFocus={() => dispatchIntent(hoverNodeIntent(node.id))}
+            onMouseEnter={() => dispatchIntent(hoverNodeIntent(node.id))}
+            onMouseLeave={() => dispatchIntent(clearHoverIntent())}
+            style={{ ...labelPosition(node), "--motion-entry-delay": `${node.kind === "core" ? 0 : nodes.indexOf(node) * policy.stagger}ms`, "--motion-entry-duration": `${activeTransition?.duration || 0}ms` }}
             type="button"
           >
             <span>{node.label}</span>

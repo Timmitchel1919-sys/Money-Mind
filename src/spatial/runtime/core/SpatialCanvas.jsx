@@ -1,6 +1,7 @@
 import { Canvas, useThree } from "@react-three/fiber"
 import { useEffect } from "react"
-import { useSpatialInteraction } from "../interaction/interactionContext"
+import { useMotionEngine } from "../../../motion/core/motionContext"
+import { resetViewIntent } from "../../../motion/input/motionIntents"
 import SpatialScene from "../scene/SpatialScene"
 import { SPATIAL_RUNTIME_CONFIG } from "./runtimeConfig"
 
@@ -25,8 +26,8 @@ function ContextLifecycle({ onContextStateChange }) {
   return null
 }
 
-export default function SpatialCanvas({ motionPreference, onContextStateChange, quality, scene }) {
-  const { resetSelection } = useSpatialInteraction()
+export default function SpatialCanvas({ onContextStateChange, quality, scene }) {
+  const { dispatchIntent } = useMotionEngine()
 
   return (
     <Canvas
@@ -49,10 +50,10 @@ export default function SpatialCanvas({ motionPreference, onContextStateChange, 
         gl.setClearColor(SPATIAL_RUNTIME_CONFIG.background, 1)
         onContextStateChange("ready")
       }}
-      onPointerMissed={resetSelection}
+      onPointerMissed={() => dispatchIntent(resetViewIntent())}
     >
       <ContextLifecycle onContextStateChange={onContextStateChange} />
-      <SpatialScene motionPreference={motionPreference} quality={quality} scene={scene} />
+      <SpatialScene quality={quality} scene={scene} />
     </Canvas>
   )
 }

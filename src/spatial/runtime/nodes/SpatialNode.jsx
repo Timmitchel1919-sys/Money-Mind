@@ -1,19 +1,19 @@
 import { useFrame } from "@react-three/fiber"
-import { MathUtils } from "three"
 import { useEffect, useRef } from "react"
-import { useSpatialInteraction } from "../interaction/interactionContext"
+import { useMotionEngine } from "../../../motion/core/motionContext"
+import { clearHoverIntent, hoverNodeIntent, selectNodeIntent } from "../../../motion/input/motionIntents"
+import { resolveNodeMotion } from "../../../motion/nodes/nodeMotion"
+import { dampValue } from "../../../motion/performance/animationBudget"
 import { nodePalette } from "./nodeMaterials"
 
-export default function SpatialNode({ geometry, motionPreference, node }) {
+export default function SpatialNode({ geometry, index, node }) {
   const mesh = useRef(null)
   const material = useRef(null)
-  const { hoveredId, selectedId, setHoveredId, toggleSelection } = useSpatialInteraction()
+  const { activeTransition, dispatchIntent, getTransitionProgress, hoveredId, policy, selectedId } = useMotionEngine()
   const hovered = hoveredId === node.id
   const selected = selectedId === node.id
-  const muted = Boolean(selectedId && !selected)
   const palette = nodePalette(node)
   const baseScale = node.kind === "core" ? 1 : 0.58
-  const targetScale = baseScale * (selected ? 1.2 : hovered ? 1.1 : 1)
 
   useEffect(() => () => {
     document.body.style.cursor = ""
@@ -21,13 +21,13 @@ export default function SpatialNode({ geometry, motionPreference, node }) {
 
   useFrame((_, delta) => {
     if (!mesh.current || !material.current) return
-    const speed = motionPreference === "full" ? 8 : motionPreference === "reduced" ? 16 : Infinity
-    const next = speed === Infinity ? targetScale : MathUtils.damp(mesh.current.scale.x, targetScale, speed, delta)
-    mesh.current.scale.setScalar(next)
-    material.current.emissiveIntensity = speed === Infinity
-      ? (selected ? 1.05 : hovered ? 0.78 : 0.38)
-      : MathUtils.damp(material.current.emissiveIntensity, selected ? 1.05 : hovered ? 0.78 : 0.38, speed, delta)
-    material.current.opacity = muted ? 0.48 : 1
+    const target = resolveNodeMotion({ activeTransition, hovered, index, kind: node.kind, policy, progress: getTransitionProgress(), selected, selectedId })
+    mesh.current.scale.setScalar(dampValue(mesh.current.scale.x, target.scale, policy.nodeDamping, delta))
+    mesh.current.position.x = dampValue(mesh.current.position.x, node.position[0] * target.radialScale, policy.radialDamping, delta)
+    mesh.current.position.y = dampValue(mesh.current.position.y, node.position[1] * target.radialScale, policy.radialDamping, delta)
+    mesh.current.position.z = dampValue(mesh.current.position.z, node.position[2] * target.radialScale, policy.radialDamping, delta)
+    material.current.emissiveIntensity = dampValue(material.current.emissiveIntensity, target.emissive, policy.nodeDamping, delta)
+    material.current.opacity = dampValue(material.current.opacity, target.opacity, policy.nodeDamping, delta)
   })
 
   return (
@@ -38,15 +38,15 @@ export default function SpatialNode({ geometry, motionPreference, node }) {
       scale={baseScale}
       onClick={(event) => {
         event.stopPropagation()
-        toggleSelection(node.id)
+        dispatchIntent(selectNodeIntent(node.id))
       }}
       onPointerEnter={(event) => {
         event.stopPropagation()
-        setHoveredId(node.id)
+        dispatchIntent(hoverNodeIntent(node.id))
         document.body.style.cursor = "pointer"
       }}
       onPointerLeave={() => {
-        setHoveredId(null)
+        dispatchIntent(clearHoverIntent())
         document.body.style.cursor = ""
       }}
     >
