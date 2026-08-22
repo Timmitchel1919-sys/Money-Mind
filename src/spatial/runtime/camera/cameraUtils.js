@@ -1,6 +1,6 @@
 export function calculateCameraState({ selectedPosition, mobile = false }) {
   if (!selectedPosition) {
-    return Object.freeze({ position: Object.freeze([0, 0, mobile ? 9.4 : 7.4]), target: Object.freeze([0, 0, 0]) })
+    return Object.freeze({ position: Object.freeze([0, 0, 9.4]), target: Object.freeze([0, 0, 0]) })
   }
 
   const [x, y, z] = selectedPosition
