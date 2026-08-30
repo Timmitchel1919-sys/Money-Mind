@@ -57,3 +57,29 @@ Foundation rules:
 ## Notes for cloud / remote sessions
 - Firebase/Google endpoints are blocked from the Anthropic cloud sandbox, so `firebase deploy` must run on a local machine.
 - node_modules holds host-OS native binaries; a Linux sandbox cannot reuse a Windows install for native deps (e.g. rolldown). Build on the host, or reinstall in the sandbox.
+
+## Codebase map
+Entry: src/main.jsx -> src/App.jsx. App.jsx (~930 lines) owns hash-based routing
+(#route), top-level orchestration and some calculations — a known refactor target
+(decompose incrementally once regression coverage exists; see docs/v2/migration/v1-to-v2.md).
+
+- src/pages/ — ~27 route screens: Dashboard, Budget, Bills, Transactions, Goals,
+  DebtManager, EmergencyFund, SavingsPlanner, NetWorth, RetirementPlanner,
+  InvestmentTracker, PortfolioDashboard, DividendDashboard/Tracker, CashFlowForecast,
+  KPIDashboard, FinancialHealth, FinancialCalendar, Reports, Charts, ExportCenter,
+  Currencycenter, InflationCalculator, LoanPayoffCalculator, AIFinancialCoach, Settings.
+- src/hooks/ — per-domain data hooks, each Firestore-backed and per-user
+  (useAssets, useBudget, useBills, useDebt, useGoals, useInvestments, useSavings,
+  useEmergencyFund, useRetirement, useTransactions, useMoneyMindData, ...), plus
+  Money AI (useMoneyAI, useMoneyAIContext, useFinancialCoach), voice
+  (useSpeechRecognition/Synthesis, useVoiceConversation), and app lock (useAppLock).
+- src/services/ — aiService.js (Money AI client), firestoreService.js (Firestore
+  access), currencyService.js, openaiVoiceService.js, biometricAuth.js.
+- src/firebase.js — Firebase app/auth/Firestore initialization.
+- src/core/feature-flags/ — centralized V2 feature flags (the on/off switch for all V2).
+- src/spatial/ — V2 spatial view: SpatialExperience.jsx, contracts.js, runtime/, performance/.
+- src/motion/, src/visualization/ — V2 motion policy/tokens and renderer-neutral adapters.
+- src/components/, src/layouts/, src/constants/, src/styles/ — shared UI, layout, config, tokens.
+
+Backend: functions/ (Cloud Functions), firestore.rules (per-user isolation), firebase.json.
+Data model: per-user Firestore collections; do not change schemas as a side effect of visual work.
