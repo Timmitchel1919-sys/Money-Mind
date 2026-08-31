@@ -115,11 +115,29 @@ hit-testing: base 0.4 → 0.52, geometry 0.6 → 0.72, `MIN_CHILD_MAGNITUDE` 0.4
 After the fix: clicking the top child selects "gold", the inspector shows
 `gold — SRD 12,500.00`, the camera focuses it; Overview collapses back to overview.
 
-`+N more`: still needs a domain with > 8 items (adapter harness covers the logic).
+`+N more` — PASS (2026-08-31): with `MAX_CHILDREN` temporarily set to 2 and four
+holdings, Investments rendered three child nodes (2 top holdings + one collapse node)
+and the hint read "3 items". The collapse node's label ("+N more") and summed remainder
+are covered by the bare-node harness. `MAX_CHILDREN` restored to 8.
 
-Still to record on the Windows host: full Layer 3 motion matrix
-(overview / hover / select / focus / switch / reset / interrupt × full / reduced /
-minimal / off), flag-OFF parity, forced-WebGL-denial fallback.
+Flag OFF (`VITE_V2_GRAPH_ENGINE=false`) — PASS (2026-08-31): `#spatial` renders the
+Layer 4 scene; selecting a domain shows no "N items" hint and no child nodes.
+
+Layer 3 motion matrix — PASS (2026-08-31), driven via `?spatialMotion=<mode>`:
+
+| Mode | select | switch | interrupt | reset |
+| --- | --- | --- | --- | --- |
+| off | → `focused` immediately | → `focused` | settles on last requested (Debt) | → `overview` |
+| reduced | `selecting` → `focused` | `switching` → `focused` | settles on last | `resetting` → `overview` |
+| minimal | → `focused` | `switching` → `focused` | (n/a) | `resetting` → `overview` |
+| full | `selecting` → `focused` | `switching` → `focused` | settles on last (Debt) | → `overview` |
+
+No stale selection; inspector always ended on the last requested node or overview; no
+console errors. The Layer 3 transition state machine
+(`MotionProvider` / `transitionSequences`) was not modified — only the `kind: "child"`
+branch of `resolveNodeMotion` is new.
+
+Not done here (needs the Windows host): forced-WebGL-denial fallback.
 
 ## Known limitations / tuning notes
 
@@ -137,6 +155,14 @@ minimal / off), flag-OFF parity, forced-WebGL-denial fallback.
 
 ## Decision
 
-**LAYER 5 IMPLEMENTED — static, signed-out, and core signed-in validation PASS.**
-Remaining before acceptance: re-check the multi-child fan-out / `+N more` / child
-selection with a richer account, and record the full Layer 3 motion matrix.
+**LAYER 5 ACCEPTED** (2026-08-31)
+
+Static, signed-out, and signed-in browser validation all pass: real per-domain totals
+and magnitude sizing (Layer 4 intact), domain-select fans out real child nodes on a
+ring sized by share, "+N more" collapses the tail, child click focuses the item and
+shows its amount, Overview collapses, empty domains are inert, flag-OFF is Layer-4
+identical, and the Layer 3 motion matrix passes in all four modes. Two bugs found and
+fixed along the way (signed-in `#spatial` route guard; child-node `raycast` toggle).
+
+Not exercised: forced-WebGL-denial fallback (needs the host) — low risk, the
+`SpatialFallback` path is unchanged from Layer 2C.

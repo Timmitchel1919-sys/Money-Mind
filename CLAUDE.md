@@ -26,13 +26,18 @@ Status (2026-08-31):
   src/visualization/adapters/financialSpatialAdapter.js turns useFinancialKPIs totals
   into the scene; per-domain node size = share of the largest domain (floor 0.35),
   applied renderer-side in SpatialNode so the Layer 3 motion policy is untouched.
-- Layer 5 graph drill-down (v2GraphEngine flag) — IMPLEMENTED, signed-in browser
-  validation PENDING (branch claude/v2-layer-5-graph-drilldown;
-  docs/v2/validation/layer-5-graph-drilldown.md). Selecting a domain fans it out into
-  one level of 3D child nodes (new src/hooks/useFinancialBreakdown.js selector →
-  adapter `children` → kind:"child" nodes on a ring), collapsing on Overview. Only the
-  child branch of resolveNodeMotion is new; core/radial motion output unchanged.
-- Branch develop/v2 (origin main is at 4ffa43d)
+- Layer 5 graph drill-down (v2GraphEngine flag) — ACCEPTED (2026-08-31, branch
+  claude/v2-layer-5-graph-drilldown; docs/v2/validation/layer-5-graph-drilldown.md).
+  Selecting a domain fans it out into one level of 3D child nodes (new
+  src/hooks/useFinancialBreakdown.js selector → adapter `children` → kind:"child" nodes
+  on a ring), collapsing on Overview; child click focuses the line item. Only the child
+  branch of resolveNodeMotion is new; Layer 3 motion matrix re-verified in all modes.
+  Fixed en route: signed-in `#spatial` route guard (App.jsx used PROTECTED_PAGES, not
+  APP_PAGES) and an R3F `raycast`-toggle pitfall that made child nodes unclickable.
+- Branch develop/v2 (origin main is at 4ffa43d). NB develop/v2 in this checkout is still
+  at e2063fb — Layers 4 + 5 live on claude/v2-layer-4… and claude/v2-layer-5…, to
+  fast-forward onto develop/v2.
+- NEXT: merge Layers 4 + 5 into develop/v2 (fast-forward), then v2Simulation or v2AI.
 - NEXT: complete Layer 5 signed-in browser validation + Layer 3 motion matrix re-run,
   then accept and merge (claude/v2-layer-4… then claude/v2-layer-5… fast-forward onto
   develop/v2). Afterwards: v2Simulation or v2AI.
