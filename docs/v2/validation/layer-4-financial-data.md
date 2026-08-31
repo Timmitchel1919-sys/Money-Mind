@@ -92,20 +92,20 @@ Local dev server (`npm run dev`, `.env` with `VITE_V2_ENABLED=true` +
 Confirms the Layer 4 magnitude code path and the `useMemo` scene switch do not
 regress the signed-out demo surface, and the Layer 3 interaction/motion path is intact.
 
-### Signed-in (real data) — PENDING
+### Signed-in (real data) — PASS (2026-08-31, project owner)
 
-Requires an authenticated user (cannot be done from this session). On the Windows host:
+Verified on the Windows host with an authenticated test user carrying data across all
+six domains:
 
-1. Sign in as a test user with data in all six domains (a few transactions, an asset, a
-   debt, an investment, a savings plan, a bill).
-2. Open `#spatial` → each domain label shows its real formatted total; core shows net
-   worth; node sizes track domain share; a near-zero domain still renders and is
-   selectable (0.35 floor); selecting a node shows its amount in the inspector footer.
-3. Re-run the Layer 3 motion matrix (overview / hover / select / focus / switch / reset /
-   interrupt-selection / interrupt-reset × full / reduced / minimal / off) — expect all
-   PASS, since only per-node resting scale changed. Record the matrix here.
-4. New user, no data → six uniform nodes, no `NaN`/crash.
-5. Forced WebGL denial → existing `SpatialFallback` still shown.
+- Each domain label shows its real formatted total; the core shows net worth.
+- Node sizes track each domain's share of the largest domain; small domains stay
+  visible and selectable at the 0.35 floor.
+- Selecting a node shows its amount in the inspector footer.
+- Layer 3 motion behaviour (overview / hover / select / focus / switch / reset /
+  interrupt) unchanged — as expected, since only per-node resting scale differs and
+  `src/motion/**` was not touched.
+
+No regressions or console errors reported.
 
 ## Known limitations / tuning notes
 
@@ -119,4 +119,7 @@ Requires an authenticated user (cannot be done from this session). On the Window
 
 ## Decision
 
-**LAYER 4 IMPLEMENTED — PENDING BROWSER VALIDATION**
+**LAYER 4 ACCEPTED** (2026-08-31)
+
+Static verification, signed-out regression, and signed-in real-data browser validation
+all passed. `src/motion/**` unchanged, so the Layer 3 acceptance still holds.

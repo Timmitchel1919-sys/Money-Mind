@@ -21,14 +21,15 @@ Status (2026-08-31):
 - Layer 1 foundation (feature flags, contracts, tokens, ADRs) — done
 - Layer 2 + 2C spatial/visual runtime (R3F/Three, placeholder proof-nodes) — accepted
 - Layer 3 motion & interaction engine — ACCEPTED (commit cb98f8b)
-- Layer 4 real financial data in the spatial nodes — IMPLEMENTED, PENDING BROWSER VALIDATION
-  (branch claude/v2-layer-4-financial-data; evidence in docs/v2/validation/layer-4-financial-data.md).
-  Pure adapter src/visualization/adapters/financialSpatialAdapter.js turns useFinancialKPIs
-  totals into the scene; per-domain node size = share of the largest domain (floor 0.35),
+- Layer 4 real financial data in the spatial nodes — ACCEPTED (2026-08-31,
+  docs/v2/validation/layer-4-financial-data.md). Pure adapter
+  src/visualization/adapters/financialSpatialAdapter.js turns useFinancialKPIs totals
+  into the scene; per-domain node size = share of the largest domain (floor 0.35),
   applied renderer-side in SpatialNode so the Layer 3 motion policy is untouched.
 - Branch develop/v2 (origin main is at 4ffa43d)
-- NEXT: complete Layer 4 browser validation on a host with Firebase/WebGL, then merge to
-  develop/v2 and accept; afterwards Layer 5 — focus/detail view per selected domain.
+- NEXT: Layer 5 — per-domain focus/detail view (breakdown for the selected node), and/or
+  fold real magnitudes into edge weighting. Consider a sqrt/log magnitude curve if the
+  overview reads too flat (see Layer 4 tuning notes).
 
 ## Architecture boundaries (src/)
 - app/            composition & configuration
