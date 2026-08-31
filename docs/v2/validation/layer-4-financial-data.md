@@ -72,22 +72,40 @@ Pure-adapter harness (`createFinancialSpatialScene` exercised directly under Nod
 The adapter and model mapping add ~2 kB gzip to the initial chunk (they sit with the
 already-eager `SpatialExperience` / `useFinancialKPIs`). The R3F/Three runtime stays lazy.
 
-## Browser validation — PENDING
+## Browser validation
 
-Not run in this environment: the Anthropic sandbox cannot reach Firebase/Auth and cannot
-initialise WebGL (per `CLAUDE.md`). To be completed on the Windows host before acceptance:
+Local dev server (`npm run dev`, `.env` with `VITE_V2_ENABLED=true` +
+`VITE_V2_SPATIAL_UI=true`), Chromium via the in-app browser pane.
 
-1. `.env` → `VITE_V2_ENABLED=true`, `VITE_V2_SPATIAL_UI=true`; `npm run dev`.
-2. Signed out, `#spatial` → proof/demo scene renders exactly as before (regression).
-3. Signed in, test user with data in all six domains → each label shows its real
-   formatted total; core shows net worth; node sizes track domain share; a near-zero
-   domain still renders and is selectable (floor); selecting a node shows its amount in
-   the inspector footer.
-4. Re-run the Layer 3 motion matrix (overview / hover / select / focus / switch / reset /
+### Signed-out `#spatial` (proof scene regression) — PASS (2026-08-31)
+
+| Check | Result |
+| --- | --- |
+| Route renders (lazy spatial chunk loads) | PASS — "Spatial Financial Workspace" + WebGL canvas |
+| Proof/demo scene unchanged | PASS — core + Income / Investments / Assets / Debt / Expenses / Savings, correct palette, all nodes uniform size (no `model` → proof nodes have no `magnitude` → renderer default 1) |
+| Edges core→domain | PASS |
+| Node select + focus motion | PASS — clicking Debt focuses it, others mute, camera moves, inspector shows "Debt is selected…" |
+| Overview / Reset camera | PASS — returns to "Financial overview" |
+| Inspector `selectedNode.detail` addition | PASS — renders nothing for proof radial nodes (no `detail`), no empty-`<p>` artifact |
+| Console errors | NONE |
+
+Confirms the Layer 4 magnitude code path and the `useMemo` scene switch do not
+regress the signed-out demo surface, and the Layer 3 interaction/motion path is intact.
+
+### Signed-in (real data) — PENDING
+
+Requires an authenticated user (cannot be done from this session). On the Windows host:
+
+1. Sign in as a test user with data in all six domains (a few transactions, an asset, a
+   debt, an investment, a savings plan, a bill).
+2. Open `#spatial` → each domain label shows its real formatted total; core shows net
+   worth; node sizes track domain share; a near-zero domain still renders and is
+   selectable (0.35 floor); selecting a node shows its amount in the inspector footer.
+3. Re-run the Layer 3 motion matrix (overview / hover / select / focus / switch / reset /
    interrupt-selection / interrupt-reset × full / reduced / minimal / off) — expect all
    PASS, since only per-node resting scale changed. Record the matrix here.
-5. New user, no data → six uniform nodes, no `NaN`/crash.
-6. Forced WebGL denial → existing `SpatialFallback` still shown.
+4. New user, no data → six uniform nodes, no `NaN`/crash.
+5. Forced WebGL denial → existing `SpatialFallback` still shown.
 
 ## Known limitations / tuning notes
 
