@@ -1,12 +1,17 @@
 import { useFrame } from "@react-three/fiber"
 import { useEffect, useRef } from "react"
+import { Mesh } from "three"
 import { useMotionEngine } from "../../../motion/core/motionContext"
 import { clearHoverIntent, hoverNodeIntent, selectNodeIntent } from "../../../motion/input/motionIntents"
 import { resolveNodeMotion } from "../../../motion/nodes/nodeMotion"
 import { dampValue } from "../../../motion/performance/animationBudget"
 import { nodePalette } from "./nodeMaterials"
 
-const neverRaycast = () => null
+// Toggle between two REAL functions. R3F ignores an `undefined` prop, so flipping
+// `raycast` back to `undefined` would not restore the default method once it had
+// been set to a no-op — the node would stay permanently unclickable.
+const HIT_RAYCAST = Mesh.prototype.raycast
+const NO_RAYCAST = () => null
 
 export default function SpatialNode({ geometry, index, node }) {
   const mesh = useRef(null)
@@ -23,7 +28,7 @@ export default function SpatialNode({ geometry, index, node }) {
   // the child itself) is selected.
   const isChild = node.kind === "child"
   const revealed = !isChild || selectedId === node.parentId || selected
-  const kindBase = node.kind === "core" ? 1 : isChild ? 0.4 : 0.58
+  const kindBase = node.kind === "core" ? 1 : isChild ? 0.52 : 0.58
   const baseScale = isChild && !revealed ? 0.0001 : kindBase * magnitude
 
   useEffect(() => () => {
@@ -47,7 +52,7 @@ export default function SpatialNode({ geometry, index, node }) {
       geometry={geometry}
       position={node.position}
       scale={baseScale}
-      raycast={isChild && !revealed ? neverRaycast : undefined}
+      raycast={isChild && !revealed ? NO_RAYCAST : HIT_RAYCAST}
       onClick={(event) => {
         event.stopPropagation()
         dispatchIntent(selectNodeIntent(node.id))

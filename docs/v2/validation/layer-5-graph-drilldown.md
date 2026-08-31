@@ -98,11 +98,24 @@ signed-in user hitting `#spatial` was redirected to `#dashboard`. Changed to
 | Layer 3 motion states | PASS — `selecting` → `focused` → `overview`; switch between domains works |
 | Console | No React / Three / spatial errors (only unrelated Firebase-auth COOP warnings) |
 
-Not exercised — the test account has exactly one line item per non-empty domain, so:
-- multi-child ring fan-out and the `+N more` node were not seen with real data
-  (covered by the adapter harness only);
-- clicking a single ~0.24-unit child to focus it could not be reliably hit-tested by
-  pixel. Re-check both with an account that has several items in a domain.
+Multi-child fan-out — PASS (2026-08-31): added three investments (Staatsolie Bond 9,500,
+Tech ETF 6,200, Bitcoin 1,400) so Investments held four holdings (SRD 29,600). Selecting
+Investments showed **four child nodes on a ring around the domain node**, each joined by
+a spoke edge, sized by share (gold largest at magnitude 1, Bitcoin at the floor);
+siblings and core dimmed; inspector read "4 items — select one to inspect"; Overview
+collapsed them.
+
+Child click-to-focus — PASS after a fix. First pass: no click on a child ever
+registered — every one deselected. Root cause: `SpatialNode` toggled the mesh `raycast`
+prop between a no-op function and `undefined`, and R3F ignores an `undefined` prop, so
+once a child had been collapsed its `raycast` stayed the no-op and it never became
+clickable again. Fixed by toggling between two real functions
+(`Mesh.prototype.raycast` ⇄ no-op). Also bumped the child size for comfortable
+hit-testing: base 0.4 → 0.52, geometry 0.6 → 0.72, `MIN_CHILD_MAGNITUDE` 0.4 → 0.55.
+After the fix: clicking the top child selects "gold", the inspector shows
+`gold — SRD 12,500.00`, the camera focuses it; Overview collapses back to overview.
+
+`+N more`: still needs a domain with > 8 items (adapter harness covers the logic).
 
 Still to record on the Windows host: full Layer 3 motion matrix
 (overview / hover / select / focus / switch / reset / interrupt × full / reduced /
@@ -112,8 +125,9 @@ minimal / off), flag-OFF parity, forced-WebGL-denial fallback.
 
 - Child nodes are always mounted (hidden at `scale ~0`); ~60 meshes total at the 8-item
   cap. GPU instancing is the future optimization if the cap is raised.
-- Child ring radius (1.2) and base scale (0.4) are first-pass; adjust if the browser
-  review shows overlap with siblings or the core.
+- Child ring radius 1.2, base scale 0.52, geometry radius 0.72, magnitude floor 0.55 —
+  tuned for hit-testing on 2026-08-31; revisit if a domain with many items shows overlap
+  with siblings or the core.
 - A selected domain contracts by the Layer 3 radial factor (~6%) while its children are
   positioned from the un-contracted domain position — a small (~0.19 unit) offset,
   invisible at the focus zoom. Not compensated.

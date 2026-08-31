@@ -18,7 +18,7 @@ export function resolveNodeMotion({ activeTransition, hovered, index, kind, poli
     return Object.freeze({ emissive: 0.15, opacity: 0, radialScale: 1, scale: 0.0001 })
   }
 
-  const baseScale = kind === "core" ? 1 : isChild ? 0.4 : 0.58
+  const baseScale = kind === "core" ? 1 : isChild ? 0.52 : 0.58
   const muted = Boolean(selectedId && !selected && kind !== "core" && !isChild)
   const entry = resolveEntryProgress({ activeTransition, index, policy, progress })
   const radialTarget = resolveRadialTarget(null, selectedId)
