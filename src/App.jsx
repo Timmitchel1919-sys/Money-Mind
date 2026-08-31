@@ -193,7 +193,10 @@ export default function App() {
     const rawRoute = window.location.hash.slice(1).split("/")[0]
     if (auth.user) {
       const intended = sessionStorage.getItem("moneyMindIntendedPage")
-      const nextPage = PROTECTED_PAGES.has(rawRoute)
+      // APP_PAGES (not just PROTECTED_PAGES) so the flag-gated development route
+      // (#spatial) stays reachable for a signed-in user; `intended` is a
+      // post-login redirect target, which is only ever a protected page.
+      const nextPage = APP_PAGES.has(rawRoute)
         ? rawRoute
         : PROTECTED_PAGES.has(intended)
           ? intended

@@ -76,23 +76,37 @@ Local dev server, Chromium via the in-app browser pane, `VITE_V2_GRAPH_ENGINE=tr
 | Overview / Reset | PASS |
 | Console errors | NONE |
 
-### Signed-in (real data) — PENDING
+### Signed-in (real data) — PARTIAL PASS (2026-08-31)
 
-Requires an authenticated user (cannot be done from this session). On the Windows host:
+Verified in the in-app browser with an authenticated user (data: 1 asset SRD 10,000,
+1 investment SRD 12,500, 1 income category SRD 900, 1 expense category SRD 80, no debts,
+no savings plans; net worth SRD 5,000).
 
-1. Flag ON, sign in with data across all six domains.
-2. Select a domain → its children fan out on a ring, sized by share; a domain with >8
-   items shows a `+N more` node; the inspector shows "`N` items — select one to inspect".
-3. Select a child → camera focuses it, inspector shows its label + amount, sibling
-   children and their edges recede.
-4. Overview / Reset → children collapse back into the parent.
-5. Re-run the Layer 3 motion matrix (overview / hover / select / focus / switch / reset /
-   interrupt-selection / interrupt-reset × full / reduced / minimal / off) — record it.
-   Only the `kind: "child"` branch of `resolveNodeMotion` is new; core/radial output is
-   unchanged, so no Layer 3 regression is expected.
-6. Empty / new-user domain → selecting it behaves like Layer 4 (no children, no crash).
-7. Flag OFF → identical to Layer 4 (no child nodes anywhere).
-8. Forced WebGL denial → existing `SpatialFallback`.
+Route-guard fix required first: App.jsx's signed-in guard gated on
+`PROTECTED_PAGES.has(rawRoute)`, and `spatial` is a `DEVELOPMENT_PAGES` entry — so a
+signed-in user hitting `#spatial` was redirected to `#dashboard`. Changed to
+`APP_PAGES.has(rawRoute)` (widens only by the flag-gated `spatial` route).
+
+| Check | Result |
+| --- | --- |
+| Layer 4 — real amounts in labels + inspector | PASS (Income 900, Investments 12,500, Assets 10,000, Expenses 80, Debt/Savings 0, core = net worth 5,000) |
+| Layer 4 — magnitude sizing | PASS — Investments (largest) > Assets > core; the four ~0 / small domains sit at the floor |
+| Select a domain with items → "N items" hint | PASS (Income/Expenses/Assets/Investments show "1 item"); pluralization fixed (`item`/`items`) |
+| Child node revealed on parent select | PASS — child sphere visible above the selected Investments node, connected |
+| Empty domain (Debt, Savings — SRD 0) | PASS — no hint, no child nodes, no crash |
+| Overview / Reset → collapse | PASS — returns to `overview`, hint clears |
+| Layer 3 motion states | PASS — `selecting` → `focused` → `overview`; switch between domains works |
+| Console | No React / Three / spatial errors (only unrelated Firebase-auth COOP warnings) |
+
+Not exercised — the test account has exactly one line item per non-empty domain, so:
+- multi-child ring fan-out and the `+N more` node were not seen with real data
+  (covered by the adapter harness only);
+- clicking a single ~0.24-unit child to focus it could not be reliably hit-tested by
+  pixel. Re-check both with an account that has several items in a domain.
+
+Still to record on the Windows host: full Layer 3 motion matrix
+(overview / hover / select / focus / switch / reset / interrupt × full / reduced /
+minimal / off), flag-OFF parity, forced-WebGL-denial fallback.
 
 ## Known limitations / tuning notes
 
@@ -109,5 +123,6 @@ Requires an authenticated user (cannot be done from this session). On the Window
 
 ## Decision
 
-**LAYER 5 IMPLEMENTED — static + signed-out validation PASS; signed-in browser
-validation PENDING.**
+**LAYER 5 IMPLEMENTED — static, signed-out, and core signed-in validation PASS.**
+Remaining before acceptance: re-check the multi-child fan-out / `+N more` / child
+selection with a richer account, and record the full Layer 3 motion matrix.
