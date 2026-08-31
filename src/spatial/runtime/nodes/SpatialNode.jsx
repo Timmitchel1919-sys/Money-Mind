@@ -13,7 +13,12 @@ export default function SpatialNode({ geometry, index, node }) {
   const hovered = hoveredId === node.id
   const selected = selectedId === node.id
   const palette = nodePalette(node)
-  const baseScale = node.kind === "core" ? 1 : 0.58
+  // Layer 4: the adapter emits a normalized per-domain magnitude (share of the
+  // largest domain). Applied here as a renderer-side multiplier so the Layer 3
+  // motion policy (resolveNodeMotion) stays untouched — transitions remain
+  // proportional, only each node's resting size differs.
+  const magnitude = Number.isFinite(node.magnitude) ? node.magnitude : 1
+  const baseScale = (node.kind === "core" ? 1 : 0.58) * magnitude
 
   useEffect(() => () => {
     document.body.style.cursor = ""
@@ -22,7 +27,7 @@ export default function SpatialNode({ geometry, index, node }) {
   useFrame((_, delta) => {
     if (!mesh.current || !material.current) return
     const target = resolveNodeMotion({ activeTransition, hovered, index, kind: node.kind, policy, progress: getTransitionProgress(), selected, selectedId })
-    mesh.current.scale.setScalar(dampValue(mesh.current.scale.x, target.scale, policy.nodeDamping, delta))
+    mesh.current.scale.setScalar(dampValue(mesh.current.scale.x, target.scale * magnitude, policy.nodeDamping, delta))
     mesh.current.position.x = dampValue(mesh.current.position.x, node.position[0] * target.radialScale, policy.radialDamping, delta)
     mesh.current.position.y = dampValue(mesh.current.position.y, node.position[1] * target.radialScale, policy.radialDamping, delta)
     mesh.current.position.z = dampValue(mesh.current.position.z, node.position[2] * target.radialScale, policy.radialDamping, delta)
