@@ -11,6 +11,7 @@
     }
   ],
   "hosting": {
+    "site": "money-mind-90176",
     "public": "dist",
     "ignore": [
       "firebase.json",

@@ -8,6 +8,8 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
+    "deploy": "npm run build && npx -y firebase-tools@latest deploy --only hosting",
+    "deploy:full": "npm run build && npx -y firebase-tools@latest deploy",
     "remotion:studio": "remotion studio remotion/index.ts",
     "render:intro": "remotion render remotion/index.ts IntroComposition out/money-mind-financial-energy-intro-1080p.mp4 --codec=h264",
     "render:cinematic-reveal": "remotion render remotion/index.ts CinematicLogoReveal out/money-mind-cinematic-logo-reveal-1440p.mp4 --codec=h264",
