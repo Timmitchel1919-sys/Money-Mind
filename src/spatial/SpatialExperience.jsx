@@ -41,7 +41,7 @@ class SpatialErrorBoundary extends Component {
   }
 }
 
-export default function SpatialExperience({ model = null }) {
+export default function SpatialExperience({ model = null, sim = null }) {
   const [capabilities] = useState(() => detectRenderingCapabilities())
   // Real per-user finances when a model is supplied (signed in); the mock
   // proof scene otherwise (signed-out demo surface).
@@ -61,6 +61,7 @@ export default function SpatialExperience({ model = null }) {
           motionPreference={resolveMotionPreference(capabilities)}
           renderingQuality="auto"
           scene={scene}
+          sim={sim}
         />
       </Suspense>
     </SpatialErrorBoundary>

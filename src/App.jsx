@@ -51,6 +51,7 @@ import useSettings from "./hooks/useSettings"
 import useAppLock from "./hooks/useAppLock"
 import useFinancialKPIs from "./hooks/useFinancialKPIs"
 import useFinancialBreakdown from "./hooks/useFinancialBreakdown"
+import { projectFinancials } from "./financial/projection/projectFinancials"
 import { convertCurrency, formatCurrencyAmount } from "./utils/currencyConversion"
 import { SEARCHABLE_NAVIGATION } from "./constants/navigation"
 import { featureFlags } from "./app/configuration/v2"
@@ -121,30 +122,65 @@ export default function App() {
     savingsPlans: saving.savingsPlans,
   })
 
+  // Layer 6 (V2 simulation): "what-if" levers. Off by default; only wired into
+  // the spatial view when featureFlags.v2Simulation is on.
+  const [sim, setSim] = useState({
+    active: false,
+    monthsForward: 0,
+    extraDebtPayment: 0,
+    extraMonthlySaving: 0,
+    annualReturnPct: 6,
+    oneOff: 0,
+  })
+  const simControls = useMemo(() => ({
+    ...sim,
+    setLever: (key, value) => setSim((s) => ({ ...s, [key]: value })),
+    reset: () => setSim((s) => ({ active: s.active, monthsForward: 0, extraDebtPayment: 0, extraMonthlySaving: 0, annualReturnPct: 6, oneOff: 0 })),
+    toggle: () => setSim((s) => ({ ...s, active: !s.active })),
+  }), [sim])
+
   const spatialFinancialModel = useMemo(() => {
     const modelCurrency = settingsHook.settings.currency || "SRD"
     const money = (value) => formatCurrencyAmount(value, modelCurrency, settingsHook.settings.numberFormat)
+
+    const simActive = featureFlags.v2Simulation && sim.active
+    const snapshot = {
+      income: financialKPIs.totalIncome,
+      expenses: financialKPIs.totalExpenses,
+      assets: financialKPIs.totalAssets,
+      liabilities: financialKPIs.totalLiabilities,
+      debt: financialKPIs.totalDebt,
+      monthlyDebtPayment: financialKPIs.monthlyDebtPayments,
+      savings: financialKPIs.totalSavingsCurrent,
+      monthlySaving: saving.savingsPlans.reduce((total, plan) => total + Number(plan.monthly || 0), 0),
+      investments: financialKPIs.investmentValue,
+    }
+    const projected = simActive ? projectFinancials(snapshot, sim) : snapshot
+    const netWorth = simActive ? projected.netWorth : financialKPIs.netWorth
+
     const domain = (id, amount) => {
       const base = { amount, detail: money(amount) }
       if (!featureFlags.v2GraphEngine) return base
       return { ...base, children: financialBreakdown[id].map((child) => ({ ...child, detail: money(child.amount) })) }
     }
     return {
+      projected: simActive,
+      monthsForward: simActive ? Math.max(0, Math.round(Number(sim.monthsForward) || 0)) : 0,
       core: {
         label: "Money Mind",
-        detail: money(financialKPIs.netWorth),
+        detail: money(netWorth),
         healthScore: financialKPIs.healthScore,
       },
       domains: {
-        income: domain("income", financialKPIs.totalIncome),
-        investments: domain("investments", financialKPIs.investmentValue),
-        assets: domain("assets", financialKPIs.totalAssets),
-        debt: domain("debt", financialKPIs.totalDebt),
-        expenses: domain("expenses", financialKPIs.totalExpenses),
-        savings: domain("savings", financialKPIs.totalSavingsCurrent),
+        income: domain("income", projected.income),
+        investments: domain("investments", projected.investments),
+        assets: domain("assets", projected.assets),
+        debt: domain("debt", projected.debt),
+        expenses: domain("expenses", projected.expenses),
+        savings: domain("savings", projected.savings),
       },
     }
-  }, [financialKPIs, financialBreakdown, settingsHook.settings.currency, settingsHook.settings.numberFormat])
+  }, [financialKPIs, financialBreakdown, saving.savingsPlans, sim, settingsHook.settings.currency, settingsHook.settings.numberFormat])
 
   useEffect(() => {
     const preference = settingsHook.settings.themeMode || "system"
@@ -925,7 +961,7 @@ export default function App() {
       )}
 
       {activePage === "spatial" && featureFlags.v2SpatialUI && (
-        <SpatialExperience model={spatialFinancialModel} />
+        <SpatialExperience model={spatialFinancialModel} sim={featureFlags.v2Simulation ? simControls : undefined} />
       )}
 
       {![
