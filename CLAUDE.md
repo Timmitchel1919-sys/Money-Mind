@@ -26,10 +26,16 @@ Status (2026-08-31):
   src/visualization/adapters/financialSpatialAdapter.js turns useFinancialKPIs totals
   into the scene; per-domain node size = share of the largest domain (floor 0.35),
   applied renderer-side in SpatialNode so the Layer 3 motion policy is untouched.
+- Layer 5 graph drill-down (v2GraphEngine flag) — IMPLEMENTED, signed-in browser
+  validation PENDING (branch claude/v2-layer-5-graph-drilldown;
+  docs/v2/validation/layer-5-graph-drilldown.md). Selecting a domain fans it out into
+  one level of 3D child nodes (new src/hooks/useFinancialBreakdown.js selector →
+  adapter `children` → kind:"child" nodes on a ring), collapsing on Overview. Only the
+  child branch of resolveNodeMotion is new; core/radial motion output unchanged.
 - Branch develop/v2 (origin main is at 4ffa43d)
-- NEXT: Layer 5 — per-domain focus/detail view (breakdown for the selected node), and/or
-  fold real magnitudes into edge weighting. Consider a sqrt/log magnitude curve if the
-  overview reads too flat (see Layer 4 tuning notes).
+- NEXT: complete Layer 5 signed-in browser validation + Layer 3 motion matrix re-run,
+  then accept and merge (claude/v2-layer-4… then claude/v2-layer-5… fast-forward onto
+  develop/v2). Afterwards: v2Simulation or v2AI.
 
 ## Architecture boundaries (src/)
 - app/            composition & configuration

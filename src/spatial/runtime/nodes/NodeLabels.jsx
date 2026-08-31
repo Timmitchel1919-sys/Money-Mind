@@ -15,7 +15,10 @@ export default function NodeLabels({ nodes }) {
 
   return (
     <div className="spatial-label-layer" aria-label="Financial domains">
-      {nodes.map((node) => {
+      {/* Layer 5: child (line-item) nodes are inspected via the footer, not the
+          DOM label layer — its positions are camera-independent and would drift
+          under the focus zoom. */}
+      {nodes.filter((node) => node.kind !== "child").map((node) => {
         const active = selectedId === node.id
         const hovered = hoveredId === node.id
         return (

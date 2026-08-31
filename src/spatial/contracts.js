@@ -10,7 +10,10 @@
  * @property {SpatialDomain} domain
  * @property {string=} entityId Reference to normalized application data, never persistence data.
  * @property {[number, number, number]=} position Renderer-neutral world position.
- * @property {"core"|"radial"=} kind
+ * @property {"core"|"radial"|"child"=} kind
+ * @property {string=} parentId Owning node id for a "child" node (graph drill-down).
+ * @property {number=} magnitude Normalized size in [floor, 1] relative to its peer group.
+ * @property {number=} childCount Number of child nodes a "radial" node owns.
  * @property {string=} detail
  * @property {string=} tone
  */

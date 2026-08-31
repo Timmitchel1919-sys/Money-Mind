@@ -50,6 +50,7 @@ import useProfile from "./hooks/useProfile"
 import useSettings from "./hooks/useSettings"
 import useAppLock from "./hooks/useAppLock"
 import useFinancialKPIs from "./hooks/useFinancialKPIs"
+import useFinancialBreakdown from "./hooks/useFinancialBreakdown"
 import { convertCurrency, formatCurrencyAmount } from "./utils/currencyConversion"
 import { SEARCHABLE_NAVIGATION } from "./constants/navigation"
 import { featureFlags } from "./app/configuration/v2"
@@ -109,9 +110,25 @@ export default function App() {
     monthlyIncome: form.income,
   })
 
+  // Layer 5 (V2 graph drill-down): per-domain line items, only computed into the
+  // scene model when the graph-engine flag is on. Flag off -> no `children` key
+  // -> the scene is identical to Layer 4.
+  const financialBreakdown = useFinancialBreakdown({
+    transactions: transaction.transactions,
+    assets: asset.assets,
+    debts: debt.debts,
+    investments: investment.investments,
+    savingsPlans: saving.savingsPlans,
+  })
+
   const spatialFinancialModel = useMemo(() => {
     const modelCurrency = settingsHook.settings.currency || "SRD"
     const money = (value) => formatCurrencyAmount(value, modelCurrency, settingsHook.settings.numberFormat)
+    const domain = (id, amount) => {
+      const base = { amount, detail: money(amount) }
+      if (!featureFlags.v2GraphEngine) return base
+      return { ...base, children: financialBreakdown[id].map((child) => ({ ...child, detail: money(child.amount) })) }
+    }
     return {
       core: {
         label: "Money Mind",
@@ -119,15 +136,15 @@ export default function App() {
         healthScore: financialKPIs.healthScore,
       },
       domains: {
-        income: { amount: financialKPIs.totalIncome, detail: money(financialKPIs.totalIncome) },
-        investments: { amount: financialKPIs.investmentValue, detail: money(financialKPIs.investmentValue) },
-        assets: { amount: financialKPIs.totalAssets, detail: money(financialKPIs.totalAssets) },
-        debt: { amount: financialKPIs.totalDebt, detail: money(financialKPIs.totalDebt) },
-        expenses: { amount: financialKPIs.totalExpenses, detail: money(financialKPIs.totalExpenses) },
-        savings: { amount: financialKPIs.totalSavingsCurrent, detail: money(financialKPIs.totalSavingsCurrent) },
+        income: domain("income", financialKPIs.totalIncome),
+        investments: domain("investments", financialKPIs.investmentValue),
+        assets: domain("assets", financialKPIs.totalAssets),
+        debt: domain("debt", financialKPIs.totalDebt),
+        expenses: domain("expenses", financialKPIs.totalExpenses),
+        savings: domain("savings", financialKPIs.totalSavingsCurrent),
       },
     }
-  }, [financialKPIs, settingsHook.settings.currency, settingsHook.settings.numberFormat])
+  }, [financialKPIs, financialBreakdown, settingsHook.settings.currency, settingsHook.settings.numberFormat])
 
   useEffect(() => {
     const preference = settingsHook.settings.themeMode || "system"

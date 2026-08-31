@@ -6,6 +6,8 @@ import { resolveNodeMotion } from "../../../motion/nodes/nodeMotion"
 import { dampValue } from "../../../motion/performance/animationBudget"
 import { nodePalette } from "./nodeMaterials"
 
+const neverRaycast = () => null
+
 export default function SpatialNode({ geometry, index, node }) {
   const mesh = useRef(null)
   const material = useRef(null)
@@ -13,12 +15,16 @@ export default function SpatialNode({ geometry, index, node }) {
   const hovered = hoveredId === node.id
   const selected = selectedId === node.id
   const palette = nodePalette(node)
-  // Layer 4: the adapter emits a normalized per-domain magnitude (share of the
-  // largest domain). Applied here as a renderer-side multiplier so the Layer 3
-  // motion policy (resolveNodeMotion) stays untouched — transitions remain
-  // proportional, only each node's resting size differs.
+  // Layer 4: the adapter emits a normalized magnitude (share of the peer group).
+  // Applied here as a renderer-side multiplier so the Layer 3 motion policy stays
+  // proportional — only each node's resting size differs.
   const magnitude = Number.isFinite(node.magnitude) ? node.magnitude : 1
-  const baseScale = (node.kind === "core" ? 1 : 0.58) * magnitude
+  // Layer 5: a child node stays collapsed and inert until its parent domain (or
+  // the child itself) is selected.
+  const isChild = node.kind === "child"
+  const revealed = !isChild || selectedId === node.parentId || selected
+  const kindBase = node.kind === "core" ? 1 : isChild ? 0.4 : 0.58
+  const baseScale = isChild && !revealed ? 0.0001 : kindBase * magnitude
 
   useEffect(() => () => {
     document.body.style.cursor = ""
@@ -26,7 +32,7 @@ export default function SpatialNode({ geometry, index, node }) {
 
   useFrame((_, delta) => {
     if (!mesh.current || !material.current) return
-    const target = resolveNodeMotion({ activeTransition, hovered, index, kind: node.kind, policy, progress: getTransitionProgress(), selected, selectedId })
+    const target = resolveNodeMotion({ activeTransition, hovered, index, kind: node.kind, parentId: node.parentId, policy, progress: getTransitionProgress(), revealed, selected, selectedId })
     mesh.current.scale.setScalar(dampValue(mesh.current.scale.x, target.scale * magnitude, policy.nodeDamping, delta))
     mesh.current.position.x = dampValue(mesh.current.position.x, node.position[0] * target.radialScale, policy.radialDamping, delta)
     mesh.current.position.y = dampValue(mesh.current.position.y, node.position[1] * target.radialScale, policy.radialDamping, delta)
@@ -41,6 +47,7 @@ export default function SpatialNode({ geometry, index, node }) {
       geometry={geometry}
       position={node.position}
       scale={baseScale}
+      raycast={isChild && !revealed ? neverRaycast : undefined}
       onClick={(event) => {
         event.stopPropagation()
         dispatchIntent(selectNodeIntent(node.id))

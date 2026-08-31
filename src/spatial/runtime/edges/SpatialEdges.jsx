@@ -5,7 +5,7 @@ import { useMotionEngine } from "../../../motion/core/motionContext"
 import { resolveEdgeMotion } from "../../../motion/edges/edgeMotion"
 import { dampValue } from "../../../motion/performance/animationBudget"
 
-function SpatialEdge({ active, connectedToSelection, positions }) {
+function SpatialEdge({ active, connectedToSelection, positions, revealed = true }) {
   const positionBuffer = useMemo(() => new Float32Array(positions), [positions])
   const material = useRef(null)
   const targetColor = useMemo(() => new Color(), [])
@@ -14,7 +14,7 @@ function SpatialEdge({ active, connectedToSelection, positions }) {
   useFrame((_, delta) => {
     if (!material.current) return
     const target = resolveEdgeMotion({ active, activeTransition, connectedToSelection, policy, progress: getTransitionProgress(), selectedId })
-    material.current.opacity = dampValue(material.current.opacity, target.opacity, policy.edgeDamping, delta)
+    material.current.opacity = dampValue(material.current.opacity, revealed ? target.opacity : 0, policy.edgeDamping, delta)
     targetColor.set(target.color)
     material.current.color.lerp(targetColor, policy.edgeDamping === Infinity ? 1 : 1 - Math.exp(-policy.edgeDamping * delta))
   })
@@ -39,12 +39,19 @@ export default function SpatialEdges({ edges, nodes }) {
     })
   }, [edges, nodes])
 
-  return resolvedEdges.map((edge) => (
-    <SpatialEdge
-      active={[edge.sourceId, edge.targetId].includes(selectedId || hoveredId)}
-      connectedToSelection={Boolean(selectedId && [edge.sourceId, edge.targetId].includes(selectedId))}
-      key={edge.id}
-      positions={edge.positions}
-    />
-  ))
+  return resolvedEdges.map((edge) => {
+    // Layer 5: a domain->item edge is hidden unless that domain, or the item
+    // itself, is selected.
+    const childEdge = edge.relationship === "domain-item"
+    const revealed = !childEdge || selectedId === edge.sourceId || selectedId === edge.targetId
+    return (
+      <SpatialEdge
+        active={[edge.sourceId, edge.targetId].includes(selectedId || hoveredId)}
+        connectedToSelection={Boolean(selectedId && [edge.sourceId, edge.targetId].includes(selectedId))}
+        key={edge.id}
+        positions={edge.positions}
+        revealed={revealed}
+      />
+    )
+  })
 }
