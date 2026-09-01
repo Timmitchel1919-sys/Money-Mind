@@ -1,15 +1,29 @@
-import { useState } from "react"
-import { Check } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Bell, Bot, Check, Monitor, Moon, Palette, ShieldCheck, SlidersHorizontal, Sun, User } from "lucide-react"
 import Panel from "../components/Panel"
 import Input from "../components/Input"
 import Card from "../components/Card"
-import LiveDateTime from "../components/LiveDateTime"
 import RateStatus from "../components/RateStatus"
 import AppLockSettings from "../components/AppLockSettings"
 import { BACKGROUND_THEMES } from "../constants/backgroundThemes"
 import { OPENAI_VOICES } from "../constants/openaiVoices"
 import useFinancialNotifications from "../hooks/useFinancialNotifications"
 import useSpeechSynthesis from "../hooks/useSpeechSynthesis"
+
+const THEME_MODES = [
+  { id: "system", label: "System", icon: Monitor },
+  { id: "dark", label: "Dark", icon: Moon },
+  { id: "light", label: "Light", icon: Sun },
+]
+
+const SETTINGS_SECTIONS = [
+  { id: "general", label: "General", icon: SlidersHorizontal },
+  { id: "appearance", label: "Appearance", icon: Palette },
+  { id: "profile", label: "Profile & Finance", icon: User },
+  { id: "notifications", label: "Notifications", icon: Bell },
+  { id: "ai", label: "Money AI", icon: Bot },
+  { id: "security", label: "Security", icon: ShieldCheck },
+]
 
 const FINANCIAL_PERSONAS = [
   "Beginner",
@@ -68,6 +82,19 @@ export default function Settings({
 }) {
   const [savedMessage, setSavedMessage] = useState("")
   const [profileSavedMessage, setProfileSavedMessage] = useState("")
+  const [activeSection, setActiveSection] = useState(() => window.location.hash.split("/")[1] || "general")
+
+  useEffect(() => {
+    function syncSection() { setActiveSection(window.location.hash.split("/")[1] || "general") }
+    window.addEventListener("hashchange", syncSection)
+    window.addEventListener("popstate", syncSection)
+    return () => { window.removeEventListener("hashchange", syncSection); window.removeEventListener("popstate", syncSection) }
+  }, [])
+
+  function selectSection(section) {
+    window.history.pushState(null, "", `#settings/${section}`)
+    setActiveSection(section)
+  }
 
   const notificationPrefs = settings.notificationPreferences
   const voicePrefs = settings.moneyAIVoice
@@ -118,8 +145,16 @@ export default function Settings({
   }
 
   return (
-    <div className="space-y-6">
-      <Panel title="Settings">
+    <div className="grid items-start gap-6 lg:grid-cols-[230px_minmax(0,860px)]">
+      <aside className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-2 lg:sticky lg:top-0" aria-label="Settings categories">
+        <p className="px-3 pb-2 pt-3 text-xs font-semibold uppercase tracking-[.16em] text-[var(--text-muted)]">Settings</p>
+        <nav className="flex gap-1 overflow-x-auto lg:block lg:space-y-1">{SETTINGS_SECTIONS.map((section) => { const Icon = section.icon; const selected = activeSection === section.id; return <button key={section.id} type="button" onClick={() => selectSection(section.id)} aria-current={selected ? "page" : undefined} className={`flex min-h-11 shrink-0 items-center gap-3 rounded-xl px-3 text-sm font-medium transition lg:w-full ${selected ? "bg-[var(--brand-primary)]/15 text-[var(--brand-primary)]" : "text-[var(--text-secondary)] hover:bg-white/5"}`}><Icon size={18} />{section.label}</button> })}</nav>
+      </aside>
+      <div className="min-w-0 space-y-6">
+      {activeSection === "general" && <>
+      <Panel
+        title="General Preferences"
+      >
         <p className="mt-2 text-[#A5ADB8]">
           Preferences are saved on this device. Account-wide sync is coming soon.
         </p>
@@ -148,30 +183,6 @@ export default function Settings({
           />
 
           <SettingSelect
-            label="Time Format"
-            value={settings.timeFormat}
-            onChange={(value) => updateSetting("timeFormat", value)}
-            options={[
-              { value: "24h", label: "24-hour" },
-              { value: "12h", label: "12-hour" },
-            ]}
-          />
-
-          <SettingSelect
-            label="Date Format"
-            value={settings.dateFormat}
-            onChange={(value) => updateSetting("dateFormat", value)}
-            options={[
-              { value: "weekday-long", label: "Mon, July 22, 2026" },
-              { value: "long", label: "July 22, 2026" },
-              { value: "day-long", label: "22 July 2026" },
-              { value: "DD-MM-YYYY", label: "22-07-2026" },
-              { value: "MM-DD-YYYY", label: "07-22-2026" },
-              { value: "YYYY-MM-DD", label: "2026-07-22" },
-            ]}
-          />
-
-          <SettingSelect
             label="Number Format"
             value={settings.numberFormat}
             onChange={(value) => updateSetting("numberFormat", value)}
@@ -192,16 +203,6 @@ export default function Settings({
           />
         </div>
 
-        <div className="mt-6">
-          <p className="mb-2 text-sm text-[#A5ADB8]">Live preview</p>
-          <LiveDateTime
-            timeFormat={settings.timeFormat}
-            dateFormat={settings.dateFormat}
-            language={settings.language}
-            className="inline-block"
-          />
-        </div>
-
         {settings.language !== "en" && (
           <p className="mt-6 rounded-2xl border border-[#BFC4CC]/20 bg-black/30 p-4 text-sm text-[#A5ADB8]">
             Your language preference is saved. Full interface translation is still in
@@ -209,10 +210,36 @@ export default function Settings({
             already understands and replies in Dutch and English.
           </p>
         )}
-      </Panel>
+      </Panel></>}
 
+      {activeSection === "appearance" && <>
       <Panel title="Theme">
-        <p className="mt-2 text-[#A5ADB8]">
+        <p className="mt-2 text-[#A5ADB8]">Choose the overall look of Money Mind.</p>
+
+        <div className="mt-4 inline-flex rounded-2xl border border-[#BFC4CC]/25 bg-black/30 p-1">
+          {THEME_MODES.map((mode) => {
+            const isSelected = (settings.themeMode || "system") === mode.id
+            const Icon = mode.icon
+            return (
+              <button
+                key={mode.id}
+                type="button"
+                onClick={() => updateSetting("themeMode", mode.id)}
+                aria-pressed={isSelected}
+                className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                  isSelected
+                    ? "bg-[#3aaf90] text-black"
+                    : "text-[#D5D8DD] hover:bg-white/5"
+                }`}
+              >
+                <Icon size={16} strokeWidth={2} aria-hidden="true" />
+                {mode.label}
+              </button>
+            )
+          })}
+        </div>
+
+        <p className="mt-6 text-[#A5ADB8]">
           Choose the ambient background (video or photo). It's used both here in the app and behind the
           login screen.
         </p>
@@ -264,8 +291,9 @@ export default function Settings({
         <p className="mt-4 text-xs text-[#707680]">
           Want more options? Send over additional background videos or photos and they'll be added here.
         </p>
-      </Panel>
+      </Panel></>}
 
+      {activeSection === "security" && <>
       <Panel title="App Lock">
         <p className="mt-2 text-[#A5ADB8]">
           Require biometrics, a PIN, a password, or a pattern to open Money Mind, on top of your
@@ -273,10 +301,11 @@ export default function Settings({
         </p>
 
         <AppLockSettings appLock={appLock} displayName={profile.displayName} />
-      </Panel>
+      </Panel></>}
 
+      {activeSection === "profile" && <>
       <Panel title="Profile">
-        <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Card
             title="Account Email"
             value={
@@ -404,8 +433,9 @@ export default function Settings({
             onChange={(value) => updateSetting("retirementAge", Number(value))}
           />
         </div>
-      </Panel>
+      </Panel></>}
 
+      {activeSection === "ai" && <>
       <Panel title="Money AI Voice">
         <p className="mt-2 text-[#A5ADB8]">
           Configure how Money AI listens and speaks in Push to Talk and Continuous Conversation modes.
@@ -639,8 +669,9 @@ export default function Settings({
           Voice recognition uses your browser's speech services. Availability and processing behavior depend on
           your browser and operating system. Money Mind does not intentionally save raw microphone audio.
         </p>
-      </Panel>
+      </Panel></>}
 
+      {activeSection === "notifications" && <>
       <Panel title="Notification Preferences">
         <p className="mt-2 text-[#A5ADB8]">
           Choose which alerts Money Mind should surface. Disabled categories are hidden from the
@@ -695,7 +726,7 @@ export default function Settings({
             })
           )}
         </div>
-      </Panel>
+      </Panel></>}
 
       <div className="flex flex-wrap items-center gap-4">
         <button onClick={handleSave} className="metallic-button rounded-xl px-6 py-3 font-semibold text-black">
@@ -710,20 +741,20 @@ export default function Settings({
         </button>
 
         {savedMessage && <p className="text-sm text-[#34D399]">{savedMessage}</p>}
-      </div>
+      </div></div>
     </div>
   )
 }
 
 function ToggleField({ label, checked, onChange }) {
   return (
-    <label className="flex items-center justify-between gap-3 rounded-2xl border border-[#BFC4CC]/20 bg-black/30 p-4">
+    <label className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-black/10 p-4">
       <span className="text-sm text-[#D5D8DD]">{label}</span>
-      <input
+      <span className={`relative h-6 w-11 shrink-0 rounded-full transition ${checked ? "bg-[var(--brand-primary)]" : "bg-white/15"}`}><span className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition ${checked ? "left-6" : "left-1"}`} /></span><input
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="h-5 w-5 accent-[#3aaf90]"
+        className="sr-only"
       />
     </label>
   )

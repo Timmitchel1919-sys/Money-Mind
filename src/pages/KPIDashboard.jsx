@@ -2,6 +2,7 @@ import { useState } from "react"
 import Panel from "../components/Panel"
 import Card from "../components/Card"
 import Input from "../components/Input"
+import PageInfoButton from "../components/PageInfoButton"
 import KPICard from "../components/KPICard"
 import KPIProgressBar from "../components/KPIProgressBar"
 import KPIComparisonChart from "../components/KPIComparisonChart"
@@ -247,7 +248,14 @@ export default function KPIDashboard({
 
   return (
     <div className="space-y-6">
-      <Panel title="Financial KPIs">
+      <Panel
+        title={
+          <span className="flex items-center gap-3">
+            Financial KPIs
+            <PageInfoButton pageKey="kpis" />
+          </span>
+        }
+      >
         <p className="mt-2 text-[#A5ADB8]">
           A consolidated view of your financial performance, health, and risk — computed live from
           your Money Mind data.

@@ -30,7 +30,7 @@ export default function PatternLockPad({ pattern, onChange, minLength = 4 }) {
                 y1={from.y}
                 x2={to.x}
                 y2={to.y}
-                stroke="#3aaf90"
+                stroke="var(--brand-primary)"
                 strokeWidth="2"
                 strokeLinecap="round"
               />

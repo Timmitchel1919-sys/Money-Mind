@@ -1,9 +1,10 @@
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import "./index.css"
 
 import DashboardLayout from "./layouts/DashboardLayout"
 import Panel from "./components/Panel"
 import AppBackground from "./components/AppBackground"
+import { DARK_BACKGROUND_THEME } from "./constants/backgroundThemes"
 
 import Dashboard from "./pages/Dashboard"
 import Budget from "./pages/Budget"
@@ -30,8 +31,9 @@ import LoanPayoffCalculator from "./pages/LoanPayoffCalculator"
 import Settings from "./pages/Settings"
 import ExportCenter from "./pages/ExportCenter"
 import KPIDashboard from "./pages/KPIDashboard"
-import AuthIntro from "./components/AuthIntro"
+import PublicExperience from "./components/PublicExperience"
 import AppLockScreen from "./components/AppLockScreen"
+import SpatialExperience from "./spatial/SpatialExperience"
 
 import useAuth from "./hooks/useAuth"
 import useBudget from "./hooks/useBudget"
@@ -48,11 +50,34 @@ import useFormState from "./hooks/useFormState"
 import useProfile from "./hooks/useProfile"
 import useSettings from "./hooks/useSettings"
 import useAppLock from "./hooks/useAppLock"
-import { convertCurrency } from "./utils/currencyConversion"
+import useFinancialKPIs from "./hooks/useFinancialKPIs"
+import useFinancialBreakdown from "./hooks/useFinancialBreakdown"
+import { projectFinancials } from "./financial/projection/projectFinancials"
+import { convertCurrency, formatCurrencyAmount } from "./utils/currencyConversion"
+import { SEARCHABLE_NAVIGATION } from "./constants/navigation"
+import { featureFlags } from "./app/configuration/v2"
+
+const PROTECTED_PAGES = new Set([
+  ...SEARCHABLE_NAVIGATION.map((item) => item.value),
+  "settings",
+])
+const DEVELOPMENT_PAGES = new Set(featureFlags.v2SpatialUI ? ["spatial"] : [])
+const APP_PAGES = new Set([...PROTECTED_PAGES, ...DEVELOPMENT_PAGES])
+
+function pageFromHash() {
+  const page = window.location.hash.slice(1).split("/")[0]
+  return APP_PAGES.has(page) ? page : "dashboard"
+}
 
 export default function App() {
-  const [activePage, setActivePage] = useState("dashboard")
+  const [activePage, setActivePageState] = useState(pageFromHash)
   let content
+
+  function setActivePage(page) {
+    if (!APP_PAGES.has(page)) return
+    window.history.pushState(null, "", `#${page}`)
+    setActivePageState(page)
+  }
 
   const budget = useBudget()
   const transaction = useTransactions()
@@ -67,6 +92,112 @@ export default function App() {
   const form = useFormState()
   const settingsHook = useSettings()
   const appLock = useAppLock()
+  const [resolvedTheme, setResolvedTheme] = useState(() => document.documentElement.dataset.theme || "light")
+
+  // Layer 4 (V2 spatial): reuse the existing pure KPI selector as the
+  // normalized financial model, then map it to the renderer-neutral scene
+  // model consumed by <SpatialExperience>. Both are memoized so the spatial
+  // adapter only re-runs when the underlying figures change.
+  const financialKPIs = useFinancialKPIs({
+    transactions: transaction.transactions,
+    budgets: budget.budgets,
+    assets: asset.assets,
+    liabilities: asset.liabilities,
+    goals: goal.goals,
+    debts: debt.debts,
+    savingsPlans: saving.savingsPlans,
+    bills: bill.bills,
+    investments: investment.investments,
+    emergencySavings: emergency.emergencySavings,
+    monthlyExpenses: emergency.monthlyExpenses,
+    monthlyIncome: form.income,
+  })
+
+  // Layer 5 (V2 graph drill-down): per-domain line items, only computed into the
+  // scene model when the graph-engine flag is on. Flag off -> no `children` key
+  // -> the scene is identical to Layer 4.
+  const financialBreakdown = useFinancialBreakdown({
+    transactions: transaction.transactions,
+    assets: asset.assets,
+    debts: debt.debts,
+    investments: investment.investments,
+    savingsPlans: saving.savingsPlans,
+  })
+
+  // Layer 6 (V2 simulation): "what-if" levers. Off by default; only wired into
+  // the spatial view when featureFlags.v2Simulation is on.
+  const [sim, setSim] = useState({
+    active: false,
+    monthsForward: 0,
+    extraDebtPayment: 0,
+    extraMonthlySaving: 0,
+    annualReturnPct: 6,
+    oneOff: 0,
+  })
+  const simControls = useMemo(() => ({
+    ...sim,
+    setLever: (key, value) => setSim((s) => ({ ...s, [key]: value })),
+    reset: () => setSim((s) => ({ active: s.active, monthsForward: 0, extraDebtPayment: 0, extraMonthlySaving: 0, annualReturnPct: 6, oneOff: 0 })),
+    toggle: () => setSim((s) => ({ ...s, active: !s.active })),
+  }), [sim])
+
+  const spatialFinancialModel = useMemo(() => {
+    const modelCurrency = settingsHook.settings.currency || "SRD"
+    const money = (value) => formatCurrencyAmount(value, modelCurrency, settingsHook.settings.numberFormat)
+
+    const simActive = featureFlags.v2Simulation && sim.active
+    const snapshot = {
+      income: financialKPIs.totalIncome,
+      expenses: financialKPIs.totalExpenses,
+      assets: financialKPIs.totalAssets,
+      liabilities: financialKPIs.totalLiabilities,
+      debt: financialKPIs.totalDebt,
+      monthlyDebtPayment: financialKPIs.monthlyDebtPayments,
+      savings: financialKPIs.totalSavingsCurrent,
+      monthlySaving: saving.savingsPlans.reduce((total, plan) => total + Number(plan.monthly || 0), 0),
+      investments: financialKPIs.investmentValue,
+    }
+    const projected = simActive ? projectFinancials(snapshot, sim) : snapshot
+    const netWorth = simActive ? projected.netWorth : financialKPIs.netWorth
+
+    const domain = (id, amount) => {
+      const base = { amount, detail: money(amount) }
+      if (!featureFlags.v2GraphEngine) return base
+      return { ...base, children: financialBreakdown[id].map((child) => ({ ...child, detail: money(child.amount) })) }
+    }
+    return {
+      projected: simActive,
+      monthsForward: simActive ? Math.max(0, Math.round(Number(sim.monthsForward) || 0)) : 0,
+      core: {
+        label: "Money Mind",
+        detail: money(netWorth),
+        healthScore: financialKPIs.healthScore,
+      },
+      domains: {
+        income: domain("income", projected.income),
+        investments: domain("investments", projected.investments),
+        assets: domain("assets", projected.assets),
+        debt: domain("debt", projected.debt),
+        expenses: domain("expenses", projected.expenses),
+        savings: domain("savings", projected.savings),
+      },
+    }
+  }, [financialKPIs, financialBreakdown, saving.savingsPlans, sim, settingsHook.settings.currency, settingsHook.settings.numberFormat])
+
+  useEffect(() => {
+    const preference = settingsHook.settings.themeMode || "system"
+    const media = window.matchMedia("(prefers-color-scheme: dark)")
+    const applyTheme = () => {
+      const resolved = preference === "system" ? (media.matches ? "dark" : "light") : preference
+      document.documentElement.dataset.theme = resolved
+      document.documentElement.dataset.themePreference = preference
+      document.querySelector('meta[name="theme-color"]')?.setAttribute("content", resolved === "dark" ? "#030712" : "#F3F1FF")
+      setResolvedTheme(resolved)
+    }
+    applyTheme()
+    media.addEventListener?.("change", applyTheme)
+    return () => media.removeEventListener?.("change", applyTheme)
+  }, [settingsHook.settings.themeMode])
 
   async function loadAllData(userId) {
     await Promise.all([
@@ -84,6 +215,41 @@ export default function App() {
 
   const auth = useAuth(loadAllData)
   const profile = useProfile(auth.user?.uid)
+
+  useEffect(() => {
+    function syncRoute() {
+      setActivePageState(pageFromHash())
+    }
+    window.addEventListener("hashchange", syncRoute)
+    window.addEventListener("popstate", syncRoute)
+    return () => {
+      window.removeEventListener("hashchange", syncRoute)
+      window.removeEventListener("popstate", syncRoute)
+    }
+  }, [])
+
+  useEffect(() => {
+    const rawRoute = window.location.hash.slice(1).split("/")[0]
+    if (auth.user) {
+      const intended = sessionStorage.getItem("moneyMindIntendedPage")
+      // APP_PAGES (not just PROTECTED_PAGES) so the flag-gated development route
+      // (#spatial) stays reachable for a signed-in user; `intended` is a
+      // post-login redirect target, which is only ever a protected page.
+      const nextPage = APP_PAGES.has(rawRoute)
+        ? rawRoute
+        : PROTECTED_PAGES.has(intended)
+          ? intended
+          : "dashboard"
+      sessionStorage.removeItem("moneyMindIntendedPage")
+      if (rawRoute !== nextPage) window.history.replaceState(null, "", `#${nextPage}`)
+      setActivePageState(nextPage)
+      return
+    }
+    if (PROTECTED_PAGES.has(rawRoute)) {
+      sessionStorage.setItem("moneyMindIntendedPage", rawRoute)
+      window.history.replaceState(null, "", "#login")
+    }
+  }, [auth.user])
 
   function getUserId() {
     return auth.user?.uid || null
@@ -352,87 +518,11 @@ export default function App() {
     await investment.deleteInvestment(userId, id)
   }
 
-  if (auth.loading) {
-    content = (
-      <div className="relative z-10 flex min-h-screen items-center justify-center text-white">
-        <p className="text-[#C9CDD3]">Loading Money Mind...</p>
-      </div>
-    )
+  if (!auth.user && activePage === "spatial" && featureFlags.v2SpatialUI) {
+    content = <SpatialExperience />
   } else if (!auth.user) {
     content = (
-      <AuthIntro>
-        <form
-          onSubmit={auth.handleAuth}
-          className="glass-login-card w-full overflow-hidden rounded-3xl p-10"
-        >
-          <p className="mb-8 text-center text-[#A5ADB8]">
-            {auth.mode === "login" ? "Login to your dashboard" : "Create your account"}
-          </p>
-
-          <label className="mb-2 block text-sm text-[#D5D8DD]">Email</label>
-          <input
-            className="mb-4 w-full rounded-xl border border-[#BFC4CC]/25 bg-black/35 p-3 text-white outline-none backdrop-blur-xl"
-            type="email"
-            value={auth.email}
-            onChange={(event) => auth.setEmail(event.target.value)}
-            required
-          />
-
-          <label className="mb-2 block text-sm text-[#D5D8DD]">Password</label>
-          <input
-            className="mb-4 w-full rounded-xl border border-[#BFC4CC]/25 bg-black/35 p-3 text-white outline-none backdrop-blur-xl"
-            type="password"
-            value={auth.password}
-            onChange={(event) => auth.setPassword(event.target.value)}
-            required
-          />
-
-          <div className="mb-6 flex items-center justify-between">
-            <label className="flex items-center gap-2 text-sm text-[#D5D8DD]">
-              <input
-                type="checkbox"
-                checked={auth.rememberMe}
-                onChange={(event) => auth.setRememberMe(event.target.checked)}
-                className="h-4 w-4 accent-[#3aaf90]"
-              />
-              Remember me
-            </label>
-
-            <button
-              type="button"
-              onClick={auth.handleForgotPassword}
-              className="text-sm text-[#D5D8DD] transition hover:text-white"
-            >
-              Forgot password?
-            </button>
-          </div>
-
-          {auth.resetMessage && (
-            <p className="mb-4 text-sm text-[#A5ADB8]">{auth.resetMessage}</p>
-          )}
-
-          <button className="metallic-button w-full rounded-xl p-3 font-semibold text-black transition">
-            {auth.mode === "login" ? "Login" : "Create Account"}
-          </button>
-
-          <button
-            type="button"
-            onClick={auth.handleGoogleLogin}
-            className="mt-4 flex w-full items-center justify-center gap-3 rounded-xl border border-[#BFC4CC]/30 bg-black/35 p-3 font-semibold text-white backdrop-blur-xl transition hover:bg-white/10"
-          >
-            <span className="font-bold" style={{ color: "#4285F4" }}>G</span>
-            Continue with Google
-          </button>
-
-          <button
-            type="button"
-            onClick={() => auth.setMode(auth.mode === "login" ? "register" : "login")}
-            className="mt-4 w-full text-[#D5D8DD] transition hover:text-white"
-          >
-            {auth.mode === "login" ? "No account? Register" : "Already have an account? Login"}
-          </button>
-        </form>
-      </AuthIntro>
+      <PublicExperience auth={auth} settings={settingsHook.settings} updateSetting={settingsHook.updateSetting} />
     )
   } else {
   const baseCurrency = settingsHook.settings.currency || "SRD"
@@ -448,11 +538,11 @@ export default function App() {
 
   const transactionIncome = transaction.transactions
     .filter((item) => item.type === "income")
-    .reduce((sum, item) => sum + Number(item.amount || 0), 0)
+    .reduce((sum, item) => sum + convertCurrency({ amount: item.amount, fromCurrency: item.currency || "SRD", toCurrency: baseCurrency, rates: currency.rates }), 0)
 
   const transactionExpenses = transaction.transactions
     .filter((item) => item.type === "expense")
-    .reduce((sum, item) => sum + Number(item.amount || 0), 0)
+    .reduce((sum, item) => sum + convertCurrency({ amount: item.amount, fromCurrency: item.currency || "SRD", toCurrency: baseCurrency, rates: currency.rates }), 0)
 
   const cashFlow = transactionIncome - transactionExpenses
   const remainingBudget = Number(form.income || 0) - totalBudget
@@ -462,10 +552,12 @@ export default function App() {
       user={auth.user}
       profile={profile.profile}
       settings={settingsHook.settings}
+      updateSetting={settingsHook.updateSetting}
       handleLogout={auth.handleLogout}
       activePage={activePage}
       setActivePage={setActivePage}
       moneyAIProps={{
+        userId: auth.user?.uid,
         transactions: transaction.transactions,
         budgets: budget.budgets,
         assets: asset.assets,
@@ -499,6 +591,7 @@ export default function App() {
           emergencySavings={emergency.emergencySavings}
           monthlyExpenses={emergency.monthlyExpenses}
           monthlyIncome={form.income}
+          displayName={profile.profile?.displayName}
           setActivePage={setActivePage}
           rates={currency.rates}
           numberFormat={settingsHook.settings.numberFormat}
@@ -870,6 +963,10 @@ export default function App() {
         />
       )}
 
+      {activePage === "spatial" && featureFlags.v2SpatialUI && (
+        <SpatialExperience model={spatialFinancialModel} sim={featureFlags.v2Simulation ? simControls : undefined} />
+      )}
+
       {![
         "dashboard",
         "budget",
@@ -896,6 +993,7 @@ export default function App() {
         "kpis",
         "export",
         "settings",
+        ...(featureFlags.v2SpatialUI ? ["spatial"] : []),
       ].includes(activePage) && (
         <Panel title="Coming Soon">
           <p className="mt-4 text-[#A5ADB8]">
@@ -922,7 +1020,7 @@ export default function App() {
 
   return (
     <>
-      <AppBackground themeId={settingsHook.settings.backgroundTheme} />
+      {auth.user && <AppBackground themeId={resolvedTheme === "dark" ? DARK_BACKGROUND_THEME : settingsHook.settings.backgroundTheme} />}
       {content}
     </>
   )

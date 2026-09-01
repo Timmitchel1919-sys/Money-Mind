@@ -32,7 +32,7 @@ export default function AppBackground({ themeId = DEFAULT_BACKGROUND_THEME }) {
           tabIndex="-1"
         />
       )}
-      <div className="absolute inset-0 bg-black/[0.42]" />
+      <div className="absolute inset-0 transition-colors duration-500" style={{ backgroundColor: "var(--scrim)" }} />
     </div>
   )
 }

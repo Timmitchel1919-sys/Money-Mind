@@ -1,0 +1,64 @@
+schemaVersion: 1
+statuses:
+  specification: [planned, skeleton, defined]
+  implementation: [not_started, foundation_only, implementing, implemented]
+  validation: [not_tested, validating, validated, blocked]
+chapters:
+  - number: 1
+    title: V2 Foundation
+    volume: 1
+    specificationStatus: defined
+    implementationStatus: implemented
+    validationStatus: validated
+    dependencies: []
+    implementedBy: docs/v2/architecture, ADRs 0001-0005
+    notes: Feature flags, spatial contracts, motion tokens, ADRs.
+  - number: 2
+    title: Spatial & Visual Runtime
+    volume: 1
+    specificationStatus: defined
+    implementationStatus: implemented
+    validationStatus: validated
+    dependencies: [1]
+    implementedBy: src/spatial/, src/visualization/
+    notes: R3F/Three spatial runtime with placeholder proof-nodes (Layer 2 + 2C).
+  - number: 3
+    title: Motion & Interaction Engine
+    volume: 1
+    specificationStatus: defined
+    implementationStatus: implemented
+    validationStatus: validated
+    dependencies: [2]
+    implementedBy: src/motion/
+    notes: MotionProvider, policy, camera/node/edge choreography (commit cb98f8b).
+  - number: 4
+    title: Financial Data in Spatial Nodes
+    volume: 1
+    specificationStatus: defined
+    implementationStatus: implemented
+    validationStatus: validated
+    dependencies: [3]
+    implementedBy: src/visualization/adapters/financialSpatialAdapter.js
+    notes: Maps real financial data into spatial nodes via useFinancialKPIs.
+  - number: 5
+    title: Graph Drill-down
+    volume: 1
+    specificationStatus: defined
+    implementationStatus: implemented
+    validationStatus: validated
+    dependencies: [4]
+    implementedBy: src/hooks/useFinancialBreakdown.js
+    notes: 3D drill-down into domain line items (v2GraphEngine flag).
+  - number: 6
+    title: Simulation Mode
+    volume: 1
+    specificationStatus: defined
+    implementationStatus: implemented
+    validationStatus: validated
+    dependencies: [5]
+    implementedBy: src/financial/projection/projectFinancials.js
+    notes: What-if simulation on the spatial view (v2Simulation flag).
+
+# Add only chapters confirmed by an approved specification. Each entry supports:
+# number, title, volume, specificationStatus, implementationStatus,
+# validationStatus, dependencies, implementedBy, and notes.

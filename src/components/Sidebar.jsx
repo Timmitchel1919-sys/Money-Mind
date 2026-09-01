@@ -1,115 +1,111 @@
-import {
-  LayoutDashboard,
-  WalletCards,
-  ArrowLeftRight,
-  ReceiptText,
-  CalendarDays,
-  TrendingUp,
-  Scale,
-  Target,
-  ShieldCheck,
-  CreditCard,
-  PiggyBank,
-  Coins,
-  ChartCandlestick,
-  BriefcaseBusiness,
-  HandCoins,
-  CircleDollarSign,
-  Landmark,
-  BadgePercent,
-  Banknote,
-  FileChartColumn,
-  ChartNoAxesCombined,
-  HeartPulse,
-  Gauge,
-  Download,
-  Settings as SettingsIcon,
-  LogOut,
-  X,
-} from "lucide-react"
-import NavItem from "./NavItem"
+import { useEffect, useRef, useState } from "react"
+import { ChevronDown, ChevronLeft, LogOut, User } from "lucide-react"
 import { SidebarLogo } from "./MoneyMindLogo"
+import { NAVIGATION, groupForPage } from "../constants/navigation"
 
-const MAIN_NAV_ITEMS = [
-  { label: "Dashboard", value: "dashboard", icon: LayoutDashboard },
-  { label: "Budget", value: "budget", icon: WalletCards },
-  { label: "Transactions", value: "transactions", icon: ArrowLeftRight },
-  { label: "Bills", value: "bills", icon: ReceiptText },
-  { label: "Financial Calendar", value: "calendar", icon: CalendarDays },
-  { label: "Cash Flow Forecast", value: "cashflowforecast", icon: TrendingUp },
-  { label: "Net Worth", value: "networth", icon: Scale },
-  { label: "Goals", value: "goals", icon: Target },
-  { label: "Emergency Fund", value: "emergency", icon: ShieldCheck },
-  { label: "Debt Manager", value: "debt", icon: CreditCard },
-  { label: "Savings Planner", value: "savings", icon: PiggyBank },
-  { label: "Currency Center", value: "currency", icon: Coins },
-  { label: "Investment Tracker", value: "investments", icon: ChartCandlestick },
-  { label: "Portfolio Dashboard", value: "portfolio", icon: BriefcaseBusiness },
-  { label: "Dividend Tracker", value: "dividends", icon: HandCoins },
-  { label: "Dividend Dashboard", value: "dividendDashboard", icon: CircleDollarSign },
-  { label: "Retirement Planner", value: "retirement", icon: Landmark },
-  { label: "Inflation Calculator", value: "inflation", icon: BadgePercent },
-  { label: "Loan Payoff", value: "loanpayoff", icon: Banknote },
-  { label: "Reports", value: "reports", icon: FileChartColumn },
-  { label: "Charts", value: "charts", icon: ChartNoAxesCombined },
-  { label: "Financial Health", value: "health", icon: HeartPulse },
-  { label: "Financial KPIs", value: "kpis", icon: Gauge },
-  { label: "Export Center", value: "export", icon: Download },
-]
+function NavButton({ item, activePage, collapsed, onNavigate, onOpenMoneyAI }) {
+  const Icon = item.icon
+  const active = item.value ? activePage === item.value : false
+  return (
+    <button
+      type="button"
+      onClick={() => item.action === "ai" ? onOpenMoneyAI() : onNavigate(item.value)}
+      aria-current={active ? "page" : undefined}
+      title={collapsed ? item.label : undefined}
+      className={`group relative flex min-h-11 w-full items-center rounded-xl transition ${collapsed ? "justify-center px-2" : "gap-3 px-3"} ${active ? "nav-item-active text-white" : "text-[#D5D8DD] hover:bg-white/5"}`}
+    >
+      {active && <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-(--brand-primary)" aria-hidden="true" />}
+      <Icon size={19} className="shrink-0" strokeWidth={1.8} aria-hidden="true" />
+      {!collapsed && <span className="min-w-0 truncate text-sm font-medium">{item.label}</span>}
+    </button>
+  )
+}
 
-const FOOTER_NAV_ITEMS = [{ label: "Settings", value: "settings", icon: SettingsIcon }]
+export default function Sidebar({ activePage, handleLogout, isOpen, onClose, onNavigate, onOpenMoneyAI, collapsed, onCollapsedChange, profile }) {
+  const [openGroup, setOpenGroup] = useState(() => groupForPage(activePage) || "money")
+  const [floatingGroup, setFloatingGroup] = useState(null)
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const asideRef = useRef(null)
 
-export default function Sidebar({ activePage, setActivePage, handleLogout, isOpen, onClose }) {
+  useEffect(() => {
+    const group = groupForPage(activePage)
+    if (group && group !== "overview") setOpenGroup(group)
+  }, [activePage])
+
+  useEffect(() => {
+    function closeFloating(event) {
+      if (event.key === "Escape") setFloatingGroup(null)
+      if (event.type === "mousedown" && asideRef.current && !asideRef.current.contains(event.target)) setFloatingGroup(null)
+    }
+    document.addEventListener("keydown", closeFloating)
+    document.addEventListener("mousedown", closeFloating)
+    return () => { document.removeEventListener("keydown", closeFloating); document.removeEventListener("mousedown", closeFloating) }
+  }, [])
+
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-50 flex h-full w-72 max-w-[85vw] flex-col overflow-hidden border-r border-[#707680]/50 bg-[#0E1117]/95 backdrop-blur-xl transition-transform duration-300 ease-out md:static md:z-auto md:h-full md:w-auto md:max-w-none md:translate-x-0 md:rounded-3xl md:border md:bg-[#0E1117]/70 ${
-        isOpen ? "translate-x-0" : "-translate-x-full"
-      }`}
+      ref={asideRef}
+      aria-label="Primary navigation"
+      className={`navigation-glass fixed inset-y-0 left-0 z-50 flex min-h-dvh flex-col overflow-hidden transition-[width,transform] duration-200 ease-out md:translate-x-0 ${collapsed ? "md:w-[76px]" : "md:w-[272px]"} ${isOpen ? "w-[272px] translate-x-0" : "w-[272px] -translate-x-full"}`}
     >
-      <div className="relative flex shrink-0 flex-col items-center border-b border-[#707680]/30 px-6 pb-3 pt-6">
-        <SidebarLogo />
-
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close menu"
-          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl text-[#A5ADB8] transition hover:bg-white/5 md:hidden"
-        >
-          <X size={18} />
-        </button>
+      <div className={`flex shrink-0 items-center border-b border-[var(--border)] ${collapsed ? "h-14 justify-center px-2" : "h-16 justify-between gap-2 px-4"}`}>
+        <SidebarLogo collapsed={collapsed} markOnly />
+        <button type="button" onClick={onClose} aria-label="Close navigation" className="flex h-11 w-11 items-center justify-center rounded-xl md:hidden"><ChevronLeft size={20} /></button>
       </div>
 
-      <nav className="scrollbar-transparent min-h-0 flex-1 space-y-3 overflow-y-auto p-6 text-[#D5D8DD]">
-        {MAIN_NAV_ITEMS.map((item) => (
-          <NavItem
-            key={item.value}
-            label={item.label}
-            value={item.value}
-            icon={item.icon}
-            activePage={activePage}
-            setActivePage={setActivePage}
-          />
-        ))}
+      {/* Collapse/expand control — belongs to the navigation panel: anchored
+          to the panel's own right edge (the <aside> is the positioning
+          context), vertically centred, and travels with the panel as it
+          animates between widths. Desktop/tablet only; on mobile the panel
+          is a drawer closed via the header button above. */}
+      <button
+        type="button"
+        onClick={() => onCollapsedChange(!collapsed)}
+        aria-label={collapsed ? "Expand navigation panel" : "Collapse navigation panel"}
+        aria-expanded={!collapsed}
+        className="absolute right-0 top-1/2 z-10 hidden h-10 w-6 -translate-y-1/2 items-center justify-center rounded-l-md border border-r-0 border-[var(--border)] bg-white/5 text-[var(--text-secondary)] hover:bg-white/10 hover:text-[var(--text-primary)] md:flex"
+      >
+        <svg viewBox="0 0 6 10" aria-hidden="true" className={`h-3.5 w-2 transition-transform ${collapsed ? "rotate-180" : ""}`}>
+          <path d="M6 0 0 5l6 5z" fill="currentColor" />
+        </svg>
+      </button>
+
+      <nav className={`scrollbar-transparent min-h-0 flex-1 overflow-y-auto ${collapsed ? "px-2 pt-2 pb-4" : "px-3 py-4"}`}>
+        {NAVIGATION.map((group) => {
+          const isFlat = group.items.length === 1 && !group.icon
+          const isExpanded = isFlat || openGroup === group.id
+          const GroupIcon = group.icon
+          return (
+            <div key={group.id} className="mb-2">
+              {isFlat ? (
+                <>
+                  {!collapsed && <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[.16em] text-[var(--text-muted)]">{group.label}</p>}
+                  <NavButton item={group.items[0]} activePage={activePage} collapsed={collapsed} onNavigate={onNavigate} onOpenMoneyAI={onOpenMoneyAI} />
+                </>
+              ) : (
+                <>
+                  <button type="button" onClick={() => collapsed ? setFloatingGroup(floatingGroup === group.id ? null : group.id) : setOpenGroup(isExpanded ? "" : group.id)} aria-expanded={collapsed ? floatingGroup === group.id : isExpanded} title={collapsed ? group.label : undefined} className={`flex min-h-11 w-full items-center rounded-xl text-[var(--text-secondary)] hover:bg-white/5 ${collapsed ? "justify-center" : "gap-3 px-3"}`}>
+                    <GroupIcon size={19} className="shrink-0" aria-hidden="true" />
+                    {!collapsed && <><span className="min-w-0 flex-1 truncate text-left text-sm font-semibold">{group.label}</span><ChevronDown size={16} className={`transition-transform ${isExpanded ? "rotate-180" : ""}`} /></>}
+                  </button>
+                  {isExpanded && !collapsed && <div className="ml-3 mt-1 space-y-1 border-l border-[var(--border)] pl-2">{group.items.map((item) => <NavButton key={item.value || item.action} item={item} activePage={activePage} collapsed={false} onNavigate={onNavigate} onOpenMoneyAI={onOpenMoneyAI} />)}</div>}
+                </>
+              )}
+            </div>
+          )
+        })}
       </nav>
 
-      <div className="mt-3 shrink-0 space-y-3 border-t border-[#707680]/30 p-6 text-[#D5D8DD]">
-        {FOOTER_NAV_ITEMS.map((item) => (
-          <NavItem
-            key={item.value}
-            label={item.label}
-            value={item.value}
-            icon={item.icon}
-            activePage={activePage}
-            setActivePage={setActivePage}
-          />
-        ))}
+      {collapsed && floatingGroup && (() => {
+        const group = NAVIGATION.find((entry) => entry.id === floatingGroup)
+        return <div className="navigation-popover fixed bottom-4 left-[84px] top-auto z-[60] max-h-[calc(100dvh-2rem)] w-64 overflow-y-auto rounded-2xl p-2"><p className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{group.label}</p>{group.items.map((item) => <NavButton key={item.value || item.action} item={item} activePage={activePage} collapsed={false} onNavigate={(page) => { setFloatingGroup(null); onNavigate(page) }} onOpenMoneyAI={() => { setFloatingGroup(null); onOpenMoneyAI() }} />)}</div>
+      })()}
 
-        <button
-          onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-xl border border-[#F87171]/30 p-3 text-left text-[#F87171] transition hover:bg-[#F87171]/10"
-        >
-          <LogOut size={18} className="shrink-0" strokeWidth={1.75} aria-hidden="true" />
-          <span>Logout</span>
+      <div className={`shrink-0 space-y-1 border-t border-[var(--border)] p-2 ${collapsed ? "items-center" : ""}`}>
+        {profileMenuOpen && <div className="navigation-popover absolute bottom-[68px] left-2 right-2 rounded-xl p-2"><button type="button" onClick={() => { setProfileMenuOpen(false); onNavigate("settings") }} className="flex min-h-10 w-full items-center gap-3 rounded-lg px-3 text-sm hover:bg-white/5"><User size={17} />My Profile</button><button type="button" onClick={handleLogout} className="flex min-h-10 w-full items-center gap-3 rounded-lg px-3 text-sm text-[var(--negative)] hover:bg-red-500/10"><LogOut size={17} />Sign Out</button></div>}
+        <button type="button" onClick={() => setProfileMenuOpen((open) => !open)} aria-expanded={profileMenuOpen} className={`flex min-h-12 w-full items-center rounded-xl bg-black/20 hover:bg-white/5 ${collapsed ? "justify-center" : "gap-3 px-3"}`} title={collapsed ? (profile?.displayName || "My Profile") : undefined}>
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--surface-elevated)]"><User size={18} /></span>
+          {!collapsed && <><div className="min-w-0 flex-1 text-left"><p className="truncate text-sm font-semibold text-[var(--text-primary)]">{profile?.displayName || "User"}</p><p className="truncate text-xs text-[var(--text-muted)]">My Profile</p></div><ChevronDown size={16} /></>}
         </button>
       </div>
     </aside>

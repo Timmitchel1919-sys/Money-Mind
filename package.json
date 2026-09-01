@@ -8,15 +8,21 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
+    "deploy": "npm run build && npx -y firebase-tools@latest deploy --only hosting",
+    "deploy:full": "npm run build && npx -y firebase-tools@latest deploy",
     "remotion:studio": "remotion studio remotion/index.ts",
-    "render:intro": "remotion render remotion/index.ts IntroComposition out/money-mind-financial-energy-intro-1080p.mp4 --codec=h264"
+    "render:intro": "remotion render remotion/index.ts IntroComposition out/money-mind-financial-energy-intro-1080p.mp4 --codec=h264",
+    "render:cinematic-reveal": "remotion render remotion/index.ts CinematicLogoReveal out/money-mind-cinematic-logo-reveal-1440p.mp4 --codec=h264",
+    "render:cinematic-reveal-vertical": "remotion render remotion/index.ts CinematicLogoRevealVertical out/money-mind-cinematic-logo-reveal-vertical.mp4 --codec=h264"
   },
   "dependencies": {
+    "@react-three/fiber": "^9.7.0",
     "firebase": "^12.15.0",
     "lucide-react": "^1.24.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "recharts": "^3.9.2",
+    "three": "^0.185.1",
     "vite-plugin-pwa": "^1.3.0"
   },
   "devDependencies": {

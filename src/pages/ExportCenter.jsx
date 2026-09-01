@@ -1,5 +1,6 @@
 import Panel from "../components/Panel"
 import StickyBar from "../components/StickyBar"
+import PageInfoButton from "../components/PageInfoButton"
 import { downloadCsv } from "../utils/csvExport"
 
 function progressPct(saved, target) {
@@ -170,7 +171,14 @@ export default function ExportCenter({
 
   return (
     <div className="space-y-6">
-      <StickyBar title="Export Center">
+      <StickyBar
+        title={
+          <span className="flex items-center gap-3">
+            Export Center
+            <PageInfoButton pageKey="export" />
+          </span>
+        }
+      >
         <p className="mt-2 text-[#A5ADB8]">
           Download your Money Mind data as CSV files. Exports run entirely in your browser —
           nothing is sent to a server.

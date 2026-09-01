@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { DEFAULT_BACKGROUND_THEME } from "../constants/backgroundThemes"
 
 const STORAGE_KEY = "moneyMindSettings"
@@ -35,6 +35,7 @@ export const DEFAULT_SETTINGS = {
   monthlySavingsTarget: 1500,
   emergencyFundMonths: 6,
   retirementAge: 40,
+  themeMode: "system",
   backgroundTheme: DEFAULT_BACKGROUND_THEME,
   notificationPreferences: DEFAULT_NOTIFICATION_PREFERENCES,
   moneyAIVoice: DEFAULT_MONEY_AI_VOICE,
@@ -73,7 +74,21 @@ export default function useSettings() {
 
   function updateSetting(key, value) {
     setSettings((prev) => ({ ...prev, [key]: value }))
+    if (key === "themeMode" || key === "currency" || key === "language") {
+      try {
+        const current = loadStoredSettings()
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...current, [key]: value }))
+      } catch { /* The in-memory preference still applies. */ }
+    }
   }
+
+  useEffect(() => {
+    function syncSettings(event) {
+      if (event.key === STORAGE_KEY) setSettings(loadStoredSettings())
+    }
+    window.addEventListener("storage", syncSettings)
+    return () => window.removeEventListener("storage", syncSettings)
+  }, [])
 
   function updateNotificationPreference(key, value) {
     setSettings((prev) => ({

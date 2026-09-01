@@ -22,8 +22,8 @@ export default defineConfig({
         start_url: '/',
         display: 'standalone',
         orientation: 'portrait-primary',
-        theme_color: '#0F1113',
-        background_color: '#000000',
+        theme_color: '#0A58EB',
+        background_color: '#F8FAFC',
         icons: [
           { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png' },
@@ -38,11 +38,21 @@ export default defineConfig({
         // images get precached; videos are handled by the runtimeCaching
         // rule below instead, fetched from the network on first use.
         globPatterns: ['**/*.{js,css,html,svg,ico,woff,woff2}'],
-        globIgnores: ['**/videos/**'],
+        globIgnores: ['**/videos/**', '**/runtime-*.js'],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/videos\//],
         runtimeCaching: [
+          // Cache the lazy V2 spatial chunk only after the feature is entered.
+          {
+            urlPattern: ({ url }) => /\/assets\/runtime-[^/]+\.js$/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'money-mind-spatial-runtime',
+              expiration: { maxEntries: 2, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           // Firebase Auth / Firestore / any Google API call — always hit
           // the network. Auth state and financial data must never be
           // served stale from a cache.

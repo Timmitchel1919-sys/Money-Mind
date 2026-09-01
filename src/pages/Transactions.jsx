@@ -1,5 +1,6 @@
 import Input from "../components/Input"
 import Panel from "../components/Panel"
+import PageHeader from "../components/PageHeader"
 import SmallStat from "../components/SmallStat"
 import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
 import { formatCurrencyAmount } from "../utils/currencyConversion"
@@ -40,7 +41,10 @@ export default function Transactions({
   baseCurrency = "SRD",
 }) {
   return (
-    <section className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_1fr]">
+    <>
+      <PageHeader pageKey="transactions" />
+
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_1fr]">
       <Panel title="Add Transaction">
         <form onSubmit={handleAddTransaction} className="mt-6 space-y-4">
           <div>
@@ -149,6 +153,7 @@ export default function Transactions({
           )}
         </div>
       </Panel>
-    </section>
+      </section>
+    </>
   )
 }

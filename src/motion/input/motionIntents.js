@@ -1,0 +1,5 @@
+export const MOTION_INTENTS = Object.freeze({ hoverNode: "HOVER_NODE", clearHover: "CLEAR_HOVER", selectNode: "SELECT_NODE", resetView: "RESET_VIEW" })
+export const hoverNodeIntent = (nodeId) => Object.freeze({ type: MOTION_INTENTS.hoverNode, nodeId })
+export const clearHoverIntent = () => Object.freeze({ type: MOTION_INTENTS.clearHover })
+export const selectNodeIntent = (nodeId) => Object.freeze({ type: MOTION_INTENTS.selectNode, nodeId })
+export const resetViewIntent = () => Object.freeze({ type: MOTION_INTENTS.resetView })

@@ -5,7 +5,7 @@ export default function Card({
   icon = null,
 }) {
   return (
-    <div className="group relative overflow-hidden rounded-3xl border border-[#707680]/40 bg-[#1F242D]/70 p-6 backdrop-blur-xl transition-colors duration-300 hover:border-[#C9CDD3]/50">
+    <div className="glass-card group relative overflow-hidden p-5 transition-colors duration-300 hover:border-[var(--border-strong)]">
       {/* Glass Highlight */}
       <div className="absolute inset-0 'bg-gradient-to-br' from-white/5 via-transparent to-transparent" />
 
@@ -14,7 +14,7 @@ export default function Card({
 
       <div className="relative z-10">
         <div className="mb-4 flex items-center justify-between">
-          <p className="text-sm font-medium uppercase tracking-wide text-[#A5ADB8]">
+          <p className="text-sm font-medium text-[var(--text-secondary)]">
             {title}
           </p>
 
@@ -25,7 +25,7 @@ export default function Card({
           )}
         </div>
 
-        <h2 className="text-3xl font-bold text-[#FAFAFA]">
+        <h2 className="text-2xl font-semibold text-[var(--text-primary)]">
           {value}
         </h2>
 

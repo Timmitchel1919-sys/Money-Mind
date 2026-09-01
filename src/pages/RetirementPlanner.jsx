@@ -1,6 +1,7 @@
 import Input from "../components/Input"
 import Panel from "../components/Panel"
 import Card from "../components/Card"
+import PageHeader from "../components/PageHeader"
 import useRetirement from "../hooks/useRetirement"
 
 export default function RetirementPlanner() {
@@ -21,6 +22,8 @@ export default function RetirementPlanner() {
 
   return (
     <div className="space-y-6">
+      <PageHeader pageKey="retirement" />
+
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card title="Years Left" value={yearsLeft} />
 

@@ -11,6 +11,7 @@ import {
 } from "recharts"
 import Panel from "../components/Panel"
 import Card from "../components/Card"
+import PageHeader from "../components/PageHeader"
 import MultiCurrencyAmount from "../components/MultiCurrencyAmount"
 import { formatCurrencyAmount } from "../utils/currencyConversion"
 
@@ -71,6 +72,8 @@ export default function Charts({ transactions, budgets, assets, liabilities, sav
 
   return (
     <div className="space-y-6">
+      <PageHeader pageKey="charts" />
+
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card
           title="Income"
