@@ -67,6 +67,9 @@ function SpatialWorkspace({ capabilities, initialQuality, motionPreference, scen
           <strong>{selectedNode?.label || "Financial overview"}</strong>
         </div>
         {selectedNode?.detail ? <p className="spatial-inspector__amount">{selectedNode.detail}</p> : null}
+        {selectedNode?.kind === "radial" && selectedNode.childCount > 0
+          ? <p className="spatial-inspector__hint">{selectedNode.childCount} {selectedNode.childCount === 1 ? "item" : "items"} — select one to inspect</p>
+          : null}
         <p>{selectedNode ? `${selectedNode.label} is selected. Choose it again or use Overview to return.` : "Select a financial domain to test focus and camera control."}</p>
       </footer>
     </section>

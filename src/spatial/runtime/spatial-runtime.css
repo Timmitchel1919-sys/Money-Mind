@@ -91,6 +91,8 @@
 .spatial-inspector span { color: #7890ab; font-size: 9px; font-weight: 750; letter-spacing: 0.13em; text-transform: uppercase; }
 .spatial-inspector strong { color: #eef5fc; font-size: 14px; }
 .spatial-inspector p { max-width: 560px; margin: 0; color: #8fa4ba; font-size: 12px; line-height: 1.5; text-align: right; }
+.spatial-inspector .spatial-inspector__amount { color: #dbe8f5; font-weight: 700; }
+.spatial-inspector .spatial-inspector__hint { color: #7f97b3; font-size: 11px; }
 .spatial-runtime-fallback { padding: 32px; border: 1px solid var(--spatial-line); border-radius: 18px; background: #08101e; color: #dbe8f5; }
 
 @media (max-width: 760px) {
