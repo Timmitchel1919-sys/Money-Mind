@@ -17,12 +17,15 @@ feature flags. V1 stays the functional baseline; V2 is OFF by default
 numbered "layers"; each layer records validation evidence in docs/v2/validation/
 before it is accepted. Traceability lives in docs/v2/chapter-registry.yaml.
 
-Status (2026-08-30):
-- Layer 1 foundation (feature flags, contracts, tokens, ADRs) — done
+Status (2026-09-01):
+- Layer 1 foundation (feature flags, contracts, tokens, ADRs) — accepted
 - Layer 2 + 2C spatial/visual runtime (R3F/Three, placeholder proof-nodes) — accepted
 - Layer 3 motion & interaction engine — ACCEPTED (commit cb98f8b)
-- Branch develop/v2 (origin main is at 4ffa43d)
-- NEXT: Layer 4 — map real financial data into the spatial nodes (currently placeholders)
+- Layer 4 real financial data in the spatial nodes — accepted
+- Layer 5 graph drill-down (v2GraphEngine flag) — accepted
+- Layer 6 simulation (v2Simulation flag) — accepted
+- All layers 1–6 merged into develop/v2; V2 stays OFF by default on the live site.
+- NEXT: v2AI (Money AI in the scene) or productionize the spatial view (real nav entry)
 
 ## Architecture boundaries (src/)
 - app/            composition & configuration
