@@ -3,7 +3,6 @@ import { Bell, Bot, Check, Monitor, Moon, Palette, ShieldCheck, SlidersHorizonta
 import Panel from "../components/Panel"
 import Input from "../components/Input"
 import Card from "../components/Card"
-import LiveDateTime from "../components/LiveDateTime"
 import RateStatus from "../components/RateStatus"
 import AppLockSettings from "../components/AppLockSettings"
 import { BACKGROUND_THEMES } from "../constants/backgroundThemes"
@@ -184,30 +183,6 @@ export default function Settings({
           />
 
           <SettingSelect
-            label="Time Format"
-            value={settings.timeFormat}
-            onChange={(value) => updateSetting("timeFormat", value)}
-            options={[
-              { value: "24h", label: "24-hour" },
-              { value: "12h", label: "12-hour" },
-            ]}
-          />
-
-          <SettingSelect
-            label="Date Format"
-            value={settings.dateFormat}
-            onChange={(value) => updateSetting("dateFormat", value)}
-            options={[
-              { value: "weekday-long", label: "Mon, July 22, 2026" },
-              { value: "long", label: "July 22, 2026" },
-              { value: "day-long", label: "22 July 2026" },
-              { value: "DD-MM-YYYY", label: "22-07-2026" },
-              { value: "MM-DD-YYYY", label: "07-22-2026" },
-              { value: "YYYY-MM-DD", label: "2026-07-22" },
-            ]}
-          />
-
-          <SettingSelect
             label="Number Format"
             value={settings.numberFormat}
             onChange={(value) => updateSetting("numberFormat", value)}
@@ -225,16 +200,6 @@ export default function Settings({
             updatedAt={updatedAt}
             rateError={rateError}
             refreshRates={refreshRates}
-          />
-        </div>
-
-        <div className="mt-6">
-          <p className="mb-2 text-sm text-[#A5ADB8]">Live preview</p>
-          <LiveDateTime
-            timeFormat={settings.timeFormat}
-            dateFormat={settings.dateFormat}
-            language={settings.language}
-            className="inline-block"
           />
         </div>
 

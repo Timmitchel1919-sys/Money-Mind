@@ -4,6 +4,7 @@ import "./index.css"
 import DashboardLayout from "./layouts/DashboardLayout"
 import Panel from "./components/Panel"
 import AppBackground from "./components/AppBackground"
+import { DARK_BACKGROUND_THEME } from "./constants/backgroundThemes"
 
 import Dashboard from "./pages/Dashboard"
 import Budget from "./pages/Budget"
@@ -88,6 +89,7 @@ export default function App() {
   const form = useFormState()
   const settingsHook = useSettings()
   const appLock = useAppLock()
+  const [resolvedTheme, setResolvedTheme] = useState(() => document.documentElement.dataset.theme || "light")
 
   useEffect(() => {
     const preference = settingsHook.settings.themeMode || "system"
@@ -97,6 +99,7 @@ export default function App() {
       document.documentElement.dataset.theme = resolved
       document.documentElement.dataset.themePreference = preference
       document.querySelector('meta[name="theme-color"]')?.setAttribute("content", resolved === "dark" ? "#030712" : "#F3F1FF")
+      setResolvedTheme(resolved)
     }
     applyTheme()
     media.addEventListener?.("change", applyTheme)
@@ -921,7 +924,7 @@ export default function App() {
 
   return (
     <>
-      {auth.user && <AppBackground themeId={settingsHook.settings.backgroundTheme} />}
+      {auth.user && <AppBackground themeId={resolvedTheme === "dark" ? DARK_BACKGROUND_THEME : settingsHook.settings.backgroundTheme} />}
       {content}
     </>
   )

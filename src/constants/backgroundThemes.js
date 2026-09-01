@@ -23,6 +23,15 @@ export const BACKGROUND_THEMES = [
 
 export const DEFAULT_BACKGROUND_THEME = BACKGROUND_THEMES[0].id
 
+// In dark mode the whole platform uses a fixed ambient video instead of
+// the Settings picker: always the most recently added video theme. Drop a
+// new `/videos/money mind.bg N.mp4` in and add its entry to the video list
+// above and it becomes the dark-mode background automatically — today
+// that's Theme 13 (the list ends on 13).
+export const DARK_BACKGROUND_THEME =
+  [...BACKGROUND_THEMES].reverse().find((theme) => theme.type === "video")?.id ||
+  DEFAULT_BACKGROUND_THEME
+
 export function getBackgroundTheme(id) {
   return BACKGROUND_THEMES.find((theme) => theme.id === id) || BACKGROUND_THEMES[0]
 }

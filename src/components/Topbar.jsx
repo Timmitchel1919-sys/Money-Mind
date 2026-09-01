@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Bell, Menu, Plus, Search, X } from "lucide-react"
-import pageInfo from "../constants/pageInfo"
 import { SEARCHABLE_NAVIGATION } from "../constants/navigation"
 import useFinancialNotifications from "../hooks/useFinancialNotifications"
 
@@ -15,13 +14,12 @@ function Popover({ open, className = "", children }) {
   return <div className={`navigation-popover absolute right-0 top-[calc(100%+.65rem)] z-50 rounded-2xl p-2 ${className}`}>{children}</div>
 }
 
-export default function Topbar({ settings, activePage, onNavigate, onMenuClick, financialData }) {
+export default function Topbar({ settings, onNavigate, onMenuClick, financialData }) {
   const [panel, setPanel] = useState(null)
   const [query, setQuery] = useState("")
   const rootRef = useRef(null)
   const searchRef = useRef(null)
   const notifications = useFinancialNotifications({ ...financialData, billLeadTimeDays: settings?.notificationPreferences?.billLeadTimeDays })
-  const title = pageInfo[activePage]?.title || "Money Mind"
   const results = useMemo(() => query.trim() ? SEARCHABLE_NAVIGATION.filter((item) => item.label.toLowerCase().includes(query.toLowerCase())).slice(0, 8) : SEARCHABLE_NAVIGATION.slice(0, 5), [query])
 
   useEffect(() => {
@@ -40,7 +38,6 @@ export default function Topbar({ settings, activePage, onNavigate, onMenuClick, 
   return (
     <header ref={rootRef} className="relative z-30 mx-auto flex h-16 w-full max-w-[1440px] shrink-0 items-center gap-3">
       <button type="button" onClick={onMenuClick} aria-label="Open navigation" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl hover:bg-white/5 md:hidden"><Menu size={20} /></button>
-      <div className="min-w-0 shrink-0 md:w-44"><h1 className="truncate text-lg font-bold text-[var(--text-primary)]">{title}</h1><p className="hidden truncate text-xs text-[var(--text-muted)] md:block">Overview / {title}</p></div>
 
       <div className="relative min-w-0 flex-1">
         <div className="flex h-11 w-full items-center gap-2 rounded-xl border border-[var(--border)] bg-black/20 px-3 text-sm text-[var(--text-muted)]"><Search size={18} className="shrink-0" /><input ref={searchRef} value={query} onFocus={() => setPanel("search")} onChange={(e) => { setQuery(e.target.value); setPanel("search") }} placeholder="Search transactions, accounts, goals, reports…" aria-label="Search Money Mind" className="min-w-0 flex-1 bg-transparent text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)]" />{query ? <button type="button" onClick={() => { setQuery(""); searchRef.current?.focus() }} aria-label="Clear search" className="shrink-0"><X size={18} /></button> : <kbd className="ml-auto hidden rounded-md border border-[var(--border)] px-1.5 py-0.5 text-[10px] lg:block">Ctrl K</kbd>}</div>

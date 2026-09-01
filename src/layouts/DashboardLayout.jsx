@@ -96,7 +96,6 @@ export default function DashboardLayout({
                     <div className="shrink-0 px-4 md:px-6">
                         <Topbar
                             settings={settings}
-                            activePage={activePage}
                             onNavigate={handleNavigate}
                             onMenuClick={() => setSidebarOpen(true)}
                             financialData={moneyAIProps}
