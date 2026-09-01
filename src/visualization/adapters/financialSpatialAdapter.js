@@ -135,6 +135,10 @@ export function createFinancialSpatialScene(model) {
 
   const scene = Object.freeze({
     id: "money-mind-financial",
+    // Layer 6: passed through so the runtime can badge projected figures; the
+    // adapter itself does no projection math.
+    projected: Boolean(model?.projected),
+    monthsForward: Number(model?.monthsForward) || 0,
     nodes: Object.freeze([core, ...radialNodes, ...childNodes]),
     edges: Object.freeze([...domainEdges, ...childEdges]),
   })

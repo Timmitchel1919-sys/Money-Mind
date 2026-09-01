@@ -34,10 +34,18 @@ Status (2026-08-31):
   branch of resolveNodeMotion is new; Layer 3 motion matrix re-verified in all modes.
   Fixed en route: signed-in `#spatial` route guard (App.jsx used PROTECTED_PAGES, not
   APP_PAGES) and an R3F `raycast`-toggle pitfall that made child nodes unclickable.
+- Layer 6 simulation (v2Simulation flag) — IMPLEMENTED, browser validation done, host
+  motion-matrix pending (branch claude/v2-layer-6-simulation;
+  docs/v2/validation/layer-6-simulation.md). A "Simulate" toolbar toggle opens a lever
+  panel (months forward, extra debt/saving, investment return, one-off); the scene
+  re-scales to projected figures with an amber "Projection · +N mo" badge. New pure
+  src/financial/projection/projectFinancials.js (first occupant of src/financial/) —
+  separate from V1 math; actual path unchanged. Flag off = Layer 5 exactly.
 - Branch develop/v2 (origin main is at 4ffa43d). NB develop/v2 in this checkout is still
-  at e2063fb — Layers 4 + 5 live on claude/v2-layer-4… and claude/v2-layer-5…, to
+  at e2063fb — Layers 4 + 5 + 6 stack on claude/v2-layer-4… / -5… / -6…, all
   fast-forward onto develop/v2.
-- NEXT: merge Layers 4 + 5 into develop/v2 (fast-forward), then v2Simulation or v2AI.
+- NEXT: merge Layers 4 + 5 + 6 into develop/v2 (fast-forward). Then v2AI (Money AI in
+  the scene) or productionize the spatial view (real nav entry, chapter-registry).
 - NEXT: complete Layer 5 signed-in browser validation + Layer 3 motion matrix re-run,
   then accept and merge (claude/v2-layer-4… then claude/v2-layer-5… fast-forward onto
   develop/v2). Afterwards: v2Simulation or v2AI.

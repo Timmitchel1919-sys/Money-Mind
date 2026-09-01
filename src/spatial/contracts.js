@@ -26,7 +26,7 @@
  * @property {string=} relationship
  */
 
-/** @typedef {{ id?: string, nodes: SpatialNode[], edges: SpatialEdge[] }} SpatialScene */
+/** @typedef {{ id?: string, nodes: SpatialNode[], edges: SpatialEdge[], projected?: boolean, monthsForward?: number }} SpatialScene */
 /** @typedef {{ nodeId: string|null, edgeId: string|null }} SpatialSelection */
 /** @typedef {{ targetId: string|null, zoom: number }} SpatialCameraState */
 /** @typedef {{ hoveredId: string|null, selected: SpatialSelection }} SpatialInteractionState */
