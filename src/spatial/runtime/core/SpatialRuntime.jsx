@@ -66,6 +66,7 @@ function SpatialWorkspace({ capabilities, initialQuality, motionPreference, scen
           <span>Current focus</span>
           <strong>{selectedNode?.label || "Financial overview"}</strong>
         </div>
+        {selectedNode?.detail ? <p className="spatial-inspector__amount">{selectedNode.detail}</p> : null}
         <p>{selectedNode ? `${selectedNode.label} is selected. Choose it again or use Overview to return.` : "Select a financial domain to test focus and camera control."}</p>
       </footer>
     </section>

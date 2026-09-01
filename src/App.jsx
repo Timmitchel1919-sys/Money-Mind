@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import "./index.css"
 
 import DashboardLayout from "./layouts/DashboardLayout"
@@ -50,7 +50,8 @@ import useFormState from "./hooks/useFormState"
 import useProfile from "./hooks/useProfile"
 import useSettings from "./hooks/useSettings"
 import useAppLock from "./hooks/useAppLock"
-import { convertCurrency } from "./utils/currencyConversion"
+import useFinancialKPIs from "./hooks/useFinancialKPIs"
+import { convertCurrency, formatCurrencyAmount } from "./utils/currencyConversion"
 import { SEARCHABLE_NAVIGATION } from "./constants/navigation"
 import { featureFlags } from "./app/configuration/v2"
 
@@ -90,6 +91,45 @@ export default function App() {
   const settingsHook = useSettings()
   const appLock = useAppLock()
   const [resolvedTheme, setResolvedTheme] = useState(() => document.documentElement.dataset.theme || "light")
+
+  // Layer 4 (V2 spatial): reuse the existing pure KPI selector as the
+  // normalized financial model, then map it to the renderer-neutral scene
+  // model consumed by <SpatialExperience>. Both are memoized so the spatial
+  // adapter only re-runs when the underlying figures change.
+  const financialKPIs = useFinancialKPIs({
+    transactions: transaction.transactions,
+    budgets: budget.budgets,
+    assets: asset.assets,
+    liabilities: asset.liabilities,
+    goals: goal.goals,
+    debts: debt.debts,
+    savingsPlans: saving.savingsPlans,
+    bills: bill.bills,
+    investments: investment.investments,
+    emergencySavings: emergency.emergencySavings,
+    monthlyExpenses: emergency.monthlyExpenses,
+    monthlyIncome: form.income,
+  })
+
+  const spatialFinancialModel = useMemo(() => {
+    const modelCurrency = settingsHook.settings.currency || "SRD"
+    const money = (value) => formatCurrencyAmount(value, modelCurrency, settingsHook.settings.numberFormat)
+    return {
+      core: {
+        label: "Money Mind",
+        detail: money(financialKPIs.netWorth),
+        healthScore: financialKPIs.healthScore,
+      },
+      domains: {
+        income: { amount: financialKPIs.totalIncome, detail: money(financialKPIs.totalIncome) },
+        investments: { amount: financialKPIs.investmentValue, detail: money(financialKPIs.investmentValue) },
+        assets: { amount: financialKPIs.totalAssets, detail: money(financialKPIs.totalAssets) },
+        debt: { amount: financialKPIs.totalDebt, detail: money(financialKPIs.totalDebt) },
+        expenses: { amount: financialKPIs.totalExpenses, detail: money(financialKPIs.totalExpenses) },
+        savings: { amount: financialKPIs.totalSavingsCurrent, detail: money(financialKPIs.totalSavingsCurrent) },
+      },
+    }
+  }, [financialKPIs, settingsHook.settings.currency, settingsHook.settings.numberFormat])
 
   useEffect(() => {
     const preference = settingsHook.settings.themeMode || "system"
@@ -868,7 +908,7 @@ export default function App() {
       )}
 
       {activePage === "spatial" && featureFlags.v2SpatialUI && (
-        <SpatialExperience />
+        <SpatialExperience model={spatialFinancialModel} />
       )}
 
       {![
