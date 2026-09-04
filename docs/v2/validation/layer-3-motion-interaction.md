@@ -83,3 +83,49 @@ The motion code remains in the lazy spatial chunk. GSAP and all alternative anim
 ## Decision
 
 **LAYER 3 ACCEPTED**
+
+---
+
+## Deterministic harness rerun (2026-09-02)
+
+- Harness: `scripts/v2/layer3-browser-acceptance.mjs`
+- Command: `npm run validate:layer3`
+- Browser: Chrome `152.0.7977.65` via `playwright-core` `1.62.1` (headless)
+- Route: `http://127.0.0.1:4178/#spatial`
+- Flags during harness run: `VITE_V2_ENABLED=true`, `VITE_V2_SPATIAL_UI=true`, `VITE_V2_AI=false`
+
+### Harness matrix
+
+| Test | Result | Evidence |
+| --- | --- | --- |
+| Initialization (Canvas/WebGL/core/domains/labels) | PASS | `docs/v2/validation/layer-3-harness-report.json` |
+| Hover (all six domains) | PASS | `docs/v2/validation/layer-3-harness-report.json` |
+| Selection (all six domains) | PASS | `docs/v2/validation/layer-3-harness-report.json` |
+| Deselect | PASS | `docs/v2/validation/layer-3-harness-report.json` |
+| Node switching | PASS | `docs/v2/validation/layer-3-harness-report.json` |
+| Rapid interruption loops | PASS | `docs/v2/validation/layer-3-harness-report.json` |
+| Keyboard (Tab/Enter/Space/reset) | PASS | `docs/v2/validation/layer-3-harness-report.json` |
+| Camera focus + reset (observable state) | PASS | `docs/v2/validation/layer-3-harness-report.json` |
+| Motion policy full | PASS | `docs/v2/validation/layer-3-harness-report.json` |
+| Motion policy reduced | PASS | `docs/v2/validation/layer-3-harness-report.json` |
+| Motion policy minimal | PASS | `docs/v2/validation/layer-3-harness-report.json` |
+| Motion policy off | PASS | `docs/v2/validation/layer-3-harness-report.json` |
+| Desktop 1920×1080 | PASS | `docs/v2/validation/screenshots/layer-3/desktop-1920x1080.png` |
+| Laptop 1366×768 | PASS | `docs/v2/validation/screenshots/layer-3/laptop-1366x768.png` |
+| Tablet 768×1024 | PASS | `docs/v2/validation/screenshots/layer-3/tablet-768x1024.png` |
+| Mobile 390×844 | PASS | `docs/v2/validation/screenshots/layer-3/mobile-390x844.png` |
+| Console/pageerror inspection | PASS (known `THREE.Clock` warning only) | `docs/v2/validation/layer-3-harness-report.json` |
+| WebGL fallback | PASS | `docs/v2/validation/screenshots/layer-3/webgl-fallback.png` |
+| Layer 2C regression set | PASS | harness report + screenshot set above |
+
+### Harness screenshots (required set)
+
+- `docs/v2/validation/screenshots/layer-3/desktop-overview.png`
+- `docs/v2/validation/screenshots/layer-3/desktop-selected.png`
+- `docs/v2/validation/screenshots/layer-3/desktop-focused.png`
+- `docs/v2/validation/screenshots/layer-3/desktop-switching.png`
+- `docs/v2/validation/screenshots/layer-3/mobile-390x844.png`
+- `docs/v2/validation/screenshots/layer-3/mobile-selected.png`
+- `docs/v2/validation/screenshots/layer-3/reduced-motion-state.png`
+- `docs/v2/validation/screenshots/layer-3/off-motion-state.png`
+- `docs/v2/validation/screenshots/layer-3/webgl-fallback.png`

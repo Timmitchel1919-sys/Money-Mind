@@ -50,10 +50,10 @@ function SpatialWorkspace({ capabilities, initialQuality, motionPreference, scen
           <h2 id="spatial-runtime-title">Spatial Financial Workspace</h2>
         </div>
         <div className="spatial-toolbar__controls" aria-label="Spatial workspace controls">
-          <button className="spatial-control" disabled={!selectedId} onClick={() => dispatchIntent(resetViewIntent())} type="button">
+          <button className="spatial-control" data-testid="spatial-overview" disabled={!selectedId} onClick={() => dispatchIntent(resetViewIntent())} type="button">
             Overview
           </button>
-          <button className="spatial-control" disabled={!selectedId} onClick={() => dispatchIntent(resetViewIntent())} type="button">
+          <button className="spatial-control" data-testid="spatial-reset" disabled={!selectedId} onClick={() => dispatchIntent(resetViewIntent())} type="button">
             Reset camera
           </button>
           <label className="spatial-quality-control">
@@ -72,7 +72,7 @@ function SpatialWorkspace({ capabilities, initialQuality, motionPreference, scen
 
       {sim?.active ? <SimPanel sim={sim} /> : null}
 
-      <div className="spatial-stage" data-active-transition={activeTransition?.name || "none"} data-context-state={contextState} data-scene-state={sceneState}>
+      <div className="spatial-stage" data-active-transition={activeTransition?.name || "none"} data-context-state={contextState} data-scene-state={sceneState} data-testid="spatial-stage">
         <SpatialCanvas
           onContextStateChange={handleContextStateChange}
           quality={quality}

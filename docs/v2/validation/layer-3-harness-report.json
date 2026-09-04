@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-09-04T17:02:27.968Z",
+  "browser": "C:/Program Files/Google/Chrome/Application/chrome.exe",
+  "playwrightCoreVersion": "1.62.1",
+  "baseUrl": "http://127.0.0.1:4178",
+  "results": {
+    "initialization": true,
+    "hover": true,
+    "selection": true,
+    "deselection": true,
+    "switching": true,
+    "rapidInterruption": true,
+    "keyboard": true,
+    "cameraFocus": true,
+    "cameraReset": true,
+    "full": true,
+    "reduced": true,
+    "minimal": true,
+    "off": true,
+    "responsive": {
+      "desktop-1920x1080": true,
+      "laptop-1366x768": true,
+      "tablet-768x1024": true,
+      "mobile-390x844": true
+    },
+    "console": true,
+    "webglFallback": true,
+    "responsivePass": true
+  },
+  "devServerOutputSnippet": "npm notice run money-mind@0.0.0 dev\nnpm notice run vite --host 127.0.0.1 --port 4178\n\u001b[2m1:56:20 PM\u001b[22m \u001b[36m\u001b[1m[vite]\u001b[22m\u001b[39m \u001b[90m\u001b[2m(client)\u001b[22m\u001b[39m Re-optimizing dependencies because vite config has changed\n\n  \u001b[32m\u001b[1mVITE\u001b[22m v8.1.3\u001b[39m  \u001b[2mready in \u001b[0m\u001b[1m1544\u001b[22m\u001b[2m\u001b[0m ms\u001b[22m\n\n  \u001b[32m➜\u001b[39m  \u001b[1mLocal\u001b[22m:   \u001b[36mhttp://127.0.0.1:\u001b[1m4178\u001b[22m/\u001b[39m\n\u001b[2m1:56:21 PM\u001b[22m \u001b[36m\u001b[1m[vite]\u001b[22m\u001b[39m \u001b[90m\u001b[2m(client)\u001b[22m\u001b[39m [optimizer] scanning dependencies...\n\u001b[2m1:56:24 PM\u001b[22m \u001b[36m\u001b[1m[vite]\u001b[22m\u001b[39m \u001b[90m\u001b[2m(client)\u001b[22m\u001b[39m [optimizer] bundling dependencies...\n\u001b[2m1:56:44 PM\u001b[22m \u001b[33m\u001b[1m[vite]\u001b[22m\u001b[39m \u001b[33m\u001b[2m(client)\u001b[22m\u001b[39m \u001b[2m[console.warn] \u001b[22mTHREE.Clock: This module has been deprecated. Please use THREE.Timer instead.\n\u001b[2m1:57:42 PM\u001b[22m \u001b[33m\u001b[1m[vite]\u001b[22m\u001b[39m \u001b[33m\u001b[2m(client)\u001b[22m\u001b[39m \u001b[2m[console.warn] \u001b[22mTHREE.Clock: This module has been deprecated. Please use THREE.Timer instead.\n\u001b[2m1:58:28 PM\u001b[22m \u001b[33m\u001b[1m[vite]\u001b[22m\u001b[39m \u001b[33m\u001b[2m(client)\u001b[22m\u001b[39m \u001b[2m[console.warn] \u001b[22mTHREE.Clock: This module has been deprecated. Please use THREE.Timer instead.\n\u001b[2m1:58:52 PM\u001b[22m \u001b[33m\u001b[1m[vite]\u001b[22m\u001b[39m \u001b[33m\u001b[2m(client)\u001b[22m\u001b[39m \u001b[2m[console.warn] \u001b[22mTHREE.Clock: This module has been deprecated. Please use THREE.Timer instead.\n\u001b[2m1:59:40 PM\u001b[22m \u001b[33m\u001b[1m[vite]\u001b[22m\u001b[39m \u001b[33m\u001b[2m(client)\u001b[22m\u001b[39m \u001b[2m[console.warn] \u001b[22mTHREE.Clock: This module has been deprecated. Please use THREE.Timer instead.\n\u001b[2m2:00:23 PM\u001b[22m \u001b[33m\u001b[1m[vite]\u001b[22m\u001b[39m \u001b[33m\u001b[2m(client)\u001b[22m\u001b[39m \u001b[2m[console.warn] \u001b[22mTHREE.Clock: This module has been deprecated. Please use THREE.Timer instead.\n\u001b[2m2:00:46 PM\u001b[22m \u001b[33m\u001b[1m[vite]\u001b[22m\u001b[39m \u001b[33m\u001b[2m(client)\u001b[22m\u001b[39m \u001b[2m[console.warn] \u001b[22mTHREE.Clock: This module has been deprecated. Please use THREE.Timer instead.\n\u001b[2m2:01:11 PM\u001b[22m \u001b[33m\u001b[1m[vite]\u001b[22m\u001b[39m \u001b[33m\u001b[2m(client)\u001b[22m\u001b[39m \u001b[2m[console.warn] \u001b[22mTHREE.Clock: This module has been deprecated. Please use THREE.Timer instead.\n\u001b[2m2:01:37 PM\u001b[22m \u001b[33m\u001b[1m[vite]\u001b[22m\u001b[39m \u001b[33m\u001b[2m(client)\u001b[22m\u001b[39m \u001b[2m[console.warn] \u001b[22mTHREE.Clock: This module has been deprecated. Please use THREE.Timer instead.\n\u001b[2m2:02:01 PM\u001b[22m \u001b[33m\u001b[1m[vite]\u001b[22m\u001b[39m \u001b[33m\u001b[2m(client)\u001b[22m\u001b[39m \u001b[2m[console.warn] \u001b[22mTHREE.Clock: This module has been deprecated. Please use THREE.Timer instead.\n"
+}

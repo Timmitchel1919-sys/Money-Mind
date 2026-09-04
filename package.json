@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
+    "validate:layer3": "node scripts/v2/layer3-browser-acceptance.mjs",
     "preview": "vite preview",
     "deploy": "npm run build && npx -y firebase-tools@latest deploy --only hosting",
     "deploy:full": "npm run build && npx -y firebase-tools@latest deploy",
@@ -33,6 +34,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
     "oxlint": "^1.71.0",
+    "playwright-core": "^1.62.1",
     "remotion": "^4.0.489",
     "tailwindcss": "^4.3.2",
     "vite": "^8.1.1"

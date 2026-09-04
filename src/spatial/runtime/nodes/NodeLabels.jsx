@@ -24,6 +24,7 @@ export default function NodeLabels({ nodes }) {
         return (
           <button
             aria-pressed={active}
+            data-testid={`spatial-node-${node.id}`}
             className={`spatial-node-label spatial-node-label--${node.kind}${active ? " is-active" : ""}${hovered ? " is-hovered" : ""}${selectedId && !active && node.kind !== "core" ? " is-muted" : ""}${activeTransition?.name === TRANSITIONS.entry ? " is-entering" : ""}`}
             key={node.id}
             onBlur={() => dispatchIntent(clearHoverIntent())}
