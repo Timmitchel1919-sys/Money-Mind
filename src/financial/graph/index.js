@@ -32,4 +32,7 @@ export {
   selectEdgesByRelationships,
   extractNeighborhood,
   extractConnectedComponent,
+  selectNodeRelationships,
+  selectRelationshipsBetween,
+  composeGraphTransforms,
 } from "./transform/graphTransform.js"

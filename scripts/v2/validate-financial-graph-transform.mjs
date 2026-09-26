@@ -8,9 +8,10 @@
 // ("conflicting identity handling if composition is implemented") are
 // exercised only insofar as documented: Layer 4C introduces no new snapshot
 // type (reuses Layer 4A's serializeGraph/deserializeGraph directly, proven
-// below) and no graph composition/merge at all (deliberately deferred — see
+// below) and no graph merge at all (deliberately deferred — see
 // docs/v2/architecture/financial-graph-engine.md), so there is no
-// conflicting-identity behavior to test.
+// conflicting-identity behavior to test. Transformation *composition*
+// (pipelines via composeGraphTransforms) is tested at the end of this file.
 
 import {
   createDomain,
@@ -32,6 +33,9 @@ import {
   selectNodesByTypes,
   serializeGraph,
   validateGraph,
+  selectNodeRelationships,
+  selectRelationshipsBetween,
+  composeGraphTransforms,
 } from "../../src/financial/graph/index.js"
 
 let passed = 0
@@ -234,6 +238,123 @@ const engine = createFinancialGraphEngine(buildFixtureGraph())
   const isolatedComponent = extractConnectedComponent(engine, isolated.id)
   assert(isolatedComponent.nodes.length === 1 && isolatedComponent.nodes[0].id === isolated.id, "an isolated node's own connected component is just itself")
   assert(isolatedComponent.edges.length === 0, "a singleton component has no edges")
+}
+
+// --- Hierarchical domains: a retained sub-domain keeps its parent chain ---
+{
+  const hierarchy = createGraph({
+    id: "layer-4c-hierarchy",
+    domains: [
+      createDomain({ id: "savings", label: "Savings" }),
+      createDomain({ id: "savings-emergency", label: "Emergency", parentId: "savings" }),
+      createDomain({ id: "savings-emergency-cash", label: "Cash buffer", parentId: "savings-emergency" }),
+      createDomain({ id: "income", label: "Income" }),
+    ],
+    nodes: [
+      createNode({ id: "income-category-salary", type: "category", domain: "income", label: "Salary" }),
+      createNode({ id: "savings-emergency-cash-goal-buffer", type: "goal", domain: "savings-emergency-cash", label: "Buffer" }),
+    ],
+    edges: [createEdge({ id: "salary-funds-buffer", source: "income-category-salary", target: "savings-emergency-cash-goal-buffer", relationship: "funds" })],
+  })
+  const byNode = selectNodesByIds(hierarchy, ["savings-emergency-cash-goal-buffer"])
+  assert(validateGraph(byNode).valid, "a node view over a sub-sub-domain node must stay valid")
+  assert(JSON.stringify(byNode.domains.map((d) => d.id)) === JSON.stringify(["savings", "savings-emergency", "savings-emergency-cash"]), "the retained sub-domain keeps its full parent chain, in original order")
+  const byRelationship = selectEdgesByRelationships(hierarchy, ["funds"])
+  assert(validateGraph(byRelationship).valid && byRelationship.domains.length === 4, "edge-first views keep parent chains too")
+  const byNodeView = selectNodeRelationships(hierarchy, "income-category-salary", { direction: "outgoing" })
+  assert(validateGraph(byNodeView).valid, "node relationship view over a hierarchy stays valid")
+}
+
+// --- Relationship views anchored on a node / between two nodes ---
+
+function assertValidDerived(view, label) {
+  assert(validateGraph(view).valid, `${label}: derived graph must pass Layer 4A validateGraph`)
+  const nodeIds = new Set(view.nodes.map((n) => n.id))
+  assert(view.edges.every((e) => nodeIds.has(e.source) && nodeIds.has(e.target)), `${label}: no dangling edges`)
+  assert(Object.isFrozen(view) && Object.isFrozen(view.nodes) && Object.isFrozen(view.edges), `${label}: derived graph must be frozen`)
+}
+
+{
+  const both = selectNodeRelationships(engine, income.id)
+  assertValidDerived(both, "selectNodeRelationships both")
+  assert(JSON.stringify(ids(both.nodes)) === JSON.stringify([income.id, savings.id, expenses.id].sort()), "both-direction view of income = income + its two neighbors")
+  assert(both.edges.length === 2, "both-direction view of income keeps its two edges")
+
+  const incoming = selectNodeRelationships(engine, netWorth.id, { direction: "incoming" })
+  assertValidDerived(incoming, "selectNodeRelationships incoming")
+  assert(incoming.edges.length === 3 && incoming.edges.every((e) => e.target === netWorth.id), "incoming view of net worth keeps only edges targeting it")
+
+  const outgoingOfNetWorth = selectNodeRelationships(engine, netWorth.id, { direction: "outgoing" })
+  assert(outgoingOfNetWorth.nodes.length === 1 && outgoingOfNetWorth.nodes[0].id === netWorth.id && outgoingOfNetWorth.edges.length === 0, "a node with no outgoing edges yields a valid one-node view (anchor retained)")
+
+  const reducesOnly = selectNodeRelationships(engine, netWorth.id, { relationships: ["reduces"] })
+  assert(reducesOnly.edges.length === 1 && reducesOnly.edges[0].relationship === "reduces", "relationship filter restricts the node view")
+  assert(JSON.stringify(ids(reducesOnly.nodes)) === JSON.stringify([debt.id, netWorth.id].sort()), "relationship-filtered node view keeps only touched nodes + anchor")
+
+  const isolatedView = selectNodeRelationships(engine, isolated.id)
+  assert(isolatedView.nodes.length === 1 && isolatedView.edges.length === 0, "isolated node view is the node alone")
+
+  assertThrows(() => selectNodeRelationships(engine, "ghost"), GRAPH_ENGINE_ERROR_CODES.NODE_NOT_FOUND, "node view of a missing node throws NODE_NOT_FOUND")
+  assertThrows(() => selectNodeRelationships(engine, income.id, { direction: "sideways" }), GRAPH_ENGINE_ERROR_CODES.INVALID_PARAMETER, "unknown direction throws INVALID_PARAMETER")
+  assertThrows(() => selectNodeRelationships(engine, income.id, { relationships: ["Not Valid"] }), GRAPH_ENGINE_ERROR_CODES.INVALID_RELATIONSHIP, "malformed relationship throws INVALID_RELATIONSHIP")
+  assertThrows(() => selectNodeRelationships(engine, income.id, { relationships: "funds" }), GRAPH_ENGINE_ERROR_CODES.INVALID_PARAMETER, "non-array relationships throws INVALID_PARAMETER")
+}
+
+{
+  const forward = selectRelationshipsBetween(engine, income.id, savings.id, { directed: true })
+  assertValidDerived(forward, "selectRelationshipsBetween directed")
+  assert(forward.edges.length === 1 && forward.edges[0].source === income.id, "directed source->target view keeps the income->savings edge")
+
+  const backward = selectRelationshipsBetween(engine, savings.id, income.id, { directed: true })
+  assert(backward.edges.length === 0 && backward.nodes.length === 2, "reverse directed view has no edges but keeps both endpoints")
+
+  const undirected = selectRelationshipsBetween(engine, savings.id, income.id)
+  assert(undirected.edges.length === 1, "undirected view finds the edge in either direction")
+
+  const unrelated = selectRelationshipsBetween(engine, income.id, debt.id)
+  assert(unrelated.edges.length === 0 && unrelated.nodes.length === 2, "two unconnected nodes yield a valid edge-less view")
+
+  const filteredOut = selectRelationshipsBetween(engine, income.id, savings.id, { relationships: ["funds"] })
+  assert(filteredOut.edges.length === 0, "relationship filter applies to source->target view")
+
+  assertThrows(() => selectRelationshipsBetween(engine, income.id, "ghost"), GRAPH_ENGINE_ERROR_CODES.NODE_NOT_FOUND, "missing endpoint throws NODE_NOT_FOUND")
+  assertThrows(() => selectRelationshipsBetween(engine, income.id, savings.id, { directed: "yes" }), GRAPH_ENGINE_ERROR_CODES.INVALID_PARAMETER, "non-boolean directed throws INVALID_PARAMETER")
+}
+
+// --- Composition (pipeline): domain filter -> neighborhood -> relationship filter ---
+{
+  const before = serializeGraph(engine.getGraph())
+  const pipeline = composeGraphTransforms(
+    (g) => selectNodesByDomains(g, ["savings", "debt", "investments", "net-worth"]),
+    (g) => extractNeighborhood(g, netWorth.id),
+    (g) => selectEdgesByRelationships(g, ["increases"]),
+  )
+  const composed = pipeline(engine)
+  assertValidDerived(composed, "composed pipeline")
+  assert(JSON.stringify(ids(composed.nodes)) === JSON.stringify([savings.id, investments.id, netWorth.id].sort()), "pipeline result = the 'increases' contributors to net worth")
+  assert(composed.edges.every((e) => e.relationship === "increases"), "pipeline result keeps only 'increases' edges")
+
+  const manual = selectEdgesByRelationships(extractNeighborhood(selectNodesByDomains(engine, ["savings", "debt", "investments", "net-worth"]), netWorth.id), ["increases"])
+  assert(serializeGraph(composed) === serializeGraph(manual), "composition is identical to manual chaining")
+  assert(serializeGraph(pipeline(engine)) === serializeGraph(composed), "composition is deterministic")
+  assert(serializeGraph(engine.getGraph()) === before, "composition never mutates the source graph")
+
+  assert(composed.metadata.lineage.length === 3, "lineage records every composed step")
+  assert(JSON.stringify(composed.metadata.lineage.map((step) => step.operation)) === JSON.stringify(["projectGraph", "extractNeighborhood", "selectEdgesByRelationships"]), "lineage keeps step order")
+  assert(composed.id === engine.getGraph().id, "composition preserves graph identity")
+
+  const plainStep = composeGraphTransforms((g) => ({ ...g, nodes: [...g.nodes], edges: [...g.edges], domains: [...g.domains] }))
+  const normalized = plainStep(engine)
+  assert(Object.isFrozen(normalized) && Object.isFrozen(normalized.nodes), "a hand-written step's plain result is re-frozen by composition")
+
+  const danglingStep = composeGraphTransforms((g) => ({ ...g, nodes: g.nodes.filter((n) => n.id !== savings.id) }))
+  assertThrows(() => danglingStep(engine), GRAPH_ENGINE_ERROR_CODES.INVALID_DERIVED_GRAPH, "a step that leaves a dangling edge is rejected, not repaired")
+  assertThrows(() => composeGraphTransforms(), GRAPH_ENGINE_ERROR_CODES.INVALID_PARAMETER, "empty composition is rejected")
+  assertThrows(() => composeGraphTransforms("not-a-function"), GRAPH_ENGINE_ERROR_CODES.INVALID_PARAMETER, "non-function step is rejected")
+
+  const emptyThenMore = composeGraphTransforms((g) => selectNodesByDomains(g, ["goals"]))(engine)
+  assertValidDerived(emptyThenMore, "empty composed result")
+  assert(emptyThenMore.nodes.length === 0 && emptyThenMore.edges.length === 0, "a composition may validly end in an empty graph")
 }
 
 console.log(`Financial graph transform tests: ${passed} assertions passed.`)

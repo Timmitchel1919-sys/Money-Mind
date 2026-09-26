@@ -26,6 +26,7 @@ import { createGraph } from "../contracts.js"
 import { createFinancialGraphEngine } from "../engine/graphEngine.js"
 import { GRAPH_ENGINE_ERROR_CODES, GraphEngineError } from "../engine/errors.js"
 import { validateGraph } from "../validation/validateGraph.js"
+import { isValidIdentifier } from "../identity.js"
 
 // Accepts either a FinancialGraphEngine (duck-typed by its own shape) or a
 // plain/graph-contract object, and always returns an engine — reusing
@@ -53,13 +54,20 @@ function normalizeIdList(value, field) {
 // operation here is constructed so it never *should* fail (edges are always
 // filtered to reference only retained nodes).
 function buildDerivedGraph(sourceGraph, { nodes, domains, edges, operation, parameters }, validationOptions) {
+  // `lineage` accumulates across composed transformations (oldest first), so a
+  // pipeline's full provenance survives; `operation`/`parameters` keep
+  // describing the most recent step.
+  const lineage = Object.freeze([
+    ...(Array.isArray(sourceGraph.metadata?.lineage) ? sourceGraph.metadata.lineage : []),
+    Object.freeze({ operation, parameters }),
+  ])
   const derived = createGraph({
     id: sourceGraph.id,
     version: sourceGraph.version,
     domains,
     nodes,
     edges,
-    metadata: { ...sourceGraph.metadata, derivedFrom: sourceGraph.id, operation, parameters },
+    metadata: { ...sourceGraph.metadata, derivedFrom: sourceGraph.id, operation, parameters, lineage },
   })
 
   const validation = validateGraph(derived, validationOptions)
@@ -73,6 +81,26 @@ function buildDerivedGraph(sourceGraph, { nodes, domains, edges, operation, para
   return derived
 }
 
+// Domains to retain for a set of retained nodes: every domain a retained node
+// references, PLUS that domain's full parent chain — otherwise a node in a
+// sub-domain (e.g. "savings-emergency" under "savings") would yield a derived
+// graph whose domain references a parent that was dropped, which Layer 4A's
+// validateGraph rightly rejects (DOMAIN_PARENT_MISSING). Returned in the source
+// graph's original domains order. The seen-set bounds the walk even on a
+// (validation-rejected) cyclic parent chain.
+function retainDomains(graph, nodes) {
+  const parentById = new Map(graph.domains.map((domain) => [domain.id, domain.parentId ?? null]))
+  const keep = new Set()
+  for (const node of nodes) {
+    let current = node.domain
+    while (current != null && !keep.has(current)) {
+      keep.add(current)
+      current = parentById.get(current) ?? null
+    }
+  }
+  return graph.domains.filter((domain) => keep.has(domain.id))
+}
+
 // The induced subgraph over a node-id keep-set: retained nodes (in original
 // graph.nodes order), retained domains (only those referenced by a retained
 // node, in original graph.domains order), retained edges (only those whose
@@ -82,27 +110,26 @@ function buildDerivedGraph(sourceGraph, { nodes, domains, edges, operation, para
 function induceSubgraph(engine, keepNodeIds, operation, parameters, validationOptions) {
   const graph = engine.getGraph()
   const nodes = graph.nodes.filter((node) => keepNodeIds.has(node.id))
-  const retainedDomainIds = new Set(nodes.map((node) => node.domain))
-  const domains = graph.domains.filter((domain) => retainedDomainIds.has(domain.id))
+  const domains = retainDomains(graph, nodes)
   const edges = graph.edges.filter((edge) => keepNodeIds.has(edge.source) && keepNodeIds.has(edge.target))
   return buildDerivedGraph(graph, { nodes, domains, edges, operation, parameters }, validationOptions)
 }
 
 // The edge-first counterpart: retained edges (in original order), retained
-// nodes = only those touched by a retained edge, retained domains = only
-// those referenced by a retained node. Also dangling-reference-free by
+// nodes = only those touched by a retained edge (plus any explicit anchor
+// nodes, e.g. the node a relationship view is centred on), retained domains =
+// only those referenced by a retained node. Also dangling-reference-free by
 // construction.
-function induceFromEdgeIds(engine, keepEdgeIds, operation, parameters, validationOptions) {
+function induceFromEdgeIds(engine, keepEdgeIds, operation, parameters, validationOptions, anchorNodeIds = []) {
   const graph = engine.getGraph()
   const edges = graph.edges.filter((edge) => keepEdgeIds.has(edge.id))
-  const retainedNodeIds = new Set()
+  const retainedNodeIds = new Set(anchorNodeIds)
   for (const edge of edges) {
     retainedNodeIds.add(edge.source)
     retainedNodeIds.add(edge.target)
   }
   const nodes = graph.nodes.filter((node) => retainedNodeIds.has(node.id))
-  const retainedDomainIds = new Set(nodes.map((node) => node.domain))
-  const domains = graph.domains.filter((domain) => retainedDomainIds.has(domain.id))
+  const domains = retainDomains(graph, nodes)
   return buildDerivedGraph(graph, { nodes, domains, edges, operation, parameters }, validationOptions)
 }
 
@@ -234,4 +261,111 @@ export function extractConnectedComponent(graphOrEngine, nodeId, validationOptio
   const keep = new Set(component.map((node) => node.id))
   keep.add(nodeId)
   return induceSubgraph(engine, keep, "extractConnectedComponent", { nodeId }, validationOptions)
+}
+
+function normalizeRelationshipFilter(relationships) {
+  const list = normalizeIdList(relationships, "relationships")
+  for (const relationship of list) {
+    if (!isValidIdentifier(relationship)) {
+      throw new GraphEngineError(GRAPH_ENGINE_ERROR_CODES.INVALID_RELATIONSHIP, `"${relationship}" is not a valid relationship identifier`, { relationship })
+    }
+  }
+  return list.length > 0 ? new Set(list) : null
+}
+
+const DIRECTIONS = new Set(["both", "outgoing", "incoming"])
+
+/**
+ * Relationship view anchored on one node: the node itself plus every edge
+ * touching it in the given direction ("both" | "outgoing" | "incoming"),
+ * optionally restricted to specific relationships, plus the nodes at the other
+ * end of those edges. The anchor is always retained, so a node with no matching
+ * relationship yields a valid one-node view rather than an empty graph.
+ * Reuses Layer 4B's getConnectedEdges (adjacency index) — no graph scan.
+ *
+ * @param {unknown} graphOrEngine
+ * @param {string} nodeId
+ * @param {{ direction?: "both"|"outgoing"|"incoming", relationships?: string[] }} [options]
+ */
+export function selectNodeRelationships(graphOrEngine, nodeId, { direction = "both", relationships } = {}, validationOptions) {
+  const engine = resolveEngine(graphOrEngine, validationOptions)
+  if (!DIRECTIONS.has(direction)) {
+    throw new GraphEngineError(GRAPH_ENGINE_ERROR_CODES.INVALID_PARAMETER, `direction must be "both", "outgoing" or "incoming", got "${direction}"`, { direction })
+  }
+  const relationshipFilter = normalizeRelationshipFilter(relationships)
+  const keepEdgeIds = new Set()
+  for (const edge of engine.getConnectedEdges(nodeId)) {
+    if (direction === "outgoing" && edge.source !== nodeId) continue
+    if (direction === "incoming" && edge.target !== nodeId) continue
+    if (relationshipFilter && !relationshipFilter.has(edge.relationship)) continue
+    keepEdgeIds.add(edge.id)
+  }
+  const parameters = { nodeId, direction, relationships: relationshipFilter ? [...relationshipFilter].sort() : [] }
+  return induceFromEdgeIds(engine, keepEdgeIds, "selectNodeRelationships", parameters, validationOptions, [nodeId])
+}
+
+/**
+ * Source -> target relationship view: both nodes plus the edges directly
+ * between them. `directed: true` keeps only edges from sourceId to targetId;
+ * the default keeps both directions. Optionally restricted to relationships.
+ * Reuses Layer 4B's getRelationships.
+ *
+ * @param {unknown} graphOrEngine
+ * @param {string} sourceId
+ * @param {string} targetId
+ * @param {{ directed?: boolean, relationships?: string[] }} [options]
+ */
+export function selectRelationshipsBetween(graphOrEngine, sourceId, targetId, { directed = false, relationships } = {}, validationOptions) {
+  const engine = resolveEngine(graphOrEngine, validationOptions)
+  if (typeof directed !== "boolean") {
+    throw new GraphEngineError(GRAPH_ENGINE_ERROR_CODES.INVALID_PARAMETER, "directed must be a boolean", { directed })
+  }
+  const relationshipFilter = normalizeRelationshipFilter(relationships)
+  const keepEdgeIds = new Set()
+  for (const edge of engine.getRelationships(sourceId, targetId)) {
+    if (directed && edge.source !== sourceId) continue
+    if (relationshipFilter && !relationshipFilter.has(edge.relationship)) continue
+    keepEdgeIds.add(edge.id)
+  }
+  const parameters = { sourceId, targetId, directed, relationships: relationshipFilter ? [...relationshipFilter].sort() : [] }
+  return induceFromEdgeIds(engine, keepEdgeIds, "selectRelationshipsBetween", parameters, validationOptions, [sourceId, targetId])
+}
+
+/**
+ * Transformation composition (a pipeline — not graph merge, which stays
+ * deferred). Each step is a function `(graph) => FinancialGraph`, typically a
+ * partially-applied transformation above:
+ *
+ *   const debtFocus = composeGraphTransforms(
+ *     (g) => selectNodesByDomains(g, ["debt", "net-worth"]),
+ *     (g) => extractNeighborhood(g, debtNodeId),
+ *   )
+ *   const view = debtFocus(engine)
+ *
+ * Steps run left to right. Every intermediate result is re-validated when the
+ * next step builds its engine, and the final result is checked with Layer 4A's
+ * validateGraph — a step that returns an invalid graph throws
+ * INVALID_DERIVED_GRAPH instead of propagating it. Provenance accumulates in
+ * `metadata.lineage`.
+ *
+ * @param {...(graph: import("../contracts.js").FinancialGraph) => import("../contracts.js").FinancialGraph} steps
+ * @returns {(graphOrEngine: unknown, validationOptions?: object) => import("../contracts.js").FinancialGraph}
+ */
+export function composeGraphTransforms(...steps) {
+  if (steps.length === 0 || steps.some((step) => typeof step !== "function")) {
+    throw new GraphEngineError(GRAPH_ENGINE_ERROR_CODES.INVALID_PARAMETER, "composeGraphTransforms requires one or more step functions", { stepCount: steps.length })
+  }
+  return function composedGraphTransform(graphOrEngine, validationOptions) {
+    let current = resolveEngine(graphOrEngine, validationOptions).getGraph()
+    steps.forEach((step, index) => {
+      const next = step(current)
+      const validation = validateGraph(next, validationOptions)
+      if (!validation.valid) {
+        throw new GraphEngineError(GRAPH_ENGINE_ERROR_CODES.INVALID_DERIVED_GRAPH, `Composed step ${index} produced an invalid graph`, { errors: validation.errors, step: index })
+      }
+      // Re-normalize through Layer 4A so a hand-written step can't leak a mutable graph.
+      current = createGraph(next)
+    })
+    return current
+  }
 }

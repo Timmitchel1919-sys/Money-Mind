@@ -2,8 +2,9 @@
 
 - Status: Contracts (Layer 4A) + a read-only deterministic query/traversal
   engine (Layer 4B) + deterministic, non-mutating graph transformations
-  (Layer 4C). No graph-to-visualization adapter, no graph library, no UI
-  wiring yet.
+  (Layer 4C, including relationship views and pipeline composition). The
+  Layer 4D graph → spatial adapter is documented separately in
+  `graph-spatial-adapter.md`. No graph library; not wired into the live UI.
 - Location: `src/financial/graph/`
 - Depends on: nothing V2-specific. Independent of `src/spatial/`, `src/motion/`,
   and the existing `v2GraphEngine` flag/UI (see "Relationship to the existing
@@ -567,6 +568,18 @@ one is always valid input to the next, and to `createFinancialGraphEngine`:
   — subgraph extraction around a node. Reuses Layer 4B's
   `getConnectedNeighborhood` verbatim for the traversal; this function only
   turns that node list into a valid induced graph.
+- **`selectNodeRelationships(graphOrEngine, nodeId, { direction = "both", relationships? })`**
+  — relationship view anchored on one node: the node, every edge touching it
+  in the given direction (`"both" | "outgoing" | "incoming"`), optionally only
+  the given relationships, and the nodes at the other ends. Reuses Layer 4B's
+  `getConnectedEdges` adjacency index. The anchor is always retained, so "no
+  matching relationship" is a valid one-node view, not an empty graph.
+- **`selectRelationshipsBetween(graphOrEngine, sourceId, targetId, { directed = false, relationships? })`**
+  — source → target view: both nodes plus the edges directly between them
+  (both directions by default; `directed: true` keeps only source → target).
+  Reuses Layer 4B's `getRelationships`. Both endpoints are always retained.
+- **`composeGraphTransforms(...steps)`** — pipeline composition, see
+  "Composition" below.
 - **`extractConnectedComponent(graphOrEngine, nodeId)`** — the full
   connected component containing `nodeId`. A thin reuse of Layer 4B's
   *bounded* `getConnectedNeighborhood`, called with `maxDepth =
@@ -582,8 +595,16 @@ filter is one of exactly three fixed, named criteria (`nodeIds`, `domains`,
 `selectEdgesByRelationships`), combined only by union. This covers every
 example in the specification (domain selection, relationship selection,
 node selection, edge selection, source/target relationships via
-`getRelatedNodes`/`getRelationships` already in Layer 4B) with four small
-functions instead of an open-ended expression evaluator.
+`getRelatedNodes`/`getRelationships` already in Layer 4B, and as graph views
+via `selectNodeRelationships`/`selectRelationshipsBetween`) with a handful of
+small functions instead of an open-ended expression evaluator.
+
+Arbitrary predicate filtering (`(node) => boolean`) was deliberately **not**
+added: every current view is expressible with the named criteria above, and a
+predicate API would make view definitions opaque to provenance
+(`metadata.lineage` could no longer record *what* was selected). A caller who
+genuinely needs a one-off predicate can write it as a `composeGraphTransforms`
+step, which is still validated and re-frozen.
 
 ### Subgraph semantics (the induced-subgraph rule)
 
@@ -591,13 +612,24 @@ Every transformation reduces to one of two shared private primitives:
 
 - **`induceSubgraph(engine, keepNodeIds, ...)`** (node-first): retained
   nodes = the keep-set, in the source graph's original `nodes` order;
-  retained domains = only those referenced by a retained node, in original
-  `domains` order; retained edges = only those whose source **and** target
+  retained domains = those referenced by a retained node **plus their full
+  parent chain**, in original `domains` order; retained edges = only those whose source **and** target
   are both retained, in original `edges` order.
 - **`induceFromEdgeIds(engine, keepEdgeIds, ...)`** (edge-first, used only
   by `selectEdgesByRelationships`): retained edges = the keep-set, in
-  original order; retained nodes = only those touched by a retained edge;
-  retained domains = only those referenced by a retained node.
+  original order; retained nodes = only those touched by a retained edge (plus explicit anchor
+  nodes for the node-anchored relationship views);
+  retained domains = those referenced by a retained node plus their parent
+  chains.
+
+> **Fix (2026-09-26, found by the Layer 4D tests):** both primitives
+> originally kept only *directly* referenced domains. A retained node in a
+> sub-domain (e.g. `savings-emergency` → parent `savings`) produced a derived
+> graph whose domain named a dropped parent, which `validateGraph` rejects
+> (`DOMAIN_PARENT_MISSING`). The `INVALID_DERIVED_GRAPH` safety net meant no
+> invalid graph ever escaped, but every view over a hierarchical graph threw.
+> A shared `retainDomains` helper now keeps ancestor chains. Covered by a
+> hierarchy test in `validate-financial-graph-transform.mjs`.
 
 Both filter the **original** arrays by membership in a computed keep-set —
 never rebuild or reorder them — which is what makes canonical ordering
@@ -636,9 +668,33 @@ duplicate representation of this — they are one-line aliases calling
 `projectGraph(g, { domains: ["debt"] })` everywhere a single criterion is
 all that's needed.
 
-### Composition decision: deferred
+### Composition (pipelines): implemented
 
-Graph composition/merge (combining two separate `FinancialGraph`s into one)
+`composeGraphTransforms(...steps)` returns a function
+`(graphOrEngine, validationOptions?) => FinancialGraph` that runs each step
+`(graph) => FinancialGraph` left to right:
+
+```js
+const debtFocus = composeGraphTransforms(
+  (g) => selectNodesByDomains(g, ["debt", "net-worth"]),
+  (g) => extractNeighborhood(g, debtNodeId),
+  (g) => selectEdgesByRelationships(g, ["reduces"]),
+)
+const view = debtFocus(engine)
+```
+
+- Every step's output is checked with Layer 4A's `validateGraph`; an invalid
+  step result throws `INVALID_DERIVED_GRAPH` (never repaired).
+- Every step's output is re-normalized through Layer 4A's `createGraph`, so a
+  hand-written step cannot leak a mutable graph.
+- The result is identical to chaining the calls by hand (verified by test).
+- Provenance: every derived graph now carries `metadata.lineage`, an ordered,
+  frozen list of `{ operation, parameters }` that accumulates across steps.
+  `metadata.operation`/`parameters` still describe the most recent step.
+
+### Graph merge decision: deferred
+
+Graph merge (combining two separate `FinancialGraph`s into one)
 was evaluated and **not implemented**. No current Money Mind consumer
 builds more than one `FinancialGraph` at a time — `App.jsx`'s
 `spatialFinancialModel` derives a single model from one signed-in user's
@@ -736,14 +792,12 @@ caller passes a plain `FinancialGraph` instead). Layer 4C's only original
 logic is turning a Layer 4B query result (a node/edge list) into a new,
 independently valid `FinancialGraph`.
 
-### Relationship to Layer 4D (not built)
+### Relationship to Layer 4D
 
-Layer 4D (a future Graph → Spatial Adapter) is expected to consume Layer 4C
-the same way `financialSpatialAdapter.js` consumes a plain financial model
-today: call a Layer 4C transformation (or several, composed) to derive the
-exact subgraph a given spatial view needs, then map that `FinancialGraph`
-into a `SpatialScene`. Nothing about that adapter exists yet — no code
-under `src/visualization/adapters/` was added or changed by Layer 4C.
+Layer 4D (`src/visualization/adapters/financialGraphSpatialAdapter.js`,
+documented in `graph-spatial-adapter.md`) consumes a `FinancialGraph` —
+typically a Layer 4C view — and maps it to a `SpatialScene`. Layer 4C itself
+imports nothing from `src/visualization/`; the dependency points one way only.
 
 ### Explicit non-responsibilities
 
@@ -752,7 +806,7 @@ Firebase/Firestore data; import Three.js, React, or the DOM; import
 anything from `src/spatial/` or `src/motion/`; introduce a graph library,
 physics engine, or layout algorithm; implement pathfinding, cycle
 detection, or any general graph algorithm beyond bounded BFS reuse; or
-implement graph composition/merge (deferred, see above).
+implement graph merge (deferred, see above).
 
 ## Relationship to the existing `v2GraphEngine` flag
 
