@@ -1,5 +1,5 @@
-import { assertSpatialScene } from "./financialVisualizationAdapter"
-import { createRadialPositions } from "../radial/createRadialPositions"
+import { assertSpatialScene } from "./financialVisualizationAdapter.js"
+import { createRadialPositions } from "../radial/createRadialPositions.js"
 
 // Domain identity, order and tone stay in lockstep with proofFinancialDomains
 // (../mock/proofFinancialDomains.js) so the runtime palette
@@ -7,14 +7,19 @@ import { createRadialPositions } from "../radial/createRadialPositions"
 // unchanged. Layer 4 swaps the mock's uniform placeholders for the signed-in
 // user's real per-domain totals and relative magnitudes; Layer 5 adds one level
 // of child nodes per domain (a line-item graph) when the model carries them.
+//
+// Exported (Layer 4D) so the financial-graph adapter maps canonical financial
+// domains onto the SAME radial slots and tones instead of keeping a second
+// domain registry or layout.
 const DOMAIN_ORDER = Object.freeze([
-  { id: "income", label: "Income", tone: "positive" },
-  { id: "investments", label: "Investments", tone: "growth" },
-  { id: "assets", label: "Assets", tone: "stable" },
-  { id: "debt", label: "Debt", tone: "liability" },
-  { id: "expenses", label: "Expenses", tone: "outflow" },
-  { id: "savings", label: "Savings", tone: "reserve" },
+  Object.freeze({ id: "income", label: "Income", tone: "positive" }),
+  Object.freeze({ id: "investments", label: "Investments", tone: "growth" }),
+  Object.freeze({ id: "assets", label: "Assets", tone: "stable" }),
+  Object.freeze({ id: "debt", label: "Debt", tone: "liability" }),
+  Object.freeze({ id: "expenses", label: "Expenses", tone: "outflow" }),
+  Object.freeze({ id: "savings", label: "Savings", tone: "reserve" }),
 ])
+export const FINANCIAL_SPATIAL_DOMAINS = DOMAIN_ORDER
 
 // A domain (or child) with little or no money still renders a visible node.
 const MIN_MAGNITUDE = 0.35
@@ -31,6 +36,17 @@ function clampMagnitude(value, floor) {
   return Math.min(1, Math.max(floor, value))
 }
 
+/** World positions of the radial domain slots, index-aligned with FINANCIAL_SPATIAL_DOMAINS. */
+export function financialDomainSlotPositions() {
+  return createRadialPositions({ count: DOMAIN_ORDER.length, radius: RADIAL_RADIUS })
+}
+
+/** World positions of `count` child nodes ringing a parent node at `parentPosition`. */
+export function childRingPositions(parentPosition, count) {
+  return createRadialPositions({ count, radius: CHILD_RADIUS }).map(([ox, oy, oz]) =>
+    Object.freeze([parentPosition[0] + ox, parentPosition[1] + oy, parentPosition[2] + oz]))
+}
+
 // Child nodes ring their parent domain node's world position.
 function childNodesFor(domain, domainPosition, children) {
   const kids = Array.isArray(children) ? children : []
@@ -38,10 +54,9 @@ function childNodesFor(domain, domainPosition, children) {
 
   const magnitudes = kids.map((child) => magnitudeOf(child.amount))
   const peak = Math.max(0, ...magnitudes)
-  const ring = createRadialPositions({ count: kids.length, radius: CHILD_RADIUS })
+  const ring = childRingPositions(domainPosition, kids.length)
 
   const nodes = kids.map((child, index) => {
-    const [ox, oy, oz] = ring[index]
     return Object.freeze({
       id: `${domain.id}-item-${index}`,
       label: child.label || `Item ${index + 1}`,
@@ -53,7 +68,7 @@ function childNodesFor(domain, domainPosition, children) {
       detail: child.detail || "",
       amount: magnitudes[index],
       magnitude: peak > 0 ? clampMagnitude(magnitudes[index] / peak, MIN_CHILD_MAGNITUDE) : 1,
-      position: Object.freeze([domainPosition[0] + ox, domainPosition[1] + oy, domainPosition[2] + oz]),
+      position: ring[index],
     })
   })
 
@@ -89,7 +104,7 @@ export function createFinancialSpatialScene(model) {
   const magnitudes = DOMAIN_ORDER.map((domain) => magnitudeOf(domainsInput[domain.id]?.amount))
   const peak = Math.max(0, ...magnitudes)
 
-  const positions = createRadialPositions({ count: DOMAIN_ORDER.length, radius: RADIAL_RADIUS })
+  const positions = financialDomainSlotPositions()
 
   const core = Object.freeze({
     id: "financial-core",

@@ -38,8 +38,8 @@ chapters:
     implementationStatus: implemented
     validationStatus: validated
     dependencies: [3]
-    implementedBy: src/visualization/adapters/financialSpatialAdapter.js
-    notes: Maps real financial data into spatial nodes via useFinancialKPIs.
+    implementedBy: src/visualization/adapters/financialSpatialAdapter.js, src/visualization/adapters/financialGraphSpatialAdapter.js
+    notes: Maps real financial data into spatial nodes via useFinancialKPIs. Layer 4D adds a FinancialGraph -> SpatialScene adapter (reusing the same radial slots/tones); it is validated but not yet wired into the live spatial view.
   - number: 5
     title: Graph Drill-down
     volume: 1
