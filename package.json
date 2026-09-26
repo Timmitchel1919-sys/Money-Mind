@@ -11,6 +11,7 @@
     "test:financial-graph": "node scripts/v2/validate-financial-graph-contracts.mjs",
     "test:financial-graph-engine": "node scripts/v2/validate-financial-graph-engine.mjs",
     "test:financial-graph-transform": "node scripts/v2/validate-financial-graph-transform.mjs",
+    "test:financial-projection": "node tests/financial/projectFinancials.test.mjs",
     "preview": "vite preview",
     "deploy": "npm run build && npx -y firebase-tools@latest deploy --only hosting",
     "deploy:full": "npm run build && npx -y firebase-tools@latest deploy",
