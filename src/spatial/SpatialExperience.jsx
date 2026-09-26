@@ -57,6 +57,7 @@ export default function SpatialExperience({ model = null, sim = null }) {
     <SpatialErrorBoundary>
       <Suspense fallback={<section className="panel" role="status">Loading spatial experience…</section>}>
         <SpatialRuntime
+          aiEnabled={featureFlags.v2AI && Boolean(model)}
           capabilities={capabilities}
           motionPreference={resolveMotionPreference(capabilities)}
           renderingQuality="auto"

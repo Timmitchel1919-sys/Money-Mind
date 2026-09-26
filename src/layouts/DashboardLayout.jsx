@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import Sidebar from "../components/Sidebar"
 import Topbar from "../components/Topbar"
 import MoneyAIWidget from "../components/MoneyAIWidget"
+import { OPEN_MONEY_AI_EVENT } from "../ai/spatial/moneyAISpatialBridge"
 
 const SIDEBAR_STORAGE_KEY = "moneyMindSidebarState"
 
@@ -22,6 +23,7 @@ export default function DashboardLayout({
     const [isSidebarOpen, setSidebarOpen] = useState(false)
     const [isMoneyAIOpen, setMoneyAIOpen] = useState(false)
     const [isSidebarCollapsed, setSidebarCollapsed] = useState(initialSidebarState)
+    const [moneyAIPrompt, setMoneyAIPrompt] = useState("")
 
     function handleNavigate(page) {
         setActivePage(page)
@@ -49,6 +51,17 @@ export default function DashboardLayout({
         }
         window.addEventListener("storage", syncSidebar)
         return () => window.removeEventListener("storage", syncSidebar)
+    }, [])
+
+    // V2's lazy spatial runtime communicates through this narrow event bridge
+    // instead of importing the dashboard-level Money AI drawer or Firebase.
+    useEffect(() => {
+        function openFromSpatial(event) {
+            setMoneyAIPrompt(event.detail?.question || "")
+            setMoneyAIOpen(true)
+        }
+        window.addEventListener(OPEN_MONEY_AI_EVENT, openFromSpatial)
+        return () => window.removeEventListener(OPEN_MONEY_AI_EVENT, openFromSpatial)
     }, [])
 
     function updateCollapsed(value) {
@@ -113,6 +126,7 @@ export default function DashboardLayout({
                 setActivePage={setActivePage}
                 isOpen={isMoneyAIOpen}
                 onOpenChange={setMoneyAIOpen}
+                initialQuestion={moneyAIPrompt}
             />
 
         </div>

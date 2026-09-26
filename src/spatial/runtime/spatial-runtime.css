@@ -105,6 +105,16 @@
 .spatial-sim-field output { color: #cde2fa; font-size: 11px; }
 .spatial-runtime-fallback { padding: 32px; border: 1px solid var(--spatial-line); border-radius: 18px; background: #08101e; color: #dbe8f5; }
 
+/* Layer 7: a renderer-adjacent entry point into the existing Money AI surface.
+   This remains ordinary DOM UI, so it keeps working independently of WebGL. */
+.spatial-ai-console { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 14px 22px; border-top: 1px solid var(--spatial-line); background: linear-gradient(90deg, rgba(42, 29, 77, 0.52), rgba(8, 16, 30, 0.82)); }
+.spatial-ai-console > div { display: grid; gap: 3px; }
+.spatial-ai-console__eyebrow { display: inline-flex; align-items: center; gap: 5px; color: #c5a8ff; font-size: 10px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+.spatial-ai-console strong { color: #f1ebff; font-size: 13px; }
+.spatial-ai-console p { max-width: 620px; margin: 0; color: #aa9fbe; font-size: 12px; line-height: 1.45; }
+.spatial-ai-console__action { flex: 0 0 auto; border-color: rgba(194, 156, 255, .42); background: rgba(128, 83, 205, .18); color: #eadfff; }
+.spatial-ai-console__action:hover:not(:disabled), .spatial-ai-console__action:focus-visible { border-color: rgba(218, 194, 255, .76); background: rgba(142, 95, 219, .3); }
+
 @media (max-width: 760px) {
   .spatial-toolbar { align-items: flex-start; padding: 15px; }
   .spatial-toolbar__controls { display: grid; grid-template-columns: 1fr 1fr; }
@@ -115,6 +125,7 @@
   .spatial-stage__status span:nth-child(2) { display: none; }
   .spatial-inspector { align-items: flex-start; padding: 14px 15px; }
   .spatial-inspector p { max-width: 62%; font-size: 10px; }
+  .spatial-ai-console { padding: 13px 15px; }
 }
 
 @media (max-width: 500px) {
@@ -126,6 +137,7 @@
   .spatial-stage__status { right: 8px; bottom: 8px; }
   .spatial-inspector { display: grid; gap: 8px; }
   .spatial-inspector p { max-width: none; text-align: left; }
+  .spatial-ai-console { align-items: flex-start; flex-direction: column; gap: 10px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

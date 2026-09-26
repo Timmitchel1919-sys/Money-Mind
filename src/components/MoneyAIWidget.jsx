@@ -6,7 +6,7 @@ import MoneyAI from "../pages/AIFinancialCoach"
 // component (untouched, same hooks/functions) in as an overlay panel.
 // Only the AI's *container* changed; its Voice settings still live in
 // Settings (see Settings.jsx "Money AI Voice" panel).
-export default function MoneyAIWidget({ setActivePage, isOpen, onOpenChange, ...moneyAIProps }) {
+export default function MoneyAIWidget({ setActivePage, isOpen, onOpenChange, initialQuestion = "", ...moneyAIProps }) {
 
   useEffect(() => {
     if (!isOpen) return
@@ -44,7 +44,7 @@ export default function MoneyAIWidget({ setActivePage, isOpen, onOpenChange, ...
         aria-label="Money AI"
       >
         <div className="h-full overflow-y-auto rounded-3xl border border-white/10 bg-[#0E1117]/95 p-4 backdrop-blur-2xl md:p-6">
-          {isOpen && <MoneyAI {...moneyAIProps} setActivePage={setActivePage ? goToSettings : undefined} />}
+          {isOpen && <MoneyAI {...moneyAIProps} initialQuestion={initialQuestion} setActivePage={setActivePage ? goToSettings : undefined} />}
         </div>
       </div>
     </>

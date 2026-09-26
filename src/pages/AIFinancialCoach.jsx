@@ -109,6 +109,7 @@ export default function MoneyAI({
   emergencySavings = 0,
   monthlyExpenses = 0,
   monthlyIncome = 0,
+  initialQuestion = "",
   setActivePage,
 }) {
   const { settings } = useSettings()
@@ -122,6 +123,12 @@ export default function MoneyAI({
   )
   const [voiceMode, setVoiceMode] = useState("off") // never auto-activates the mic on mount
   const [question, setQuestion] = useState("")
+
+  // A spatial selection can hand off a relevant draft without changing how
+  // ordinary launches behave. Sending remains an explicit user action.
+  useEffect(() => {
+    if (initialQuestion) setQuestion(initialQuestion)
+  }, [initialQuestion])
 
   useEffect(() => {
     localStorage.setItem("moneyAILanguagePref", languagePref)

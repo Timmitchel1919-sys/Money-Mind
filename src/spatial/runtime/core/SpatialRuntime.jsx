@@ -5,6 +5,7 @@ import { resetViewIntent } from "../../../motion/input/motionIntents"
 import NodeLabels from "../nodes/NodeLabels"
 import { QUALITY_OPTIONS, resolveQualityPreset } from "../quality/qualityPresets"
 import SpatialCanvas from "./SpatialCanvas"
+import SpatialAIConsole from "../../../ai/spatial/SpatialAIConsole"
 import "../../../styles/v2-tokens.css"
 import "../spatial-runtime.css"
 
@@ -31,7 +32,7 @@ function SimPanel({ sim }) {
   )
 }
 
-function SpatialWorkspace({ capabilities, initialQuality, motionPreference, scene, sim }) {
+function SpatialWorkspace({ aiEnabled, capabilities, initialQuality, motionPreference, scene, sim }) {
   const [requestedQuality, setRequestedQuality] = useState(initialQuality)
   const [contextState, setContextState] = useState("initializing")
   const { activeTransition, dispatchIntent, sceneState, selectedId } = useMotionEngine()
@@ -105,11 +106,12 @@ function SpatialWorkspace({ capabilities, initialQuality, motionPreference, scen
           : null}
         <p>{selectedNode ? `${selectedNode.label} is selected. Choose it again or use Overview to return.` : "Select a financial domain to test focus and camera control."}</p>
       </footer>
+      {aiEnabled ? <SpatialAIConsole selectedNode={selectedNode} /> : null}
     </section>
   )
 }
 
-export default function SpatialRuntime({ capabilities, motionPreference = "reduced", renderingQuality = "auto", scene, sim = null }) {
+export default function SpatialRuntime({ aiEnabled = false, capabilities, motionPreference = "reduced", renderingQuality = "auto", scene, sim = null }) {
   if (!scene?.nodes?.length || !Array.isArray(scene.edges)) {
     return <section className="spatial-runtime-fallback" role="alert">The spatial model is unavailable. Use the standard dashboard instead.</section>
   }
@@ -117,6 +119,7 @@ export default function SpatialRuntime({ capabilities, motionPreference = "reduc
   return (
     <MotionProvider motionPreference={motionPreference}>
       <SpatialWorkspace
+        aiEnabled={aiEnabled}
         capabilities={capabilities}
         initialQuality={renderingQuality}
         motionPreference={motionPreference}
