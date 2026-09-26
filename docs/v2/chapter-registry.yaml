@@ -56,8 +56,8 @@ chapters:
     implementationStatus: implemented
     validationStatus: validated
     dependencies: [5]
-    implementedBy: src/financial/projection/projectFinancials.js
-    notes: What-if simulation on the spatial view (v2Simulation flag).
+    implementedBy: src/financial/projection/projectionAuthority.js
+    notes: What-if simulation on the spatial view (v2Simulation flag). Minor-unit projection is the production authority (currency-explicit, via src/hooks/useFinancialProjection.js); legacy projectFinancials.js is reference/fallback only.
 
 # Add only chapters confirmed by an approved specification. Each entry supports:
 # number, title, volume, specificationStatus, implementationStatus,

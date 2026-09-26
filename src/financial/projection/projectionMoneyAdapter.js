@@ -1,30 +1,51 @@
 import { createMoney, parseMoneyInput } from "../domain/money.js";
+import { currencyFractionDigits, normalizeCurrencyCode } from "../domain/currency.js";
 import { createBasisPoints } from "../domain/rates.js";
+import { DomainValidationError } from "../domain/errors.js";
 
-const ASSUMED_CURRENCY = "USD"; // Currently hardcoded as UI has no multi-currency support yet.
+// Currency boundary: every conversion requires an explicit ISO currency code.
+// There is deliberately no default currency here — the caller (the projection
+// authority) receives it from the user's reporting currency (settings.currency).
 
 /**
- * Converts a floating-point major value (e.g. 100.50) into a strict minor-unit Money object.
- * Applies a 2-decimal rounding to prevent floating-point parse errors.
- * @param {number} majorDecimal
- * @returns {import("../domain/money.js").Money}
+ * Validates and normalizes the projection's currency context.
+ * @param {string} currencyCode
+ * @returns {string}
  */
-export function toMinor(majorDecimal) {
-  const numValue = Number(majorDecimal);
-  if (!Number.isFinite(numValue)) return createMoney(0, ASSUMED_CURRENCY);
-  // Strip floating point noise (e.g., 0.1+0.2 = 0.30000000000000004 -> "0.30")
-  const safeStr = numValue.toFixed(2);
-  return parseMoneyInput(safeStr, ASSUMED_CURRENCY);
+export function requireCurrencyCode(currencyCode) {
+  if (typeof currencyCode !== "string" || currencyCode.trim() === "") {
+    throw new DomainValidationError("Projection requires an explicit currencyCode.");
+  }
+  return normalizeCurrencyCode(currencyCode);
 }
 
 /**
- * Converts a strict Money object back to a major decimal.
+ * Converts a floating-point major value (e.g. 100.50) into a strict minor-unit Money object.
+ * Rounds to the currency's own precision (SRD/USD/EUR: 2, JPY: 0, BHD: 3) to strip
+ * floating-point noise before parsing. Non-finite input maps to zero, matching the
+ * legacy engine's num() behavior.
+ * @param {number} majorDecimal
+ * @param {string} currencyCode
+ * @returns {import("../domain/money.js").Money}
+ */
+export function toMinor(majorDecimal, currencyCode) {
+  const code = requireCurrencyCode(currencyCode);
+  const numValue = Number(majorDecimal);
+  if (!Number.isFinite(numValue)) return createMoney(0, code);
+  // Strip floating point noise (e.g., 0.1+0.2 = 0.30000000000000004 -> "0.30")
+  const safeStr = numValue.toFixed(currencyFractionDigits(code));
+  const money = parseMoneyInput(safeStr, code);
+  // "-0.00" (tiny negative noise) parses to -0; normalize so it never renders as "-0.00".
+  return money.amountMinor === 0 ? createMoney(0, code) : money;
+}
+
+/**
+ * Converts a strict Money object back to a major decimal using its currency's precision.
  * @param {import("../domain/money.js").Money} moneyObj
  * @returns {number}
  */
 export function toMajor(moneyObj) {
-  // USD has 2 fraction digits.
-  return moneyObj.amountMinor / 100;
+  return moneyObj.amountMinor / 10 ** currencyFractionDigits(moneyObj.currency);
 }
 
 /**

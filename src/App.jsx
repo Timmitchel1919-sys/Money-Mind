@@ -52,7 +52,7 @@ import useSettings from "./hooks/useSettings"
 import useAppLock from "./hooks/useAppLock"
 import useFinancialKPIs from "./hooks/useFinancialKPIs"
 import useFinancialBreakdown from "./hooks/useFinancialBreakdown"
-import { projectFinancials } from "./financial/projection/projectFinancials"
+import useFinancialProjection from "./hooks/useFinancialProjection"
 import { convertCurrency, formatCurrencyAmount } from "./utils/currencyConversion"
 import { SEARCHABLE_NAVIGATION } from "./constants/navigation"
 import { featureFlags } from "./app/configuration/v2"
@@ -141,24 +141,23 @@ export default function App() {
     toggle: () => setSim((s) => ({ ...s, active: !s.active })),
   }), [sim])
 
-  const spatialFinancialModel = useMemo(() => {
-    const modelCurrency = settingsHook.settings.currency || "SRD"
-    const money = (value) => formatCurrencyAmount(value, modelCurrency, settingsHook.settings.numberFormat)
+  // KPI -> minor-unit projection authority. Figures are denominated in the user's
+  // reporting currency (settings.currency, app base "SRD"), never an implicit USD.
+  const reportingCurrency = settingsHook.settings.currency || "SRD"
+  const financialProjection = useFinancialProjection({
+    financialKPIs,
+    savingsPlans: saving.savingsPlans,
+    levers: sim,
+    active: featureFlags.v2Simulation && sim.active,
+    currencyCode: reportingCurrency,
+  })
 
-    const simActive = featureFlags.v2Simulation && sim.active
-    const snapshot = {
-      income: financialKPIs.totalIncome,
-      expenses: financialKPIs.totalExpenses,
-      assets: financialKPIs.totalAssets,
-      liabilities: financialKPIs.totalLiabilities,
-      debt: financialKPIs.totalDebt,
-      monthlyDebtPayment: financialKPIs.monthlyDebtPayments,
-      savings: financialKPIs.totalSavingsCurrent,
-      monthlySaving: saving.savingsPlans.reduce((total, plan) => total + Number(plan.monthly || 0), 0),
-      investments: financialKPIs.investmentValue,
-    }
-    const projected = simActive ? projectFinancials(snapshot, sim) : snapshot
-    const netWorth = simActive ? projected.netWorth : financialKPIs.netWorth
+  const spatialFinancialModel = useMemo(() => {
+    const money = (value) => formatCurrencyAmount(value, financialProjection.currencyCode, settingsHook.settings.numberFormat)
+
+    const simActive = financialProjection.active
+    const projected = financialProjection.figures
+    const netWorth = financialProjection.netWorth
 
     const domain = (id, amount) => {
       const base = { amount, detail: money(amount) }
@@ -182,7 +181,7 @@ export default function App() {
         savings: domain("savings", projected.savings),
       },
     }
-  }, [financialKPIs, financialBreakdown, saving.savingsPlans, sim, settingsHook.settings.currency, settingsHook.settings.numberFormat])
+  }, [financialKPIs.healthScore, financialBreakdown, financialProjection, sim.monthsForward, settingsHook.settings.numberFormat])
 
   useEffect(() => {
     const preference = settingsHook.settings.themeMode || "system"

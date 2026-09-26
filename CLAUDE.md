@@ -46,6 +46,12 @@ Status (2026-08-31):
   the live site.
 - NEXT: v2AI (Money AI in the scene) or productionize the spatial view (real nav entry,
   chapter-registry).
+- Minor-unit projection is the PRODUCTION AUTHORITY for the V2 simulation (2026-09-26,
+  docs/v2/validation/minor-unit-authority-kpi-hooks.md): runFinancialProjection() in
+  src/financial/projection/projectionAuthority.js, currency-explicit (settings.currency,
+  no implicit USD), consumed via src/hooks/useFinancialProjection.js. Legacy
+  projectFinancials.js = parity reference + flagged fallback. useFinancialKPIs (V1 totals)
+  is NOT migrated to minor units yet.
 
 ## Architecture boundaries (src/)
 - app/            composition & configuration

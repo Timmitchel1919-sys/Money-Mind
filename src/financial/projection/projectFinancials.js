@@ -1,5 +1,10 @@
 // Layer 6 (V2 simulation): a pure "what-if" projection over a financial snapshot.
 //
+// LEGACY REFERENCE: this floating-point engine is no longer the production
+// authority. Production callers use runFinancialProjection() in
+// projectionAuthority.js (minor-unit engine). It is kept for the parity suite and
+// as the flagged fallback there; do not add new production callers.
+//
 // This is a NEW calculation, deliberately separate from the V1 financial math
 // (useFinancialKPIs and the page-level calculators) — the actual-data path is
 // never routed through here, so V1 numbers are unaffected (CLAUDE.md rule 6).
