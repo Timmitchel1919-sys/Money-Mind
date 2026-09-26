@@ -1,0 +1,54 @@
+/* 
+ * Money Mind V2 Glass Materials 
+ * Harvested from Next.js prototype, optimized for Vite/React SPA.
+ * Depends on tokens.css
+ */
+
+.mm-glass { 
+  --mm-material-bg: var(--mm-glass-default); 
+  --mm-material-border: var(--mm-glass-border-default); 
+  --mm-material-shadow: var(--mm-shadow-2); 
+  --mm-material-blur: 18px; 
+  
+  position: relative; 
+  isolation: isolate; 
+  background: linear-gradient(145deg, rgb(255 255 255 / 5%), transparent 42%), var(--mm-material-bg); 
+  border: 1px solid var(--mm-material-border); 
+  box-shadow: var(--mm-material-shadow); 
+  backdrop-filter: blur(var(--mm-material-blur)) saturate(118%); 
+  -webkit-backdrop-filter: blur(var(--mm-material-blur)) saturate(118%); 
+}
+
+.mm-glass::before { 
+  content: ""; 
+  position: absolute; 
+  z-index: -1; 
+  inset: 0; 
+  pointer-events: none; 
+  border-radius: inherit; 
+  background: linear-gradient(125deg, rgb(255 255 255 / 9%), transparent 28%, transparent 72%); 
+  mask: linear-gradient(#000, transparent 55%); 
+  -webkit-mask: linear-gradient(#000, transparent 55%);
+}
+
+.mm-glass-subtle { 
+  --mm-material-bg: var(--mm-glass-subtle); 
+  --mm-material-border: var(--mm-glass-border-subtle); 
+  --mm-material-shadow: var(--mm-shadow-1); 
+  --mm-material-blur: 12px; 
+}
+
+.mm-glass-elevated { 
+  --mm-material-bg: var(--mm-glass-elevated); 
+  --mm-material-border: var(--mm-glass-border-strong); 
+  --mm-material-shadow: var(--mm-shadow-3); 
+  --mm-material-blur: 22px; 
+}
+
+.mm-glass-premium { 
+  --mm-material-bg: var(--mm-glass-premium); 
+  --mm-material-border: rgb(215 188 120 / 28%); 
+  --mm-material-shadow: var(--mm-shadow-4); 
+  --mm-material-blur: 24px; 
+  background: linear-gradient(140deg, rgb(231 206 146 / 10%), transparent 36%), var(--mm-material-bg); 
+}

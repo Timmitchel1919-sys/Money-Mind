@@ -1,0 +1,116 @@
+/* 
+ * Money Mind V2 Design Tokens 
+ * Harvested from Next.js prototype, optimized for Vite/React SPA.
+ * Prefix: --mm-* (distinct from --mm-v2-* spatial tokens)
+ */
+
+:root {
+  /* Core Palette */
+  --mm-obsidian: #050a0a; 
+  --mm-deep-emerald: #071311; 
+  --mm-dark-teal: #0b211f; 
+  --mm-elevated-teal: #123431; 
+  --mm-glass-teal: #17423e;
+  --mm-luminous-mint: #65ddb8; 
+  --mm-electric-aqua: #55d8d0; 
+  --mm-champagne-gold: #d7bc78; 
+  --mm-soft-gold: #e7ce92;
+  --mm-signal-rose: #d77c99; 
+  --mm-signal-violet: #8c76d8; 
+  --mm-white: #f1f4ef; 
+  --mm-sage: #9aa9a4;
+
+  /* Semantic Backgrounds */
+  --mm-bg-primary: var(--mm-obsidian); 
+  --mm-bg-secondary: var(--mm-deep-emerald); 
+  --mm-bg-tertiary: var(--mm-dark-teal); 
+  --mm-bg-elevated: var(--mm-elevated-teal);
+
+  /* Surfaces & Glass Backgrounds */
+  --mm-surface-subtle: rgb(18 52 49 / 30%); 
+  --mm-surface-default: rgb(18 52 49 / 52%); 
+  --mm-surface-elevated: rgb(23 66 62 / 68%); 
+  --mm-surface-premium: rgb(29 62 53 / 78%);
+  
+  --mm-glass-subtle: rgb(18 52 49 / 34%); 
+  --mm-glass-default: rgb(18 52 49 / 56%); 
+  --mm-glass-elevated: rgb(23 66 62 / 70%); 
+  --mm-glass-premium: rgb(24 55 48 / 82%);
+
+  /* Glass Borders */
+  --mm-glass-border-subtle: rgb(160 235 215 / 9%); 
+  --mm-glass-border-default: rgb(160 235 215 / 16%); 
+  --mm-glass-border-strong: rgb(160 235 215 / 25%);
+
+  /* Text & Typography */
+  --mm-text-primary: var(--mm-white); 
+  --mm-text-secondary: var(--mm-sage); 
+  --mm-text-muted: rgb(154 169 164 / 68%); 
+  --mm-text-disabled: rgb(154 169 164 / 40%); 
+  --mm-text-inverse: #06100e;
+  
+  --mm-font-sans: "Geist", "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; 
+  --mm-font-mono: "Geist Mono", "SFMono-Regular", Consolas, monospace;
+
+  /* Semantic Indicators */
+  --mm-primary: var(--mm-luminous-mint); 
+  --mm-secondary: var(--mm-electric-aqua); 
+  --mm-success: var(--mm-luminous-mint); 
+  --mm-warning: var(--mm-champagne-gold); 
+  --mm-danger: var(--mm-signal-rose); 
+  --mm-info: var(--mm-electric-aqua); 
+  --mm-premium: var(--mm-champagne-gold); 
+  --mm-neutral: var(--mm-sage);
+
+  /* Spacing */
+  --mm-space-1: .25rem; 
+  --mm-space-2: .5rem; 
+  --mm-space-3: .75rem; 
+  --mm-space-4: 1rem; 
+  --mm-space-5: 1.25rem; 
+  --mm-space-6: 1.5rem; 
+  --mm-space-8: 2rem; 
+  --mm-space-10: 2.5rem; 
+  --mm-space-12: 3rem; 
+  --mm-space-16: 4rem; 
+  --mm-space-20: 5rem;
+
+  /* Radii */
+  --mm-radius-sm: .5rem; 
+  --mm-radius-md: .75rem; 
+  --mm-radius-lg: 1rem; 
+  --mm-radius-xl: 1.375rem; 
+  --mm-radius-2xl: 1.75rem; 
+  --mm-radius-full: 9999px;
+
+  /* Shadows */
+  --mm-shadow-0: none; 
+  --mm-shadow-1: 0 8px 24px rgb(0 8 7 / 16%); 
+  --mm-shadow-2: 0 16px 42px rgb(0 8 7 / 22%), inset 0 1px 0 rgb(255 255 255 / 5%); 
+  --mm-shadow-3: 0 24px 64px rgb(0 8 7 / 28%), inset 0 1px 0 rgb(255 255 255 / 7%); 
+  --mm-shadow-4: 0 30px 86px rgb(0 8 7 / 34%), 0 0 48px rgb(215 188 120 / 5%), inset 0 1px 0 rgb(255 255 255 / 9%);
+
+  /* Motion & Easing */
+  --mm-motion-fast: 140ms; 
+  --mm-motion-normal: 220ms; 
+  --mm-motion-slow: 380ms; 
+  --mm-motion-cinematic: 900ms;
+  --mm-ease-standard: cubic-bezier(.2,0,0,1); 
+  --mm-ease-enter: cubic-bezier(.16,1,.3,1); 
+  --mm-ease-exit: cubic-bezier(.7,0,.84,0); 
+  --mm-ease-premium: cubic-bezier(.22,1,.36,1);
+
+  /* Focus and interactive states */
+  --mm-focus-color: var(--mm-electric-aqua); 
+  --mm-focus-width: 2px; 
+  --mm-focus-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --mm-motion-fast: 0ms;
+    --mm-motion-normal: 0ms;
+    --mm-motion-slow: 0ms;
+    --mm-motion-cinematic: 0ms;
+  }
+}
