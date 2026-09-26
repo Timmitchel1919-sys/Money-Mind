@@ -39,7 +39,7 @@ chapters:
     validationStatus: validated
     dependencies: [3]
     implementedBy: src/visualization/adapters/financialSpatialAdapter.js, src/visualization/adapters/financialGraphSpatialAdapter.js
-    notes: Maps real financial data into spatial nodes via useFinancialKPIs. Layer 4D adds a FinancialGraph -> SpatialScene adapter (reusing the same radial slots/tones); the Financial Graph Builder (src/financial/graph/builder/, useFinancialGraph) feeds it from real records, live only behind the off-by-default VITE_V2_GRAPH_BUILDER flag.
+    notes: Maps real financial data into spatial nodes via useFinancialKPIs. Layer 4D adds a FinancialGraph -> SpatialScene adapter (reusing the same radial slots/tones); the Financial Graph Builder (src/financial/graph/builder/, useFinancialGraph) feeds it from real records, live only behind the off-by-default VITE_V2_GRAPH_BUILDER flag. Layer 4E real-data browser acceptance passed (docs/v2/validation/layer-4e-graph-spatial-runtime-acceptance.md).
   - number: 5
     title: Graph Drill-down
     volume: 1

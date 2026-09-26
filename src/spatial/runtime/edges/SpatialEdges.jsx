@@ -35,15 +35,18 @@ export default function SpatialEdges({ edges, nodes }) {
     return edges.flatMap((edge) => {
       const source = nodeById.get(edge.sourceId)
       const target = nodeById.get(edge.targetId)
-      return source && target ? [{ ...edge, positions: [...source.position, ...target.position] }] : []
+      return source && target ? [{ ...edge, source, target, positions: [...source.position, ...target.position] }] : []
     })
   }, [edges, nodes])
 
+  // Layer 5: a child node stays collapsed until its parent domain (or the child
+  // itself) is selected — same rule as SpatialNode. An edge is revealed only
+  // when both endpoints are, so an edge never points at a collapsed child. For
+  // domain->item edges this equals the original "domain or item selected" rule.
+  const endpointRevealed = (node) => node.kind !== "child" || selectedId === node.parentId || selectedId === node.id
+
   return resolvedEdges.map((edge) => {
-    // Layer 5: a domain->item edge is hidden unless that domain, or the item
-    // itself, is selected.
-    const childEdge = edge.relationship === "domain-item"
-    const revealed = !childEdge || selectedId === edge.sourceId || selectedId === edge.targetId
+    const revealed = endpointRevealed(edge.source) && endpointRevealed(edge.target)
     return (
       <SpatialEdge
         active={[edge.sourceId, edge.targetId].includes(selectedId || hoveredId)}

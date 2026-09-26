@@ -110,12 +110,12 @@ interaction state machine and no MotionProvider state duplication.
 
 - Wired only behind `VITE_V2_GRAPH_BUILDER`. With the flag off, the live
   scene still comes from `createFinancialSpatialScene(model)`.
-- **Semantic edges between child nodes.** The runtime reveal rule
-  (`SpatialEdges.jsx`) hides only `domain-item` edges while a domain is
-  collapsed. A semantic child ↔ child edge would stay visible while its
-  endpoints are collapsed; this was observed in the browser for the builder's
-  asset → core `increases` edge. The adapter produces a valid scene either way.
-  Deciding how such edges reveal is Layer 2/3 work, left for when the graph
-  is wired in.
+- **Semantic edges on child nodes (resolved in Layer 4E).** The runtime
+  originally revealed/hid only `domain-item` edges, so a semantic edge touching
+  a collapsed child (the builder's asset → core `increases` edge) was drawn to
+  an invisible point. `SpatialEdges.jsx` now reveals an edge only when both
+  endpoints are revealed (the same child rule as `SpatialNode.jsx`). This is
+  proven identical for existing scenes; see
+  `docs/v2/validation/layer-4e-graph-spatial-runtime-acceptance.md`.
 - Only the six canonical domains have spatial slots; other domains are
   reported, not shown.
