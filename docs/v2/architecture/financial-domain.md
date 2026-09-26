@@ -44,3 +44,30 @@ This boundary is more than sufficient for the foreseeable scope of Money Mind V2
 
 ## Domain / Application Boundary
 The financial domain is isolated in `src/financial/domain/` as pure, framework-independent JavaScript. It has zero dependency on React hooks, Firebase, Next.js, or DOM structures. Validations reject invalid shapes early, allowing the rest of the engine to assume safe structural invariants.
+
+## Projection Migration Status
+
+> [!WARNING]
+> MINOR-UNIT PROJECTION IS NOT YET AUTHORITATIVE.
+
+The legacy `projectFinancials.js` continues to execute all production projections using floating point numbers.
+We have introduced a parity framework:
+- **Legacy Calculation Path:** `projectFinancials.js` (Authoritative)
+- **Minor-Unit Shadow Path:** `projectFinancialsMinor.js` (Shadow / Validation Only)
+
+### Conversion Boundary
+The `projectionMoneyAdapter.js` serves as the explicit boundary between floating-point major units (expected by the current UI contract) and the new strict domain minor units.
+Floating point amounts are serialized to 2-decimal strings to strip floating-point artifacts (e.g. `0.30000000000004` -> `"0.30"`) before parsing into strict `Money` objects. Currently, `USD` is assumed for all minor unit calculations until multi-currency support is properly passed through from the UI.
+
+### Rate Conversion
+Decimal percentages (e.g., `5.25`) are converted into `BasisPoints` (e.g., `525`) exactly once at the adapter boundary.
+
+### Rounding Policy
+- **Addition & Subtraction:** Exact. No rounding is applied to integer addition/subtraction.
+- **Compounding Interest:** Explicitly applies a continuous rate and rounds to the nearest minor unit *only at the very end* of the month iteration (e.g., `Math.round(minorAmount * Math.pow(1 + rate, months))`) to match the legacy continuous curve without accumulating intermediate compounding artifacts.
+
+### Parity Methodology
+The parity test (`tests/financial/projectFinancials.parity.test.mjs`) injects identical floating point states and levers into both engines and compares the results.
+
+### Known Differences
+- **Precision:** The legacy engine routinely outputs deep fractional artifacts (e.g., `9313193.843911406`) on long compound horizons. The minor-unit engine correctly truncates this to `9313193.84`. This sub-penny variance is classified as an `EXPECTED_PRECISION_IMPROVEMENT`. 
