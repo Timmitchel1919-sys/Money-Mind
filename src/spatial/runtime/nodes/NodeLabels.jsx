@@ -29,9 +29,11 @@ export default function NodeLabels({ nodes }) {
             key={node.id}
             onBlur={() => dispatchIntent(clearHoverIntent())}
             onClick={() => dispatchIntent(selectNodeIntent(node.id))}
-            onFocus={() => dispatchIntent(hoverNodeIntent(node.id))}
-            onMouseEnter={() => dispatchIntent(hoverNodeIntent(node.id))}
-            onMouseLeave={() => dispatchIntent(clearHoverIntent())}
+            // Keyboard focus previews (hover spotlight); a tap's focus does not.
+            onFocus={(event) => { if (event.currentTarget.matches(":focus-visible")) dispatchIntent(hoverNodeIntent(node.id)) }}
+            // Touch taps emit pointer events with pointerType "touch": no hover on touch.
+            onPointerEnter={(event) => { if (event.pointerType !== "touch") dispatchIntent(hoverNodeIntent(node.id)) }}
+            onPointerLeave={(event) => { if (event.pointerType !== "touch") dispatchIntent(clearHoverIntent()) }}
             style={{ ...labelPosition(node), "--motion-entry-delay": `${node.kind === "core" ? 0 : nodes.indexOf(node) * policy.stagger}ms`, "--motion-entry-duration": `${activeTransition?.duration || 0}ms` }}
             type="button"
           >

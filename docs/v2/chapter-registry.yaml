@@ -58,6 +58,15 @@ chapters:
     dependencies: [5]
     implementedBy: src/financial/projection/projectionAuthority.js
     notes: What-if simulation on the spatial view (v2Simulation flag). Minor-unit projection is the production authority (currency-explicit, via src/hooks/useFinancialProjection.js); legacy projectFinancials.js is reference/fallback only.
+  - number: 7
+    title: Spatial Financial Universe
+    volume: 1
+    specificationStatus: defined
+    implementationStatus: implemented
+    validationStatus: validated
+    dependencies: [2, 3, 4]
+    implementedBy: src/motion/nodes/nodeMotion.js, src/spatial/runtime/nodes/, src/spatial/runtime/lighting/SpatialLighting.jsx
+    notes: Glossy quality-tiered node materials, brighter domain palette, and a motion-engine hover spotlight (hovered node illuminated, others dimmed). Owner brief titled it "Layer 5"; registered as chapter 7 because chapter 5 is Graph Drill-down (owner-approved, 2026-09-26).
 
 # Add only chapters confirmed by an approved specification. Each entry supports:
 # number, title, volume, specificationStatus, implementationStatus,

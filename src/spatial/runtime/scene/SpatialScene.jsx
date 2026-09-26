@@ -19,7 +19,7 @@ export default function SpatialScene({ quality, scene }) {
       <group scale={responsiveScale}>
         <RadialMotionGroup>
           <SpatialEdges edges={scene.edges} nodes={scene.nodes} />
-          <NodeGroup detail={quality.detail} nodes={scene.nodes} />
+          <NodeGroup detail={quality.detail} lighting={quality.lighting} nodes={scene.nodes} />
         </RadialMotionGroup>
       </group>
     </>

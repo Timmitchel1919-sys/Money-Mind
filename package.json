@@ -13,6 +13,7 @@
     "test:financial-graph-transform": "node scripts/v2/validate-financial-graph-transform.mjs",
     "test:financial-graph-spatial-adapter": "node scripts/v2/validate-financial-graph-spatial-adapter.mjs",
     "test:financial-graph-builder": "node scripts/v2/validate-financial-graph-builder.mjs",
+    "test:spatial-universe": "node scripts/v2/validate-spatial-universe.mjs",
     "test:financial-domain": "node tests/financial/domain.test.mjs",
     "test:financial-projection": "node tests/financial/projectFinancials.test.mjs",
     "test:financial-projection-parity": "node tests/financial/projectFinancials.parity.test.mjs",

@@ -56,6 +56,9 @@ Status (2026-08-31):
   (2026-09-26; docs/v2/architecture/financial-graph-*.md, graph-spatial-adapter.md).
   Real records -> createFinancialGraphFromModel -> 4D adapter drives #spatial only
   behind the off-by-default VITE_V2_GRAPH_BUILDER flag.
+- Chapter 7 Spatial Financial Universe (2026-09-26; registered as chapter 7 because
+  chapter 5 = Graph Drill-down): glossy quality-tiered node materials, brighter palette,
+  hover spotlight via resolveNodeMotion (docs/v2/architecture/spatial-financial-universe.md).
 
 ## Architecture boundaries (src/)
 - app/            composition & configuration
