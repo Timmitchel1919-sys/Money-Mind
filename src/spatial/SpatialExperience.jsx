@@ -41,13 +41,14 @@ class SpatialErrorBoundary extends Component {
   }
 }
 
-export default function SpatialExperience({ model = null, sim = null }) {
+export default function SpatialExperience({ model = null, scene: prebuiltScene = null, sim = null }) {
   const [capabilities] = useState(() => detectRenderingCapabilities())
-  // Real per-user finances when a model is supplied (signed in); the mock
-  // proof scene otherwise (signed-out demo surface).
+  // A prebuilt scene (Financial Graph Builder path, v2GraphBuilder flag) wins;
+  // otherwise real per-user finances when a model is supplied (signed in); the
+  // mock proof scene otherwise (signed-out demo surface).
   const scene = useMemo(
-    () => (model ? createFinancialSpatialScene(model) : createProofSpatialScene()),
-    [model],
+    () => prebuiltScene ?? (model ? createFinancialSpatialScene(model) : createProofSpatialScene()),
+    [prebuiltScene, model],
   )
 
   if (!featureFlags.v2SpatialUI) return null

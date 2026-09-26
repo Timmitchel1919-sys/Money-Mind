@@ -52,6 +52,10 @@ Status (2026-08-31):
   no implicit USD), consumed via src/hooks/useFinancialProjection.js. Legacy
   projectFinancials.js = parity reference + flagged fallback. useFinancialKPIs (V1 totals)
   is NOT migrated to minor units yet.
+- Financial graph layers 4A–4D + Financial Graph Builder committed on develop/v2
+  (2026-09-26; docs/v2/architecture/financial-graph-*.md, graph-spatial-adapter.md).
+  Real records -> createFinancialGraphFromModel -> 4D adapter drives #spatial only
+  behind the off-by-default VITE_V2_GRAPH_BUILDER flag.
 
 ## Architecture boundaries (src/)
 - app/            composition & configuration

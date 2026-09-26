@@ -36,3 +36,14 @@ export {
   selectRelationshipsBetween,
   composeGraphTransforms,
 } from "./transform/graphTransform.js"
+
+// Financial Graph Builder — Money Mind domain records -> FinancialGraph
+export {
+  createFinancialGraphFromModel,
+  FinancialGraphBuilderError,
+  FINANCIAL_GRAPH_BUILDER_ERROR_CODES,
+  FINANCIAL_GRAPH_DOMAINS,
+  FINANCIAL_GRAPH_ID,
+  CORE_NODE_ID,
+  toIdentifierKey,
+} from "./builder/financialGraphBuilder.js"

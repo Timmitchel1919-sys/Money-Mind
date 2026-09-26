@@ -53,6 +53,11 @@ import useAppLock from "./hooks/useAppLock"
 import useFinancialKPIs from "./hooks/useFinancialKPIs"
 import useFinancialBreakdown from "./hooks/useFinancialBreakdown"
 import useFinancialProjection from "./hooks/useFinancialProjection"
+import useFinancialGraph from "./hooks/useFinancialGraph"
+import { CORE_NODE_ID } from "./financial/graph/builder/financialGraphBuilder"
+import { createFinancialSpatialScene } from "./visualization/adapters/financialSpatialAdapter"
+import { createFinancialGraphSpatialScene } from "./visualization/adapters/financialGraphSpatialAdapter"
+import { createFinancialGraphPresentation } from "./visualization/adapters/financialGraphPresentation"
 import { convertCurrency, formatCurrencyAmount } from "./utils/currencyConversion"
 import { SEARCHABLE_NAVIGATION } from "./constants/navigation"
 import { featureFlags } from "./app/configuration/v2"
@@ -182,6 +187,43 @@ export default function App() {
       },
     }
   }, [financialKPIs.healthScore, financialBreakdown, financialProjection, sim.monthsForward, settingsHook.settings.numberFormat])
+
+  // Financial Graph Builder (v2GraphBuilder flag): real records -> FinancialGraph
+  // -> 4D adapter. Core/domain figures reuse the model above; a builder or
+  // adapter rejection keeps the existing scene (never renders invalid data).
+  const financialGraph = useFinancialGraph({
+    enabled: featureFlags.v2GraphBuilder,
+    currencyCode: reportingCurrency,
+    transactions: transaction.transactions,
+    assets: asset.assets,
+    liabilities: asset.liabilities,
+    debts: debt.debts,
+    investments: investment.investments,
+    savingsPlans: saving.savingsPlans,
+  })
+  const spatialGraphScene = useMemo(() => {
+    if (!financialGraph.graph) return null
+    try {
+      const presentation = createFinancialGraphPresentation({
+        graph: financialGraph.graph,
+        baseScene: createFinancialSpatialScene(spatialFinancialModel),
+        categoryTotals: financialBreakdown,
+        formatAmount: (amount, currencyCode) => formatCurrencyAmount(amount, currencyCode, settingsHook.settings.numberFormat),
+        coreNodeId: CORE_NODE_ID,
+      })
+      return createFinancialGraphSpatialScene(financialGraph.graph, {
+        presentation,
+        projected: spatialFinancialModel.projected,
+        monthsForward: spatialFinancialModel.monthsForward,
+      }).scene
+    } catch (error) {
+      console.warn("[v2GraphBuilder] graph scene rejected; showing the standard scene.", error)
+      return null
+    }
+  }, [financialGraph.graph, spatialFinancialModel, financialBreakdown, settingsHook.settings.numberFormat])
+  useEffect(() => {
+    if (financialGraph.error) console.warn("[v2GraphBuilder] financial graph rejected; showing the standard scene.", financialGraph.error)
+  }, [financialGraph.error])
 
   useEffect(() => {
     const preference = settingsHook.settings.themeMode || "system"
@@ -963,7 +1005,7 @@ export default function App() {
       )}
 
       {activePage === "spatial" && featureFlags.v2SpatialUI && (
-        <SpatialExperience model={spatialFinancialModel} sim={featureFlags.v2Simulation ? simControls : undefined} />
+        <SpatialExperience model={spatialFinancialModel} scene={spatialGraphScene} sim={featureFlags.v2Simulation ? simControls : undefined} />
       )}
 
       {![

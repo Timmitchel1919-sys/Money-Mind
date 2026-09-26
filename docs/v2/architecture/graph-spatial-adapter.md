@@ -1,7 +1,8 @@
 # Layer 4D: Financial Graph → Spatial Adapter
 
-- Status: implemented and validated as a pure adapter; **not yet wired** into
-  `SpatialExperience` / the live `#spatial` view.
+- Status: implemented and validated. Live in the signed-in `#spatial` view
+  only behind the off-by-default `VITE_V2_GRAPH_BUILDER` flag, fed by the
+  Financial Graph Builder (`financial-graph-builder.md`).
 - Location: `src/visualization/adapters/financialGraphSpatialAdapter.js`
 - Tests: `npm run test:financial-graph-spatial-adapter`
   (`scripts/v2/validate-financial-graph-spatial-adapter.mjs`)
@@ -13,7 +14,7 @@
 
 ```
 Firebase / repositories -> hooks (useFinancialKPIs, ...)      (unchanged)
-        -> FinancialGraph (Layer 4A)       [no producer from real data yet]
+        -> FinancialGraph (Layer 4A)       [Financial Graph Builder]
         -> Graph Engine (4B) / Transformations (4C: views, pipelines)
         -> createFinancialGraphSpatialScene (4D)   <- presentation (formatted strings, sizes)
         -> SpatialScene -> Layer 2 runtime -> Layer 3 motion engine
@@ -107,14 +108,13 @@ interaction state machine and no MotionProvider state duplication.
 
 ## Known limitations
 
-- **Not wired into the live view.** Nothing turns real user data into a
-  `FinancialGraph` yet. The live `#spatial` scene still comes from
-  `createFinancialSpatialScene(model)`. Wiring needs a graph producer (hooks →
-  graph), which is a separate step.
+- Wired only behind `VITE_V2_GRAPH_BUILDER`. With the flag off, the live
+  scene still comes from `createFinancialSpatialScene(model)`.
 - **Semantic edges between child nodes.** The runtime reveal rule
   (`SpatialEdges.jsx`) hides only `domain-item` edges while a domain is
   collapsed. A semantic child ↔ child edge would stay visible while its
-  endpoints are collapsed. The adapter produces a valid scene either way.
+  endpoints are collapsed; this was observed in the browser for the builder's
+  asset → core `increases` edge. The adapter produces a valid scene either way.
   Deciding how such edges reveal is Layer 2/3 work, left for when the graph
   is wired in.
 - Only the six canonical domains have spatial slots; other domains are

@@ -23,7 +23,7 @@ export const FINANCIAL_SPATIAL_DOMAINS = DOMAIN_ORDER
 
 // A domain (or child) with little or no money still renders a visible node.
 const MIN_MAGNITUDE = 0.35
-const MIN_CHILD_MAGNITUDE = 0.55
+export const MIN_CHILD_MAGNITUDE = 0.55
 const RADIAL_RADIUS = 3.15
 const CHILD_RADIUS = 1.2
 

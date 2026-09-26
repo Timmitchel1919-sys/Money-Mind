@@ -5,6 +5,7 @@ const FLAG_DEFINITIONS = Object.freeze({
   v2MotionEngine: "VITE_V2_MOTION_ENGINE",
   v2Simulation: "VITE_V2_SIMULATION",
   v2AI: "VITE_V2_AI",
+  v2GraphBuilder: "VITE_V2_GRAPH_BUILDER",
 })
 
 function readBoolean(value) {
@@ -25,6 +26,9 @@ export function resolveFeatureFlags(environment = import.meta.env) {
     v2MotionEngine: v2Enabled && readBoolean(environment[FLAG_DEFINITIONS.v2MotionEngine]),
     v2Simulation: v2Enabled && readBoolean(environment[FLAG_DEFINITIONS.v2Simulation]),
     v2AI: v2Enabled && readBoolean(environment[FLAG_DEFINITIONS.v2AI]),
+    // Signed-in #spatial scene from real records via the Financial Graph Builder
+    // (builder -> 4B engine -> 4D adapter) instead of the KPI model adapter.
+    v2GraphBuilder: v2Enabled && readBoolean(environment[FLAG_DEFINITIONS.v2GraphBuilder]),
   })
 }
 
