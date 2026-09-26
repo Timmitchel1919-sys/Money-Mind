@@ -106,3 +106,62 @@ Entry: src/main.jsx -> src/App.jsx. App.jsx (~930 lines) owns hash-based routing
 
 Backend: functions/ (Cloud Functions), firestore.rules (per-user isolation), firebase.json.
 Data model: per-user Firestore collections; do not change schemas as a side effect of visual work.
+
+---
+
+## Multi-Agent Development Infrastructure
+Money Mind V2 uses a specialized Claude Code multi-agent infrastructure. The main session acts as the Lead/Orchestrator, responsible for:
+- Understanding the user's request, inspecting code, and classifying work.
+- Decomposing tasks and identifying dependencies.
+- Selecting qualified specialist agents (from `.claude/agents/`).
+- Determining parallel vs. sequential execution.
+- Preventing overlapping edits.
+- Integrating results and invoking QA, Security, Independent Review, Documentation, and Release agents.
+
+### Agent Orchestration Rules
+- Only delegate work to agents within their competency boundary. Use the minimum qualified set of agents necessary.
+- Do not invoke all agents for every task.
+- Use parallel agents only when workstreams are sufficiently independent to prevent file conflicts.
+- Stop unnecessary agent work once sufficient evidence exists.
+- The implementing agent must not self-approve critical work.
+
+### Agent Responsibility Boundaries
+- **Architect**: Architecture analysis, boundaries, ADRs, interface design.
+- **Financial Engineer**: Financial domains (accounts, transactions, budgets, etc.) and calculations.
+- **Accountant**: Bookkeeping, ledgers, financial statements, and rules.
+- **Frontend Engineer**: React components, UI, design system.
+- **Spatial Engineer**: 3D spatial financial visualization (WebGL, Three.js).
+- **Data Engineer**: Persistence (Firebase, Firestore, models, migrations).
+- **AI Engineer**: Financial insights, forecasting integration.
+- **Security Engineer**: Auth, Firebase rules, data security.
+- **QA Engineer**: Testing (unit, integration, regression, financial invariants).
+- **Reviewer**: Independent code and architecture review (correctness, security, etc.).
+- **Documentation**: Technical docs, chapter registry mapping, ADR updates.
+- **Release Engineer**: Git safety, release readiness, branch verification.
+
+### Testing & Validation Requirements
+- Validation requires typecheck, lint, unit tests, integration tests, and financial graph tests where available.
+- Financial functionality requires rigorous validation of financial invariants.
+- Distinguish between existing baseline failures and new regressions. Never classify a pre-existing failure as a regression without evidence.
+
+### Financial Correctness Requirements
+- Financial calculations must be deterministic, testable, auditable, and independent from presentation.
+- Core calculations belong in the financial domain, not UI/3D components.
+
+### Security Requirements
+- Never expose secrets in source, logs, commits, prompts, or documentation.
+- Maintain authorization and validate input.
+
+### Documentation Requirements
+- Significant V2 functionality should be traceable to specification requirements in `docs/v2/`.
+- Do not create source-code directories per requirement chapter.
+
+### Git Safety Requirements
+- Never silently overwrite uncommitted work.
+- Do not reset or clean user changes, rewrite history, or force push.
+- Verify branches before modifications.
+
+### Release Requirements
+- Work is not "release ready" if a BLOCKER remains.
+- The state model is: IMPLEMENTED -> TESTED -> SECURITY CHECKED -> REVIEWED -> DOCUMENTED -> RELEASE READY.
+- Release work only after independent verification and QA.
