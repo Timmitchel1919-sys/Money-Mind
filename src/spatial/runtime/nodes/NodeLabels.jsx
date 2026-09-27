@@ -1,6 +1,6 @@
 import { useMotionEngine } from "../../../motion/core/motionContext"
 import { TRANSITIONS } from "../../../motion/core/motionState"
-import { clearHoverIntent, hoverNodeIntent, selectNodeIntent } from "../../../motion/input/motionIntents"
+import { activateNodeIntent, clearHoverIntent, hoverNodeIntent } from "../../../motion/input/motionIntents"
 
 function labelPosition(node) {
   if (node.kind === "core") return { "--label-x": 50, "--label-y": 50 }
@@ -28,7 +28,8 @@ export default function NodeLabels({ nodes }) {
             className={`spatial-node-label spatial-node-label--${node.kind}${active ? " is-active" : ""}${hovered ? " is-hovered" : ""}${selectedId && !active && node.kind !== "core" ? " is-muted" : ""}${activeTransition?.name === TRANSITIONS.entry ? " is-entering" : ""}`}
             key={node.id}
             onBlur={() => dispatchIntent(clearHoverIntent())}
-            onClick={() => dispatchIntent(selectNodeIntent(node.id))}
+            aria-label={node.ariaLabel || undefined}
+            onClick={() => dispatchIntent(activateNodeIntent(node))}
             // Keyboard focus previews (hover spotlight); a tap's focus does not.
             onFocus={(event) => { if (event.currentTarget.matches(":focus-visible")) dispatchIntent(hoverNodeIntent(node.id)) }}
             // Touch taps emit pointer events with pointerType "touch": no hover on touch.

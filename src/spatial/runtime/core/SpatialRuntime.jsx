@@ -1,10 +1,9 @@
-import { useCallback, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { MotionProvider } from "../../../motion/core/MotionProvider"
 import { useMotionEngine } from "../../../motion/core/motionContext"
 import { resetViewIntent } from "../../../motion/input/motionIntents"
-import NodeLabels from "../nodes/NodeLabels"
 import { QUALITY_OPTIONS, resolveQualityPreset } from "../quality/qualityPresets"
-import SpatialCanvas from "./SpatialCanvas"
+import SpatialStage from "./SpatialStage"
 import SpatialAIConsole from "../../../ai/spatial/SpatialAIConsole"
 import "../../../styles/v2-tokens.css"
 import "../spatial-runtime.css"
@@ -34,11 +33,9 @@ function SimPanel({ sim }) {
 
 function SpatialWorkspace({ aiEnabled, capabilities, initialQuality, motionPreference, scene, sim }) {
   const [requestedQuality, setRequestedQuality] = useState(initialQuality)
-  const [contextState, setContextState] = useState("initializing")
-  const { activeTransition, dispatchIntent, sceneState, selectedId } = useMotionEngine()
+  const { dispatchIntent, selectedId } = useMotionEngine()
   const quality = useMemo(() => resolveQualityPreset(requestedQuality, capabilities), [capabilities, requestedQuality])
   const selectedNode = scene.nodes.find((node) => node.id === selectedId)
-  const handleContextStateChange = useCallback((state) => setContextState(state), [])
   const capabilityState = capabilities.webGL
     ? (capabilities.mobileClass || capabilities.reducedMotion ? "Degraded" : "Supported")
     : "Unsupported"
@@ -73,24 +70,18 @@ function SpatialWorkspace({ aiEnabled, capabilities, initialQuality, motionPrefe
 
       {sim?.active ? <SimPanel sim={sim} /> : null}
 
-      <div className="spatial-stage" data-active-transition={activeTransition?.name || "none"} data-context-state={contextState} data-scene-state={sceneState} data-testid="spatial-stage">
-        <SpatialCanvas
-          onContextStateChange={handleContextStateChange}
-          quality={quality}
-          scene={scene}
-        />
-        <NodeLabels nodes={scene.nodes} />
-        <div className="spatial-stage__status" aria-live="polite">
-          <span>{capabilityState}</span>
-          <span>{quality.id} · DPR {quality.dpr[1]}</span>
-          <span>{motionPreference} motion</span>
-        </div>
-        {contextState === "lost" ? (
-          <div className="spatial-context-notice" role="alert">
-            Rendering paused while the graphics context recovers. The standard dashboard remains available.
+      <SpatialStage
+        lostMessage="Rendering paused while the graphics context recovers. The standard dashboard remains available."
+        quality={quality}
+        scene={scene}
+        status={(
+          <div className="spatial-stage__status" aria-live="polite">
+            <span>{capabilityState}</span>
+            <span>{quality.id} · DPR {quality.dpr[1]}</span>
+            <span>{motionPreference} motion</span>
           </div>
-        ) : null}
-      </div>
+        )}
+      />
 
       <footer className="spatial-inspector" aria-live="polite">
         {scene.projected ? (

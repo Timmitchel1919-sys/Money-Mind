@@ -81,10 +81,12 @@ const lum = (hex) => { const [r, g, b] = rgb(hex).map((c) => (c <= 0.03928 ? c /
 const sat = (hex) => { const c = rgb(hex); const max = Math.max(...c); const min = Math.min(...c); return max === 0 ? 0 : (max - min) / max }
 const hue = (hex) => { const [r, g, b] = rgb(hex); const max = Math.max(r, g, b); const d = max - Math.min(r, g, b); if (!d) return 0; const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4; return (h * 60 + 360) % 360 }
 for (const [tone, colors] of Object.entries(NODE_PALETTE)) {
+  if (!OLD[tone]) continue // tones added after chapter 7 (Layer 11 module tones)
   assert(lum(colors.base) > lum(OLD[tone]) * 3, `${tone}: base colour substantially brighter than before`)
   assert(sat(colors.base) > sat(OLD[tone]) && sat(colors.base) >= 0.6, `${tone}: bolder (more saturated)`)
 }
-const tones = Object.keys(NODE_PALETTE)
+// Hue separation applies to colour tones; "system" (Settings) is intentionally neutral silver.
+const tones = Object.keys(NODE_PALETTE).filter((tone) => tone !== "system")
 for (let i = 0; i < tones.length; i++) for (let j = i + 1; j < tones.length; j++) {
   const dh = Math.abs(hue(NODE_PALETTE[tones[i]].base) - hue(NODE_PALETTE[tones[j]].base))
   assert(Math.min(dh, 360 - dh) >= 12, `${tones[i]} vs ${tones[j]}: distinct hues`)

@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react"
 import { IcosahedronGeometry, SphereGeometry } from "three"
+import MoneyMindCore from "./MoneyMindCore"
 import SpatialNode from "./SpatialNode"
 
 export default function NodeGroup({ detail, lighting, nodes }) {
@@ -15,7 +16,10 @@ export default function NodeGroup({ detail, lighting, nodes }) {
     geometries.child.dispose()
   }, [geometries])
 
-  return nodes.map((node, index) => (
+  return nodes.map((node, index) => node.visual === "money-mind-core" ? (
+    // Layer 10: the V2 application's Core has its own visual; everything else is a SpatialNode.
+    <MoneyMindCore detail={detail} index={index} key={node.id} lighting={lighting} node={node} />
+  ) : (
     <SpatialNode
       geometry={node.kind === "core" ? geometries.core : node.kind === "child" ? geometries.child : geometries.radial}
       key={node.id}

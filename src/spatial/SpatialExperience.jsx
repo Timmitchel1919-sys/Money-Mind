@@ -1,20 +1,12 @@
 import { Component, lazy, Suspense, useMemo, useState } from "react"
 import { featureFlags } from "../core/feature-flags/featureFlags"
 import { detectRenderingCapabilities } from "./performance/capabilities"
+import { resolveMotionPreference } from "./performance/motionPreference"
 import { createProofSpatialScene } from "../visualization/adapters/createProofSpatialScene"
 import { createFinancialSpatialScene } from "../visualization/adapters/financialSpatialAdapter"
 import "./spatial-fallback.css"
 
 const SpatialRuntime = lazy(() => import("./runtime"))
-const MOTION_PREFERENCES = new Set(["full", "reduced", "minimal", "off"])
-
-function resolveMotionPreference(capabilities) {
-  const detectedPreference = capabilities.reducedMotion ? "reduced" : "full"
-  if (!import.meta.env.DEV) return detectedPreference
-
-  const requestedPreference = new URLSearchParams(window.location.search).get("spatialMotion")
-  return MOTION_PREFERENCES.has(requestedPreference) ? requestedPreference : detectedPreference
-}
 
 function SpatialFallback({ reason }) {
   const detail = reason === "webgl"

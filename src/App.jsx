@@ -61,6 +61,9 @@ import { createFinancialGraphPresentation } from "./visualization/adapters/finan
 import { convertCurrency, formatCurrencyAmount } from "./utils/currencyConversion"
 import { SEARCHABLE_NAVIGATION } from "./constants/navigation"
 import { featureFlags } from "./app/configuration/v2"
+import { PRESENTATIONS, resolvePresentation } from "./app/presentation/resolvePresentation"
+import { readClassicViewPreference, writeClassicViewPreference } from "./app/presentation/classicViewPreference"
+import V2SpatialApp from "./app/v2/V2SpatialApp"
 
 const PROTECTED_PAGES = new Set([
   ...SEARCHABLE_NAVIGATION.map((item) => item.value),
@@ -98,6 +101,12 @@ export default function App() {
   const settingsHook = useSettings()
   const appLock = useAppLock()
   const [resolvedTheme, setResolvedTheme] = useState(() => document.documentElement.dataset.theme || "light")
+  // Layer 8: explicit, session-scoped opt-in to the legacy V1 presentation.
+  const [classicRequested, setClassicRequested] = useState(readClassicViewPreference)
+  const setClassicView = (classic) => {
+    writeClassicViewPreference(classic)
+    setClassicRequested(classic)
+  }
 
   // Layer 4 (V2 spatial): reuse the existing pure KPI selector as the
   // normalized financial model, then map it to the renderer-neutral scene
@@ -558,6 +567,14 @@ export default function App() {
     if (!userId) return
     await investment.deleteInvestment(userId, id)
   }
+
+  // Layer 8: which presentation layer renders (public / locked / v2 / legacy).
+  const presentation = resolvePresentation({
+    signedIn: Boolean(auth.user),
+    locked: appLock.isEnabled && appLock.isLocked,
+    v2AppShell: featureFlags.v2AppShell,
+    classicRequested,
+  })
 
   if (!auth.user && activePage === "spatial" && featureFlags.v2SpatialUI) {
     content = <SpatialExperience />
@@ -1045,6 +1062,27 @@ export default function App() {
     </DashboardLayout>
   )
 
+  // Layer 8 cutover: V1 business/data wiring above is shared; only the
+  // presentation layer differs (see resolvePresentation). The lock screen wins below.
+  if (presentation === PRESENTATIONS.v2) {
+    content = (
+      <V2SpatialApp
+        coreDetail={formatCurrencyAmount(financialKPIs.netWorth, reportingCurrency, settingsHook.settings.numberFormat)}
+        financialData={{
+          transactions: transaction.transactions, bills: bill.bills, debts: debt.debts, goals: goal.goals,
+          investments: investment.investments, emergencySavings: emergency.emergencySavings,
+          monthlyExpenses: emergency.monthlyExpenses, monthlyIncome: form.income,
+        }}
+        onOpenClassic={() => setClassicView(true)}
+        onSignOut={auth.handleLogout}
+        profile={profile.profile}
+        settings={settingsHook.settings}
+        updateSetting={settingsHook.updateSetting}
+        user={auth.user}
+      />
+    )
+  }
+
   if (appLock.isEnabled && appLock.isLocked) {
     content = (
       <AppLockScreen
@@ -1061,8 +1099,13 @@ export default function App() {
 
   return (
     <>
-      {auth.user && <AppBackground themeId={resolvedTheme === "dark" ? DARK_BACKGROUND_THEME : settingsHook.settings.backgroundTheme} />}
+      {(presentation === PRESENTATIONS.legacy || presentation === PRESENTATIONS.locked) && <AppBackground themeId={resolvedTheme === "dark" ? DARK_BACKGROUND_THEME : settingsHook.settings.backgroundTheme} />}
       {content}
+      {presentation === PRESENTATIONS.legacy && featureFlags.v2AppShell ? (
+        <button className="v2-return-pill" data-testid="v2-return-from-classic" onClick={() => setClassicView(false)} type="button">
+          Return to Money Mind V2
+        </button>
+      ) : null}
     </>
   )
 }

@@ -143,3 +143,6 @@
 @media (prefers-reduced-motion: reduce) {
   .spatial-node-label { animation-duration: 0ms; transition-duration: 0ms; }
 }
+
+/* Layer 9: full-viewport stage for the V2 Spatial Application. */
+.spatial-stage.spatial-stage--app { position: absolute; inset: 0; height: auto; min-height: 0; background: transparent; }
