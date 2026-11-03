@@ -14,6 +14,10 @@ const LIGHTING = Object.freeze({
   enhanced: { ambient: 0.42, key: 28, rim: 16, environment: 0.85 },
 })
 
+// Chapter 7 visual-fidelity pass: warm key light (reads as gold highlight on
+// the glossy clearcoat) over a teal rim/ambient, matching the reference's
+// teal-black scene with warm-lit node surfaces.
+
 function useRoomEnvironment(intensity) {
   const gl = useThree((state) => state.gl)
   const scene = useThree((state) => state.scene)
@@ -38,9 +42,9 @@ export default function SpatialLighting({ mode = "standard" }) {
   useRoomEnvironment(config.environment)
   return (
     <>
-      <ambientLight intensity={config.ambient} color="#b9c8e6" />
-      <pointLight position={[4, 5, 6]} intensity={config.key} color="#e6efff" distance={18} />
-      {config.rim > 0 ? <pointLight position={[-5, -2, 2]} intensity={config.rim} color="#5b7fd6" distance={16} /> : null}
+      <ambientLight intensity={config.ambient} color="#9fd8c9" />
+      <pointLight position={[4, 5, 6]} intensity={config.key} color="#fff2d9" distance={18} />
+      {config.rim > 0 ? <pointLight position={[-5, -2, 2]} intensity={config.rim} color="#1fae8f" distance={16} /> : null}
     </>
   )
 }

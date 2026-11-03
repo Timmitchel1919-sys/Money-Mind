@@ -9,6 +9,26 @@
 - Tests: `npm run test:spatial-universe`
 - Validation: `docs/v2/validation/chapter-7-spatial-financial-universe.md`
 
+## Visual-fidelity pass (2026-11-03)
+
+Palette-only follow-up against a user-supplied radial node-graph reference
+(dark teal-black scene, warm gold connection lines, glassy selected-card glow
+— not a Money Mind asset; used for visual direction only, per the brief).
+Colour/material constants only; no scene structure, motion policy, or
+financial logic touched. Verified in the browser at `#spatial` (quality Auto,
+overview + node-select interaction, no console errors).
+
+| File | Change |
+| --- | --- |
+| `src/spatial/runtime/core/runtimeConfig.js` | Scene background `#020713` → `#050f0f` (teal-black, was navy) |
+| `src/spatial/runtime/lighting/SpatialLighting.jsx` | Ambient `#b9c8e6`→`#9fd8c9`, key `#e6efff`→`#fff2d9` (warm), rim `#5b7fd6`→`#1fae8f` (teal) |
+| `src/spatial/runtime/scene/SpatialAtmosphere.jsx` | Particle colour `#8fa6ff`→`#5eead4` (teal, was blue) |
+| `src/motion/edges/edgeMotion.js`, `src/spatial/runtime/edges/SpatialEdges.jsx` | Edge colour `#45617e`/`#a9c8ef`→`#8a7142` (rest) / `#f3cf8a` (active/selected) — warm gold, was slate blue; opacity/reveal logic unchanged |
+| `src/spatial/runtime/spatial-runtime.css` | Workspace/stage chrome re-tinted teal (`--spatial-line`, `--spatial-surface`, background gradient); selected-label glow `rgba(98,143,197,…)`→`rgba(94,234,212,…)` (teal) |
+
+`NODE_PALETTE` (`nodeMaterials.js`) is unchanged — those hues are
+luminance/saturation/hue-spacing tested and carry domain meaning.
+
 ## What changed (and what did not)
 
 Only presentation and interaction inside the existing systems:

@@ -34,7 +34,9 @@ export default function SpatialAtmosphere({ detail }) {
     g.setAttribute("position", new BufferAttribute(seededPositions(count), 3))
     return g
   }, [count])
-  const material = useMemo(() => new PointsMaterial({ color: "#8fa6ff", size: 0.045, sizeAttenuation: true, transparent: true, opacity: 0.55, depthWrite: false, blending: AdditiveBlending }), [])
+  // Chapter 7 visual-fidelity pass: teal dust (was blue) to match the
+  // reference's teal-black atmosphere.
+  const material = useMemo(() => new PointsMaterial({ color: "#5eead4", size: 0.045, sizeAttenuation: true, transparent: true, opacity: 0.5, depthWrite: false, blending: AdditiveBlending }), [])
   useEffect(() => () => geometry.dispose(), [geometry])
   useEffect(() => () => material.dispose(), [material])
 

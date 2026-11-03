@@ -1,12 +1,15 @@
 .spatial-workspace {
-  --spatial-line: rgba(151, 179, 214, 0.2);
-  --spatial-surface: rgba(8, 16, 30, 0.78);
+  /* Chapter 7 visual-fidelity pass: teal-tinted chrome (was slate blue), to
+     read as one scene with the WebGL stage's teal-black background and gold
+     edges instead of a blue UI bolted onto it. */
+  --spatial-line: rgba(94, 234, 212, 0.18);
+  --spatial-surface: rgba(5, 18, 17, 0.78);
   color: #edf5ff;
   overflow: hidden;
   border: 1px solid var(--spatial-line);
   border-radius: 26px;
-  background: #020713;
-  box-shadow: 0 30px 90px rgba(0, 7, 20, 0.42);
+  background: radial-gradient(120% 90% at 18% 42%, rgba(18, 65, 58, 0.55) 0%, rgba(5, 15, 15, 0.92) 46%, #020807 100%);
+  box-shadow: 0 30px 90px rgba(0, 10, 8, 0.45);
 }
 
 .spatial-toolbar,
@@ -45,7 +48,7 @@
 .spatial-quality-control select { border: 0; background: transparent; color: #f0f6fc; font: inherit; text-transform: capitalize; outline: 0; }
 .spatial-quality-control option { background: #0b1424; }
 
-.spatial-stage { position: relative; height: min(68vh, 690px); min-height: 470px; isolation: isolate; background: #020713; }
+.spatial-stage { position: relative; height: min(68vh, 690px); min-height: 470px; isolation: isolate; background: #050f0f; }
 .spatial-stage canvas { display: block; outline: none; }
 .spatial-label-layer { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
 .spatial-node-label {
@@ -72,9 +75,9 @@
 }
 .spatial-node-label small { margin-top: 2px; color: #7f95b0; font-size: 8px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
 .spatial-node-label--core { min-width: 128px; transform: translate(-50%, calc(-50% + 72px)); color: #eaf3fc; font-size: 12px; }
-.spatial-node-label:hover, .spatial-node-label:focus-visible, .spatial-node-label.is-hovered { border-color: rgba(181, 211, 244, 0.48); background: rgba(17, 31, 50, 0.9); color: #f5f9fd; transform: translate(-50%, calc(-50% + 40px)); outline: none; }
+.spatial-node-label:hover, .spatial-node-label:focus-visible, .spatial-node-label.is-hovered { border-color: rgba(167, 243, 208, 0.5); background: rgba(14, 35, 32, 0.9); color: #f5f9fd; transform: translate(-50%, calc(-50% + 40px)); outline: none; }
 .spatial-node-label--core:hover, .spatial-node-label--core:focus-visible, .spatial-node-label--core.is-hovered { transform: translate(-50%, calc(-50% + 69px)); }
-.spatial-node-label.is-active { border-color: rgba(205, 226, 250, 0.66); background: rgba(24, 43, 68, 0.94); color: #fff; box-shadow: 0 0 24px rgba(98, 143, 197, 0.18); }
+.spatial-node-label.is-active { border-color: rgba(167, 243, 208, 0.7); background: rgba(16, 41, 37, 0.94); color: #fff; box-shadow: 0 0 26px rgba(94, 234, 212, 0.22); }
 .spatial-node-label.is-muted { opacity: 0.38; }
 .spatial-node-label.is-entering { animation: spatial-label-entry var(--motion-entry-duration) cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: var(--motion-entry-delay); }
 

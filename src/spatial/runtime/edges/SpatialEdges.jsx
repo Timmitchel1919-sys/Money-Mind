@@ -23,7 +23,7 @@ function SpatialEdge({ active, connectedToSelection, positions, revealed = true 
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positionBuffer, 3]} count={2} />
       </bufferGeometry>
-      <lineBasicMaterial ref={material} color="#45617e" opacity={0} transparent />
+      <lineBasicMaterial ref={material} color="#8a7142" opacity={0} transparent />
     </line>
   )
 }
