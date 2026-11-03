@@ -9,12 +9,13 @@ import { resolveNodeMotion } from "../../src/motion/nodes/nodeMotion.js"
 import { readFileSync, readdirSync, statSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { MODULE_REGISTRY } from "../../src/app/v2/modules/moduleRegistry.js"
-import { ModuleRegistryError, resolveVisibleModules, validateModuleRegistry } from "../../src/app/v2/modules/moduleModel.js"
+import { findSubmoduleByWorkspaceRoute, ModuleRegistryError, resolveVisibleModules, validateModuleRegistry } from "../../src/app/v2/modules/moduleModel.js"
 import { createModuleSpatialScene, MODULE_LAYOUT, MONEY_MIND_CORE_ID } from "../../src/visualization/adapters/moduleSpatialAdapter.js"
 import { SEARCHABLE_NAVIGATION } from "../../src/constants/navigation.js"
 import { NODE_PALETTE } from "../../src/spatial/runtime/nodes/nodeMaterials.js"
 import { adjacentModuleId, deriveSpatialNavigation, NAVIGATION_LEVELS, openModuleIntent, resolveSubmodule, returnToCoreIntent } from "../../src/app/v2/navigation/spatialNavigation.js"
 import { resolveEdgeMotion } from "../../src/motion/edges/edgeMotion.js"
+import { actionRoute, parseAppRoute, spatialRoute, workspaceRoute } from "../../src/app/v2/navigation/appRoute.js"
 
 let passed = 0
 function assert(condition, message) {
@@ -84,10 +85,16 @@ function throwsRegistry(fn, label) {
   const legacyPages = new Set(SEARCHABLE_NAVIGATION.map((item) => item.value))
   for (const module of modules) {
     assert(Boolean(NODE_PALETTE[module.tone]), `${module.id}: tone "${module.tone}" exists in the runtime palette`)
-    for (const sub of module.submodules) assert(legacyPages.has(sub.legacyPage), `${module.id}/${sub.id}: legacy page "${sub.legacyPage}" exists in V1`)
+    for (const sub of module.submodules) {
+      assert(sub.parentModuleId === module.id && sub.availability === "available" && Number.isInteger(sub.navigation.order), `${module.id}/${sub.id}: typed navigation metadata`)
+      if (sub.destination.kind === "workspace") assert(legacyPages.has(sub.destination.route), `${module.id}/${sub.id}: workspace "${sub.destination.route}" exists in V1`)
+      else assert(sub.destination.action === "money-ai", `${module.id}/${sub.id}: verified action destination`)
+    }
   }
-  const covered = new Set(modules.flatMap((m) => m.submodules.map((s) => s.legacyPage)))
+  const covered = new Set(modules.flatMap((m) => m.submodules.filter((s) => s.destination.kind === "workspace").map((s) => s.destination.route)))
   for (const page of legacyPages) assert(covered.has(page), `V1 screen "${page}" has a home in the module registry`)
+  assert(covered.size === 25 && modules.flatMap((m) => m.submodules).filter((s) => s.destination.kind === "action").length === 1, "25 workspaces plus the Money AI action")
+  assert(findSubmoduleByWorkspaceRoute(MODULE_REGISTRY, "transactions")?.id === "transactions", "workspace reverse lookup")
 
   // Adapter
   const scene = createModuleSpatialScene({ modules, core: { detail: "SRD 5,000.00" } })
@@ -122,6 +129,9 @@ function throwsRegistry(fn, label) {
   throwsRegistry(() => validateModuleRegistry([{ ...MODULE_REGISTRY[0], label: "" }]), "missing label")
   throwsRegistry(() => validateModuleRegistry([{ ...MODULE_REGISTRY[0], id: "Bad Id" }]), "malformed id")
   throwsRegistry(() => validateModuleRegistry([{ ...MODULE_REGISTRY[0], submodules: [{ id: "x", label: "X" }, { id: "x", label: "Y" }] }]), "duplicate submodule")
+  throwsRegistry(() => validateModuleRegistry([{ ...MODULE_REGISTRY[0], submodules: [{ ...MODULE_REGISTRY[0].submodules[0], parentModuleId: "wrong" }] }]), "submodule parent mismatch")
+  throwsRegistry(() => validateModuleRegistry([{ ...MODULE_REGISTRY[0], submodules: [{ ...MODULE_REGISTRY[0].submodules[0], navigation: { order: 0, restore: "nowhere" } }] }]), "invalid submodule navigation metadata")
+  throwsRegistry(() => validateModuleRegistry([{ ...MODULE_REGISTRY[0], submodules: [...MODULE_REGISTRY[0].submodules, { ...MODULE_REGISTRY[0].submodules[0], id: "duplicate-route", navigation: { order: 2, restore: "spatial" } }] }]), "duplicate workspace route")
   throwsRegistry(() => validateModuleRegistry("nope"), "non-array registry")
 
   // No hardcoded module branching outside the registry.
@@ -153,7 +163,7 @@ function throwsRegistry(fn, label) {
   assert(selected.level === "module" && selected.activeModuleId === ids[2] && selected.previewModuleId === null && selected.canReturn, "selected module is the active context")
   const movement = modules.find((module) => module.id === "money-movement")
   const transactions = resolveSubmodule(modules, "money-movement", "transactions")
-  assert(transactions?.legacyPage === "transactions", "transactions submodule resolves to the existing workspace")
+  assert(transactions?.destination.route === "transactions", "transactions submodule resolves to the existing workspace")
   const submodule = deriveSpatialNavigation({ coreId: core, modules, selectedId: movement.id, selectedSubmoduleId: transactions.id })
   assert(submodule.level === "submodule" && submodule.activeSubmoduleId === "transactions", "selected submodule is the active context")
   assert(resolveSubmodule(modules, "money-movement", "missing") === null, "invalid submodule IDs resolve safely")
@@ -181,6 +191,28 @@ function throwsRegistry(fn, label) {
   const others = resolveNodeMotion({ activeTransition: null, index: 2, kind: "radial", policy, progress: 1, revealed: true, hovered: false, selected: false, selectedId: ids[2], hoveredId: null })
   const chosen = resolveNodeMotion({ activeTransition: null, index: 3, kind: "radial", policy, progress: 1, revealed: true, hovered: false, selected: true, selectedId: ids[2], hoveredId: null })
   assert(others.opacity > 0 && others.opacity < chosen.opacity && chosen.scale > others.scale && chosen.emissive > others.emissive, "selected module brighter/larger; others dimmed but visible")
+}
+
+// --- Phase 1H: canonical spatial/workspace routes ---
+{
+  const transactions = findSubmoduleByWorkspaceRoute(MODULE_REGISTRY, "transactions")
+  assert(spatialRoute() === "#v2" && spatialRoute("money-movement", "transactions") === "#v2/money-movement/transactions", "canonical spatial routes")
+  assert(workspaceRoute(transactions) === "#workspace/transactions/money-movement/transactions", "canonical workspace route")
+  const spatial = parseAppRoute("#v2/money-movement/transactions", MODULE_REGISTRY)
+  assert(spatial.kind === "spatial" && spatial.moduleId === "money-movement" && spatial.submoduleId === "transactions" && !spatial.invalid, "spatial deep link restores context")
+  const workspace = parseAppRoute("#workspace/transactions/money-movement/transactions", MODULE_REGISTRY)
+  assert(workspace.kind === "workspace" && workspace.workspaceRoute === "transactions" && workspace.returnHash === "#v2/money-movement/transactions", "workspace deep link restores return context")
+  const moneyAI = MODULE_REGISTRY.find((module) => module.id === "intelligence").submodules.find((submodule) => submodule.id === "money-ai")
+  assert(actionRoute(moneyAI) === "#workspace/action/intelligence/money-ai", "canonical action route")
+  const action = parseAppRoute(actionRoute(moneyAI), MODULE_REGISTRY)
+  assert(action.kind === "workspace" && action.workspaceRoute === "dashboard" && action.actionId === "money-ai" && action.returnHash === "#v2/intelligence/money-ai", "action deep link restores Money AI and return context")
+  for (const bad of ["#v2/missing", "#v2/money-movement/missing", "#workspace/transactions/wrong/transactions", "#workspace/missing/x/y", "#nonsense"]) {
+    const parsed = parseAppRoute(bad, MODULE_REGISTRY)
+    assert(parsed.kind === "spatial" && parsed.moduleId === null && parsed.invalid, `${bad}: invalid routes fail safe to Core`)
+  }
+  const unavailableRegistry = MODULE_REGISTRY.map((module) => module.id !== "money-movement" ? module : { ...module, submodules: module.submodules.map((submodule) => submodule.id === "transactions" ? { ...submodule, availability: "unavailable" } : submodule) })
+  const unavailable = parseAppRoute("#v2/money-movement/transactions", unavailableRegistry)
+  assert(unavailable.kind === "spatial" && unavailable.moduleId === null && unavailable.invalid, "unavailable submodule deep link fails safe")
 }
 
 console.log(`V2 application tests: ${passed} assertions passed.`)
