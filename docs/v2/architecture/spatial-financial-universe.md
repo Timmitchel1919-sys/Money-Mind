@@ -29,6 +29,30 @@ overview + node-select interaction, no console errors).
 `NODE_PALETTE` (`nodeMaterials.js`) is unchanged — those hues are
 luminance/saturation/hue-spacing tested and carry domain meaning.
 
+## Selection detail panel (2026-11-03, follow-up)
+
+The same reference video showed a richer selected-node detail card (icon,
+hero stat, item-count tiles) — but that video is a demo of a *different,
+unrelated third-party product* (branding/content not reproduced; see the
+chat record). What's adapted here is the layout idea only, built strictly
+from fields the adapters already emit — nothing invented:
+
+- `src/spatial/runtime/core/SpatialRuntime.jsx`: the `.spatial-inspector`
+  footer gains an icon chip (`lucide-react`, one icon per node tone/kind —
+  purely decorative), an eyebrow ("Financial domain" / "Line item" /
+  "Financial core" from `node.kind`), and a magnitude meter bar driven by
+  the adapter's existing `node.magnitude` (0–1, already clamped/floored in
+  `financialSpatialAdapter.js`). The existing `detail` string and
+  `childCount` hint are unchanged, just restyled.
+- `src/spatial/runtime/spatial-runtime.css`: new `__identity`/`__icon`/
+  `__stats`/`__meter`/`__status` rules; old generic `div`/`span`/`strong`/`p`
+  selectors scoped to the new class names so mobile breakpoints keep working.
+- No new data, no Firestore reads, no change to `financialSpatialAdapter.js`
+  / `financialGraphSpatialAdapter.js` output shape. The signed-out demo scene
+  (`createProofSpatialScene`) has no `magnitude`/`childCount`, so the panel
+  renders without them there — verified in the browser (no console errors);
+  real per-user scenes populate both.
+
 ## What changed (and what did not)
 
 Only presentation and interaction inside the existing systems:
