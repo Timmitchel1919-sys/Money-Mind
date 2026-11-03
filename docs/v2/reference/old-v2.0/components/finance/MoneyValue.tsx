@@ -1,0 +1,4 @@
+import { cn } from "@/lib/utils/cn";
+export type FinancialTone="positive"|"negative"|"neutral";
+type MoneySize="hero"|"large"|"medium"|"small";
+export function MoneyValue({value,currencyLabel,tone="neutral",size="medium",className}:{value:string;currencyLabel?:string;tone?:FinancialTone;size?:MoneySize;className?:string}){const sizeClass={hero:"mm-financial-hero",large:"mm-financial-large",medium:"mm-financial-medium",small:"mm-financial-small"}[size];const toneClass={positive:"text-[var(--mm-success)]",negative:"text-[var(--mm-danger)]",neutral:"text-[var(--mm-text-primary)]"}[tone];return <span className={cn("mm-numeric inline-flex items-baseline gap-2",sizeClass,toneClass,className)}>{value}{currencyLabel&&<span className="text-[.38em] font-semibold tracking-[.06em] text-[var(--mm-text-muted)]">{currencyLabel}</span>}</span>}

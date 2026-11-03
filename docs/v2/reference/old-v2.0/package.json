@@ -1,0 +1,48 @@
+{
+  "name": "money-mind-v2",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint app components config domain lib repositories types tests --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "test:visual": "node tests/visual-qa.mjs",
+    "test:shell": "node tests/application-shell-qa.mjs",
+    "test:auth": "node tests/authentication-qa.mjs",
+    "test:auth-utils": "node --experimental-strip-types tests/auth-utilities.test.mjs",
+    "test:onboarding": "node --experimental-strip-types tests/onboarding-utilities.test.mjs",
+    "test:onboarding-routes": "node tests/onboarding-routes-qa.mjs",
+    "test:domain": "node --experimental-strip-types tests/financial-domain.test.mjs"
+  },
+  "dependencies": {
+    "@radix-ui/react-avatar": "1.1.11",
+    "@radix-ui/react-checkbox": "1.3.3",
+    "@radix-ui/react-dialog": "1.1.15",
+    "@radix-ui/react-dropdown-menu": "2.1.16",
+    "@radix-ui/react-radio-group": "1.3.8",
+    "@radix-ui/react-select": "2.2.6",
+    "@radix-ui/react-separator": "1.1.8",
+    "@radix-ui/react-switch": "1.2.6",
+    "@radix-ui/react-tooltip": "1.2.8",
+    "clsx": "2.1.1",
+    "firebase": "12.17.1",
+    "lucide-react": "1.33.0",
+    "next": "16.3.0",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "tailwind-merge": "3.6.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.55.0",
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "26.2.0",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.3.0",
+    "tailwindcss": "4.3.0",
+    "typescript": "6.0.3"
+  }
+}
