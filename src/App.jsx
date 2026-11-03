@@ -64,6 +64,9 @@ import { featureFlags } from "./app/configuration/v2"
 import { PRESENTATIONS, resolvePresentation } from "./app/presentation/resolvePresentation"
 import { readClassicViewPreference, writeClassicViewPreference } from "./app/presentation/classicViewPreference"
 import V2SpatialApp from "./app/v2/V2SpatialApp"
+import { MODULE_REGISTRY } from "./app/v2/modules/moduleRegistry"
+import { findSubmodule, findSubmoduleByWorkspaceRoute } from "./app/v2/modules/moduleModel"
+import { APP_ROUTE_KINDS, actionRoute, parseAppRoute, spatialRoute, workspaceRoute } from "./app/v2/navigation/appRoute"
 
 const PROTECTED_PAGES = new Set([
   ...SEARCHABLE_NAVIGATION.map((item) => item.value),
@@ -73,18 +76,67 @@ const DEVELOPMENT_PAGES = new Set(featureFlags.v2SpatialUI ? ["spatial"] : [])
 const APP_PAGES = new Set([...PROTECTED_PAGES, ...DEVELOPMENT_PAGES])
 
 function pageFromHash() {
-  const page = window.location.hash.slice(1).split("/")[0]
+  const parts = window.location.hash.slice(1).split("/")
+  if (parts[0] === "workspace") {
+    if (parts[1] === "action") return "dashboard"
+    return PROTECTED_PAGES.has(parts[1]) ? parts[1] : "dashboard"
+  }
+  const page = parts[0]
   return APP_PAGES.has(page) ? page : "dashboard"
+}
+
+function navigationRouteFromHash(hash = window.location.hash) {
+  const rawRoute = String(hash || "").slice(1).split("/")[0]
+  if (rawRoute === "v2" || rawRoute === "workspace") return parseAppRoute(hash, MODULE_REGISTRY)
+  const submodule = findSubmoduleByWorkspaceRoute(MODULE_REGISTRY, rawRoute, { availableOnly: true })
+  return submodule
+    ? Object.freeze({
+        actionId: null,
+        invalid: false,
+        kind: APP_ROUTE_KINDS.workspace,
+        moduleId: submodule.parentModuleId,
+        returnHash: spatialRoute(submodule.parentModuleId, submodule.id),
+        submoduleId: submodule.id,
+        workspaceRoute: submodule.destination.route,
+      })
+    : null
 }
 
 export default function App() {
   const [activePage, setActivePageState] = useState(pageFromHash)
+  const [navigationRoute, setNavigationRoute] = useState(() => navigationRouteFromHash() || parseAppRoute("#v2", MODULE_REGISTRY))
   let content
+
+  function applyLocationState() {
+    let nextRoute = navigationRouteFromHash()
+    if (nextRoute?.invalid) {
+      window.history.replaceState(null, "", spatialRoute())
+      nextRoute = parseAppRoute(spatialRoute(), MODULE_REGISTRY)
+    }
+    setActivePageState(pageFromHash())
+    if (nextRoute) {
+      setNavigationRoute(nextRoute)
+      if (featureFlags.v2AppShell) {
+        const classic = nextRoute.kind === APP_ROUTE_KINDS.workspace
+        writeClassicViewPreference(classic)
+        setClassicRequested(classic)
+      }
+    }
+  }
+
+  function navigateToHash(hash, { replace = false } = {}) {
+    window.history[replace ? "replaceState" : "pushState"](null, "", hash)
+    applyLocationState()
+  }
 
   function setActivePage(page) {
     if (!APP_PAGES.has(page)) return
-    window.history.pushState(null, "", `#${page}`)
-    setActivePageState(page)
+    const submodule = findSubmoduleByWorkspaceRoute(MODULE_REGISTRY, page, { availableOnly: true })
+    if (featureFlags.v2AppShell && submodule) {
+      navigateToHash(workspaceRoute(submodule))
+      return
+    }
+    navigateToHash(`#${page}`)
   }
 
   const budget = useBudget()
@@ -101,12 +153,9 @@ export default function App() {
   const settingsHook = useSettings()
   const appLock = useAppLock()
   const [resolvedTheme, setResolvedTheme] = useState(() => document.documentElement.dataset.theme || "light")
-  // Layer 8: explicit, session-scoped opt-in to the legacy V1 presentation.
-  const [classicRequested, setClassicRequested] = useState(readClassicViewPreference)
-  const setClassicView = (classic) => {
-    writeClassicViewPreference(classic)
-    setClassicRequested(classic)
-  }
+  // Phase 1H: the URL is authoritative; session storage remains a compatibility
+  // hint for older tabs while canonical #v2/#workspace routes drive presentation.
+  const [classicRequested, setClassicRequested] = useState(() => navigationRouteFromHash()?.kind === APP_ROUTE_KINDS.workspace || readClassicViewPreference())
 
   // Layer 4 (V2 spatial): reuse the existing pure KPI selector as the
   // normalized financial model, then map it to the renderer-neutral scene
@@ -267,9 +316,7 @@ export default function App() {
   const profile = useProfile(auth.user?.uid)
 
   useEffect(() => {
-    function syncRoute() {
-      setActivePageState(pageFromHash())
-    }
+    function syncRoute() { applyLocationState() }
     window.addEventListener("hashchange", syncRoute)
     window.addEventListener("popstate", syncRoute)
     return () => {
@@ -280,24 +327,26 @@ export default function App() {
 
   useEffect(() => {
     const rawRoute = window.location.hash.slice(1).split("/")[0]
+    const currentRoute = navigationRouteFromHash()
     if (auth.user) {
-      const intended = sessionStorage.getItem("moneyMindIntendedPage")
-      // APP_PAGES (not just PROTECTED_PAGES) so the flag-gated development route
-      // (#spatial) stays reachable for a signed-in user; `intended` is a
-      // post-login redirect target, which is only ever a protected page.
-      const nextPage = APP_PAGES.has(rawRoute)
-        ? rawRoute
-        : PROTECTED_PAGES.has(intended)
-          ? intended
-          : "dashboard"
+      const intendedHash = sessionStorage.getItem("moneyMindIntendedHash")
+      sessionStorage.removeItem("moneyMindIntendedHash")
       sessionStorage.removeItem("moneyMindIntendedPage")
-      if (rawRoute !== nextPage) window.history.replaceState(null, "", `#${nextPage}`)
-      setActivePageState(nextPage)
+      if (["", "home", "login", "register", "reset"].includes(rawRoute)) {
+        const nextHash = intendedHash || (featureFlags.v2AppShell ? spatialRoute() : "#dashboard")
+        navigateToHash(nextHash, { replace: true })
+      } else if (currentRoute?.invalid || (!currentRoute && !APP_PAGES.has(rawRoute))) {
+        navigateToHash(featureFlags.v2AppShell ? spatialRoute() : "#dashboard", { replace: true })
+      } else {
+        applyLocationState()
+      }
       return
     }
-    if (PROTECTED_PAGES.has(rawRoute)) {
-      sessionStorage.setItem("moneyMindIntendedPage", rawRoute)
+    const protectedRoute = currentRoute || PROTECTED_PAGES.has(rawRoute)
+    if (protectedRoute && !(rawRoute === "spatial" && featureFlags.v2SpatialUI)) {
+      sessionStorage.setItem("moneyMindIntendedHash", window.location.hash || spatialRoute())
       window.history.replaceState(null, "", "#login")
+      setClassicRequested(false)
     }
   }, [auth.user])
 
@@ -614,6 +663,7 @@ export default function App() {
       handleLogout={auth.handleLogout}
       activePage={activePage}
       setActivePage={setActivePage}
+      moneyAIOpen={navigationRoute.kind === APP_ROUTE_KINDS.workspace && navigationRoute.actionId === "money-ai"}
       moneyAIProps={{
         userId: auth.user?.uid,
         transactions: transaction.transactions,
@@ -1065,6 +1115,8 @@ export default function App() {
   // Layer 8 cutover: V1 business/data wiring above is shared; only the
   // presentation layer differs (see resolvePresentation). The lock screen wins below.
   if (presentation === PRESENTATIONS.v2) {
+    const openClassicSubmodule = navigationRoute.submodule
+      || findSubmodule(MODULE_REGISTRY, "dashboard", "overview", { availableOnly: true })
     content = (
       <V2SpatialApp
         coreDetail={formatCurrencyAmount(financialKPIs.netWorth, reportingCurrency, settingsHook.settings.numberFormat)}
@@ -1073,8 +1125,16 @@ export default function App() {
           investments: investment.investments, emergencySavings: emergency.emergencySavings,
           monthlyExpenses: emergency.monthlyExpenses, monthlyIncome: form.income,
         }}
-        onOpenClassic={() => setClassicView(true)}
-        onOpenWorkspace={(page) => { setClassicView(true); setActivePage(page) }}
+        initialModuleId={navigationRoute.kind === APP_ROUTE_KINDS.spatial ? navigationRoute.moduleId : null}
+        initialSubmoduleId={navigationRoute.kind === APP_ROUTE_KINDS.spatial ? navigationRoute.submoduleId : null}
+        onNavigationChange={({ moduleId, submoduleId }) => {
+          if (navigationRoute.kind !== APP_ROUTE_KINDS.spatial) return
+          const hash = spatialRoute(moduleId, submoduleId)
+          if (window.location.hash !== hash) navigateToHash(hash, { replace: true })
+        }}
+        onOpenAction={(_actionId, { submodule }) => navigateToHash(actionRoute(submodule))}
+        onOpenClassic={() => navigateToHash(workspaceRoute(openClassicSubmodule))}
+        onOpenWorkspace={(_page, { submodule }) => navigateToHash(workspaceRoute(submodule))}
         onSignOut={auth.handleLogout}
         profile={profile.profile}
         settings={settingsHook.settings}
@@ -1103,7 +1163,7 @@ export default function App() {
       {(presentation === PRESENTATIONS.legacy || presentation === PRESENTATIONS.locked) && <AppBackground themeId={resolvedTheme === "dark" ? DARK_BACKGROUND_THEME : settingsHook.settings.backgroundTheme} />}
       {content}
       {presentation === PRESENTATIONS.legacy && featureFlags.v2AppShell ? (
-        <button className="v2-return-pill" data-testid="v2-return-from-classic" onClick={() => setClassicView(false)} type="button">
+        <button className="v2-return-pill" data-testid="v2-return-from-classic" onClick={() => navigateToHash(navigationRoute.returnHash || spatialRoute())} type="button">
           Return to Money Mind V2
         </button>
       ) : null}

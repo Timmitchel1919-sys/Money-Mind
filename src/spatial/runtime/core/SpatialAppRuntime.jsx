@@ -42,9 +42,9 @@ function SpatialAppFrame({ capabilities, initialQuality, overlay, scene, topbar 
   )
 }
 
-export default function SpatialAppRuntime({ capabilities, motionPreference = "reduced", overlay = null, renderingQuality = "auto", scene, topbar = null }) {
+export default function SpatialAppRuntime({ capabilities, initialSelectedId = null, motionPreference = "reduced", overlay = null, renderingQuality = "auto", scene, topbar = null }) {
   return (
-    <MotionProvider motionPreference={motionPreference}>
+    <MotionProvider initialSelectedId={initialSelectedId} motionPreference={motionPreference}>
       <SpatialAppFrame capabilities={capabilities} initialQuality={renderingQuality} overlay={overlay} scene={scene} topbar={topbar} />
     </MotionProvider>
   )

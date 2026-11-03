@@ -8,11 +8,11 @@ import { MotionContext } from "./motionContext.js"
 let transitionId = 0
 const createTransition = (name, duration, targetNodeId = null) => Object.freeze({ id: ++transitionId, name, duration, targetNodeId, startedAt: performance.now() })
 
-export function MotionProvider({ children, motionPreference }) {
+export function MotionProvider({ children, initialSelectedId = null, motionPreference }) {
   const policy = useMemo(() => resolveMotionPolicy(motionPreference), [motionPreference])
-  const entryTransition = useMemo(() => createTransition(TRANSITIONS.entry, policy.durations.entry), [policy])
-  const [sceneState, setSceneState] = useState(SCENE_STATES.overview)
-  const [selectedId, setSelectedId] = useState(null)
+  const entryTransition = useMemo(() => initialSelectedId ? null : createTransition(TRANSITIONS.entry, policy.durations.entry), [initialSelectedId, policy])
+  const [sceneState, setSceneState] = useState(initialSelectedId ? SCENE_STATES.focused : SCENE_STATES.overview)
+  const [selectedId, setSelectedId] = useState(initialSelectedId)
   const [hoveredId, setHoveredId] = useState(null)
   const [activeTransition, setActiveTransition] = useState(entryTransition)
   const sceneStateRef = useRef(sceneState)
@@ -43,6 +43,7 @@ export function MotionProvider({ children, motionPreference }) {
   }, [settleTransition])
 
   useEffect(() => {
+    if (!entryTransition) return undefined
     activeTransitionRef.current = entryTransition
     if (entryTransition.duration === 0) {
       activeTransitionRef.current = null
@@ -52,6 +53,14 @@ export function MotionProvider({ children, motionPreference }) {
     settlementTimerRef.current = setTimeout(() => settleTransition(SCENE_STATES.overview, entryTransition), entryTransition.duration)
     return () => { if (settlementTimerRef.current) clearTimeout(settlementTimerRef.current) }
   }, [entryTransition, settleTransition])
+
+  // URL/history hydration updates the existing motion state machine; it does
+  // not introduce a parallel selection owner.
+  useEffect(() => {
+    if (initialSelectedId === selectedIdRef.current) return
+    if (initialSelectedId) startSequence(resolveSelectionSequence({ currentSelectedId: selectedIdRef.current, nodeId: initialSelectedId, policy }))
+    else if (selectedIdRef.current) startSequence(resolveResetSequence(policy))
+  }, [initialSelectedId, policy, startSequence])
 
   const dispatchIntent = useCallback((intent) => {
     if (intent.type === MOTION_INTENTS.selectNode) return startSequence(resolveSelectionSequence({ currentSelectedId: selectedIdRef.current, nodeId: intent.nodeId, policy }))

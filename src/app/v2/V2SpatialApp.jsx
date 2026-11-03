@@ -1,4 +1,4 @@
-import { Component, lazy, Suspense, useMemo, useState } from "react"
+import { Component, lazy, Suspense, useEffect, useMemo, useState } from "react"
 import useFinancialNotifications from "../../hooks/useFinancialNotifications"
 import { detectRenderingCapabilities } from "../../spatial/performance/capabilities"
 import { resolveMotionPreference } from "../../spatial/performance/motionPreference"
@@ -29,14 +29,16 @@ class RuntimeBoundary extends Component {
   render() { return this.state.failed ? this.props.fallback : this.props.children }
 }
 
-export default function V2SpatialApp({ coreDetail = "", financialData = {}, onOpenClassic, onOpenWorkspace, onSignOut, profile, settings = {}, updateSetting, user }) {
+export default function V2SpatialApp({ coreDetail = "", financialData = {}, initialModuleId = null, initialSubmoduleId = null, onNavigationChange, onOpenAction, onOpenClassic, onOpenWorkspace, onSignOut, profile, settings = {}, updateSetting, user }) {
   const [capabilities] = useState(() => detectRenderingCapabilities())
-  const [selectedSubmoduleId, setSelectedSubmoduleId] = useState(null)
+  const [selectedSubmoduleId, setSelectedSubmoduleId] = useState(initialSubmoduleId)
   const notifications = useFinancialNotifications({ ...financialData, billLeadTimeDays: settings.notificationPreferences?.billLeadTimeDays })
   // Layer 11: everything spatial derives from the registry.
   const modules = useMemo(() => resolveVisibleModules(MODULE_REGISTRY, { flags: featureFlags }), [])
   const scene = useMemo(() => createModuleSpatialScene({ modules, core: { label: "Money Mind", detail: coreDetail } }), [modules, coreDetail])
   const settingsModule = modules.find((module) => module.shortcut === "settings")
+  const hydratedModuleId = modules.some((module) => module.id === initialModuleId) ? initialModuleId : null
+  useEffect(() => setSelectedSubmoduleId(initialSubmoduleId), [initialSubmoduleId])
   const topbarProps = {
     displayName: profile?.displayName || user?.displayName,
     email: user?.email,
@@ -76,6 +78,7 @@ export default function V2SpatialApp({ coreDetail = "", financialData = {}, onOp
           <Suspense fallback={<p className="v2-loading" role="status">Entering the Money Mind universe…</p>}>
             <SpatialAppRuntime
               capabilities={capabilities}
+              initialSelectedId={hydratedModuleId}
               motionPreference={resolveMotionPreference(capabilities)}
               renderingQuality="auto"
               overlay={({ engine }) => (
@@ -83,6 +86,8 @@ export default function V2SpatialApp({ coreDetail = "", financialData = {}, onOp
                   coreId={MONEY_MIND_CORE_ID}
                   engine={engine}
                   modules={modules}
+                  onNavigationChange={onNavigationChange}
+                  onOpenAction={onOpenAction}
                   onOpenWorkspace={onOpenWorkspace}
                   onSelectSubmodule={setSelectedSubmoduleId}
                   selectedSubmoduleId={selectedSubmoduleId}

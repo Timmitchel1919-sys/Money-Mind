@@ -1,6 +1,6 @@
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { ArrowLeft, ArrowLeftRight, ChevronLeft, ChevronRight, CircleDot, LayoutDashboard, Scale, Settings, Sparkles } from "lucide-react"
-import { adjacentModuleId, deriveSpatialNavigation, NAVIGATION_LEVELS, openModuleIntent, returnToCoreIntent } from "./navigation/spatialNavigation"
+import { adjacentModuleId, deriveSpatialNavigation, NAVIGATION_LEVELS, openModuleIntent, orderedSubmodules, returnToCoreIntent } from "./navigation/spatialNavigation"
 
 // Layer 12 overlay: the active navigation context, rendered inside the spatial
 // stage (reads the motion engine through `engine`). Registry-driven: no module
@@ -11,10 +11,33 @@ const Icon = ({ name, ...props }) => {
   return <Component aria-hidden="true" {...props} />
 }
 
-export default function ModuleContextPanel({ coreId, engine, modules, onOpenWorkspace, onSelectSubmodule, selectedSubmoduleId = null }) {
+function bandPosition(index, count) {
+  const angle = Math.PI + (count === 1 ? Math.PI / 2 : (index / (count - 1)) * Math.PI)
+  return { "--band-x": `${50 + Math.cos(angle) * 46}%`, "--band-y": `${96 + Math.sin(angle) * 82}%` }
+}
+
+export default function ModuleContextPanel({ coreId, engine, modules, onNavigationChange, onOpenAction, onOpenWorkspace, onSelectSubmodule, selectedSubmoduleId = null }) {
   const { dispatchIntent, hoveredId, selectedId } = engine
   const navigation = deriveSpatialNavigation({ coreId, hoveredId, modules, selectedId, selectedSubmoduleId })
   const module = navigation.activeModule
+  const submodules = orderedSubmodules(module)
+  const lastPublished = useRef(null)
+
+  useEffect(() => {
+    if (selectedSubmoduleId && !navigation.activeSubmodule) onSelectSubmodule?.(null)
+    const signature = `${navigation.activeModuleId || "core"}/${navigation.activeSubmoduleId || ""}`
+    if (lastPublished.current === signature) return
+    lastPublished.current = signature
+    onNavigationChange?.({ moduleId: navigation.activeModuleId, submoduleId: navigation.activeSubmoduleId })
+  }, [navigation.activeModuleId, navigation.activeSubmodule, navigation.activeSubmoduleId, onNavigationChange, onSelectSubmodule, selectedSubmoduleId])
+
+  const openSubmodule = (submodule) => {
+    if (submodule.availability !== "available") return
+    onSelectSubmodule?.(submodule.id)
+    onNavigationChange?.({ moduleId: module.id, submoduleId: submodule.id })
+    if (submodule.destination.kind === "workspace") onOpenWorkspace?.(submodule.destination.route, { moduleId: module.id, submoduleId: submodule.id, submodule })
+    if (submodule.destination.kind === "action") onOpenAction?.(submodule.destination.action, { moduleId: module.id, submoduleId: submodule.id, submodule })
+  }
 
   // Arrow keys move between modules while one is active (not while typing).
   useEffect(() => {
@@ -43,20 +66,23 @@ export default function ModuleContextPanel({ coreId, engine, modules, onOpenWork
               <p>{module.description}</p>
             </div>
           </div>
-          {module.submodules.length ? (
-            <div className="v2-context__submodules">
-              <p className="v2-context__eyebrow">Arriving in the submodule band</p>
-              <ul>{module.submodules.map((sub) => (
+          {submodules.length ? (
+            <nav className="v2-context__submodules" aria-label={`${module.label} workspaces`}>
+              <p className="v2-context__eyebrow">Choose a workspace</p>
+              <ul>{submodules.map((sub, index) => (
                 <li key={sub.id}>
                   <button
                     aria-current={navigation.activeSubmoduleId === sub.id ? "page" : undefined}
+                    aria-disabled={sub.availability !== "available" || undefined}
                     data-testid={`v2-submodule-${sub.id}`}
-                    onClick={() => { onSelectSubmodule?.(sub.id); onOpenWorkspace?.(sub.legacyPage, { moduleId: module.id, submoduleId: sub.id }) }}
+                    disabled={sub.availability !== "available"}
+                    onClick={() => openSubmodule(sub)}
+                    style={bandPosition(index, submodules.length)}
                     type="button"
                   >{sub.label}</button>
                 </li>
               ))}</ul>
-            </div>
+            </nav>
           ) : null}
           <div className="v2-context__stepper">
             <button aria-label="Previous module" className="v2-icon-button" onClick={() => dispatchIntent(openModuleIntent(adjacentModuleId(modules, module.id, -1)))} type="button"><ChevronLeft aria-hidden="true" size={16} /></button>

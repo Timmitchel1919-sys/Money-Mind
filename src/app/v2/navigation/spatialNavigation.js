@@ -22,7 +22,7 @@ export function deriveSpatialNavigation({ coreId, hoveredId = null, modules = []
     activeSubmodule,
     activeSubmoduleId: activeSubmodule?.id ?? null,
     previewModuleId: hoveredModule && hoveredModule.id !== activeModule?.id ? hoveredModule.id : null,
-    activePath: Object.freeze(activeModule ? [coreId, activeModule.id] : [coreId]),
+    activePath: Object.freeze(activeSubmodule ? [coreId, activeModule.id, activeSubmodule.id] : activeModule ? [coreId, activeModule.id] : [coreId]),
     canReturn: Boolean(activeModule),
   })
 }
@@ -40,5 +40,9 @@ export const returnToCoreIntent = () => resetViewIntent()
 
 export function resolveSubmodule(modules, moduleId, submoduleId) {
   const module = modules.find((candidate) => candidate.id === moduleId)
-  return module?.submodules.find((submodule) => submodule.id === submoduleId) ?? null
+  return module?.submodules.find((submodule) => submodule.id === submoduleId && submodule.availability === "available") ?? null
+}
+
+export function orderedSubmodules(module) {
+  return (module?.submodules ?? []).slice().sort((a, b) => a.navigation.order - b.navigation.order || a.id.localeCompare(b.id))
 }
