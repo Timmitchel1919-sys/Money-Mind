@@ -29,8 +29,9 @@ class RuntimeBoundary extends Component {
   render() { return this.state.failed ? this.props.fallback : this.props.children }
 }
 
-export default function V2SpatialApp({ coreDetail = "", financialData = {}, onOpenClassic, onSignOut, profile, settings = {}, updateSetting, user }) {
+export default function V2SpatialApp({ coreDetail = "", financialData = {}, onOpenClassic, onOpenWorkspace, onSignOut, profile, settings = {}, updateSetting, user }) {
   const [capabilities] = useState(() => detectRenderingCapabilities())
+  const [selectedSubmoduleId, setSelectedSubmoduleId] = useState(null)
   const notifications = useFinancialNotifications({ ...financialData, billLeadTimeDays: settings.notificationPreferences?.billLeadTimeDays })
   // Layer 11: everything spatial derives from the registry.
   const modules = useMemo(() => resolveVisibleModules(MODULE_REGISTRY, { flags: featureFlags }), [])
@@ -77,7 +78,16 @@ export default function V2SpatialApp({ coreDetail = "", financialData = {}, onOp
               capabilities={capabilities}
               motionPreference={resolveMotionPreference(capabilities)}
               renderingQuality="auto"
-              overlay={({ engine }) => <ModuleContextPanel coreId={MONEY_MIND_CORE_ID} engine={engine} modules={modules} />}
+              overlay={({ engine }) => (
+                <ModuleContextPanel
+                  coreId={MONEY_MIND_CORE_ID}
+                  engine={engine}
+                  modules={modules}
+                  onOpenWorkspace={onOpenWorkspace}
+                  onSelectSubmodule={setSelectedSubmoduleId}
+                  selectedSubmoduleId={selectedSubmoduleId}
+                />
+              )}
               scene={scene}
               topbar={topbar}
             />

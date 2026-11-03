@@ -1074,6 +1074,7 @@ export default function App() {
           monthlyExpenses: emergency.monthlyExpenses, monthlyIncome: form.income,
         }}
         onOpenClassic={() => setClassicView(true)}
+        onOpenWorkspace={(page) => { setClassicView(true); setActivePage(page) }}
         onSignOut={auth.handleLogout}
         profile={profile.profile}
         settings={settingsHook.settings}

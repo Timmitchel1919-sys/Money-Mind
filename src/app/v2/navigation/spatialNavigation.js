@@ -9,15 +9,18 @@
 //                emphasis; later layers extend it with submodule / information ids.
 import { resetViewIntent, selectNodeIntent } from "../../../motion/input/motionIntents.js"
 
-export const NAVIGATION_LEVELS = Object.freeze({ core: "core", module: "module" })
+export const NAVIGATION_LEVELS = Object.freeze({ core: "core", module: "module", submodule: "submodule" })
 
-export function deriveSpatialNavigation({ coreId, hoveredId = null, modules = [], selectedId = null }) {
+export function deriveSpatialNavigation({ coreId, hoveredId = null, modules = [], selectedId = null, selectedSubmoduleId = null }) {
   const activeModule = modules.find((module) => module.id === selectedId) ?? null
   const hoveredModule = modules.find((module) => module.id === hoveredId) ?? null
+  const activeSubmodule = activeModule?.submodules.find((submodule) => submodule.id === selectedSubmoduleId) ?? null
   return Object.freeze({
-    level: activeModule ? NAVIGATION_LEVELS.module : NAVIGATION_LEVELS.core,
+    level: activeSubmodule ? NAVIGATION_LEVELS.submodule : activeModule ? NAVIGATION_LEVELS.module : NAVIGATION_LEVELS.core,
     activeModuleId: activeModule?.id ?? null,
     activeModule,
+    activeSubmodule,
+    activeSubmoduleId: activeSubmodule?.id ?? null,
     previewModuleId: hoveredModule && hoveredModule.id !== activeModule?.id ? hoveredModule.id : null,
     activePath: Object.freeze(activeModule ? [coreId, activeModule.id] : [coreId]),
     canReturn: Boolean(activeModule),
@@ -34,3 +37,8 @@ export function adjacentModuleId(modules, currentId, direction) {
 
 export const openModuleIntent = (moduleId) => selectNodeIntent(moduleId)
 export const returnToCoreIntent = () => resetViewIntent()
+
+export function resolveSubmodule(modules, moduleId, submoduleId) {
+  const module = modules.find((candidate) => candidate.id === moduleId)
+  return module?.submodules.find((submodule) => submodule.id === submoduleId) ?? null
+}

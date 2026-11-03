@@ -11,9 +11,9 @@ const Icon = ({ name, ...props }) => {
   return <Component aria-hidden="true" {...props} />
 }
 
-export default function ModuleContextPanel({ coreId, engine, modules }) {
+export default function ModuleContextPanel({ coreId, engine, modules, onOpenWorkspace, onSelectSubmodule, selectedSubmoduleId = null }) {
   const { dispatchIntent, hoveredId, selectedId } = engine
-  const navigation = deriveSpatialNavigation({ coreId, hoveredId, modules, selectedId })
+  const navigation = deriveSpatialNavigation({ coreId, hoveredId, modules, selectedId, selectedSubmoduleId })
   const module = navigation.activeModule
 
   // Arrow keys move between modules while one is active (not while typing).
@@ -33,7 +33,7 @@ export default function ModuleContextPanel({ coreId, engine, modules }) {
     <section aria-live="polite" className={`v2-context v2-context--${navigation.level}`} data-level={navigation.level} data-testid="v2-context">
       {module ? (
         <>
-          <button className="v2-context__back" data-testid="v2-back-to-core" onClick={() => dispatchIntent(returnToCoreIntent())} type="button">
+          <button className="v2-context__back" data-testid="v2-back-to-core" onClick={() => { onSelectSubmodule?.(null); dispatchIntent(returnToCoreIntent()) }} type="button">
             <ArrowLeft aria-hidden="true" size={15} /> Back to Core
           </button>
           <div className="v2-context__module">
@@ -46,7 +46,16 @@ export default function ModuleContextPanel({ coreId, engine, modules }) {
           {module.submodules.length ? (
             <div className="v2-context__submodules">
               <p className="v2-context__eyebrow">Arriving in the submodule band</p>
-              <ul>{module.submodules.map((sub) => <li key={sub.id}>{sub.label}</li>)}</ul>
+              <ul>{module.submodules.map((sub) => (
+                <li key={sub.id}>
+                  <button
+                    aria-current={navigation.activeSubmoduleId === sub.id ? "page" : undefined}
+                    data-testid={`v2-submodule-${sub.id}`}
+                    onClick={() => { onSelectSubmodule?.(sub.id); onOpenWorkspace?.(sub.legacyPage, { moduleId: module.id, submoduleId: sub.id }) }}
+                    type="button"
+                  >{sub.label}</button>
+                </li>
+              ))}</ul>
             </div>
           ) : null}
           <div className="v2-context__stepper">

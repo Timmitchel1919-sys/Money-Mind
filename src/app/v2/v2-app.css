@@ -107,7 +107,9 @@
 .v2-context__submodules { max-width: 38%; }
 .v2-context__eyebrow { margin: 0 0 4px; color: #8e9bb3; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 .v2-context__submodules ul { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; list-style: none; }
-.v2-context__submodules li { padding: 3px 7px; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 99px; color: #c9d3e4; font-size: 10.5px; }
+.v2-context__submodules li { padding: 0; border: 0; }
+.v2-context__submodules button { padding: 3px 7px; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 99px; background: transparent; color: #c9d3e4; font: inherit; font-size: 10.5px; cursor: pointer; }
+.v2-context__submodules button:hover, .v2-context__submodules button:focus-visible, .v2-context__submodules button[aria-current="page"] { border-color: rgba(181, 200, 255, 0.5); background: rgba(255, 255, 255, 0.08); color: #fff; }
 .v2-context__stepper { display: flex; flex: none; gap: 6px; }
 @media (max-width: 760px) {
   .v2-context { flex-wrap: wrap; gap: 10px; padding: 10px; }
@@ -132,8 +134,9 @@
 
   .v2-context__module { gap: 8px; }
   .v2-context__module h2 { font-size: 13px; }
-  .v2-context__module p,
-  .v2-context__submodules { display: none; }
+  .v2-context__module p { display: none; }
+  .v2-context__submodules { display: block; width: 100%; max-width: none; max-height: 34px; overflow-x: auto; overflow-y: hidden; }
+  .v2-context__submodules ul { flex-wrap: nowrap; width: max-content; }
   .v2-context__icon { width: 30px; height: 30px; border-radius: 9px; }
   .v2-context__back { padding: 7px 8px; font-size: 11px; }
   .v2-context__stepper .v2-icon-button { width: 30px; min-width: 30px; height: 30px; padding: 0; }

@@ -13,7 +13,7 @@ import { ModuleRegistryError, resolveVisibleModules, validateModuleRegistry } fr
 import { createModuleSpatialScene, MODULE_LAYOUT, MONEY_MIND_CORE_ID } from "../../src/visualization/adapters/moduleSpatialAdapter.js"
 import { SEARCHABLE_NAVIGATION } from "../../src/constants/navigation.js"
 import { NODE_PALETTE } from "../../src/spatial/runtime/nodes/nodeMaterials.js"
-import { adjacentModuleId, deriveSpatialNavigation, NAVIGATION_LEVELS, openModuleIntent, returnToCoreIntent } from "../../src/app/v2/navigation/spatialNavigation.js"
+import { adjacentModuleId, deriveSpatialNavigation, NAVIGATION_LEVELS, openModuleIntent, resolveSubmodule, returnToCoreIntent } from "../../src/app/v2/navigation/spatialNavigation.js"
 import { resolveEdgeMotion } from "../../src/motion/edges/edgeMotion.js"
 
 let passed = 0
@@ -151,6 +151,12 @@ function throwsRegistry(fn, label) {
   assert(hover.level === "core" && hover.previewModuleId === ids[1], "hover previews without navigating")
   const selected = deriveSpatialNavigation({ coreId: core, modules, selectedId: ids[2], hoveredId: ids[2] })
   assert(selected.level === "module" && selected.activeModuleId === ids[2] && selected.previewModuleId === null && selected.canReturn, "selected module is the active context")
+  const movement = modules.find((module) => module.id === "money-movement")
+  const transactions = resolveSubmodule(modules, "money-movement", "transactions")
+  assert(transactions?.legacyPage === "transactions", "transactions submodule resolves to the existing workspace")
+  const submodule = deriveSpatialNavigation({ coreId: core, modules, selectedId: movement.id, selectedSubmoduleId: transactions.id })
+  assert(submodule.level === "submodule" && submodule.activeSubmoduleId === "transactions", "selected submodule is the active context")
+  assert(resolveSubmodule(modules, "money-movement", "missing") === null, "invalid submodule IDs resolve safely")
   assert(JSON.stringify(selected.activePath) === JSON.stringify([core, ids[2]]), "active path = Core -> module")
   assert(deriveSpatialNavigation({ coreId: core, modules, selectedId: ids[2], hoveredId: ids[0] }).previewModuleId === ids[0], "hovering another module while one is active previews it")
   assert(deriveSpatialNavigation({ coreId: core, modules, selectedId: "not-a-module" }).level === "core", "unknown selection stays at the Core")
