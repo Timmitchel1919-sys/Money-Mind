@@ -20,6 +20,7 @@
     "test:financial-projection-parity": "node tests/financial/projectFinancials.parity.test.mjs",
     "test:financial-projection-authority": "node tests/financial/projectionAuthority.test.mjs",
     "test:financial-projection-hooks": "node tests/financial/financialProjectionHook.test.mjs",
+    "test:e2e:phase1g": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/e2e/run-phase1g.ps1",
     "preview": "vite preview",
     "deploy": "npm run build && npx -y firebase-tools@latest deploy --only hosting",
     "deploy:full": "npm run build && npx -y firebase-tools@latest deploy",
