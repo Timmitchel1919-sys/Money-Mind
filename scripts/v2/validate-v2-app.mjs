@@ -213,6 +213,16 @@ function throwsRegistry(fn, label) {
   const unavailableRegistry = MODULE_REGISTRY.map((module) => module.id !== "money-movement" ? module : { ...module, submodules: module.submodules.map((submodule) => submodule.id === "transactions" ? { ...submodule, availability: "unavailable" } : submodule) })
   const unavailable = parseAppRoute("#v2/money-movement/transactions", unavailableRegistry)
   assert(unavailable.kind === "spatial" && unavailable.moduleId === null && unavailable.invalid, "unavailable submodule deep link fails safe")
+  const appSource = readFileSync(fileURLToPath(new URL("../../src/App.jsx", import.meta.url)), "utf8")
+  for (const module of MODULE_REGISTRY) {
+    for (const submodule of module.submodules.filter((sub) => sub.availability === "available")) {
+      const destination = submodule.destination.kind === "workspace" ? workspaceRoute(submodule) : actionRoute(submodule)
+      const parsed = parseAppRoute(destination, MODULE_REGISTRY)
+      assert(parsed.kind === "workspace" && parsed.moduleId === module.id && parsed.submoduleId === submodule.id, `${module.id}/${submodule.id}: destination round-trips`)
+      assert(parsed.returnHash === spatialRoute(module.id, submodule.id), `${module.id}/${submodule.id}: return context round-trips`)
+      if (submodule.destination.kind === "workspace") assert(appSource.includes(`activePage === "${submodule.destination.route}"`), `${module.id}/${submodule.id}: workspace has an app render branch`)
+    }
+  }
 }
 
 // --- UX remediation: Classic workspace mode and return affordance ---
