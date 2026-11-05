@@ -26,10 +26,10 @@
 | 1 — interaction | In progress | Commit `22440f5` pushed: reject unavailable modules, show loading/fallback feedback, and surface missing native events in development. Browser harness at 320 and 1440 px selected Money Movement and returned to Core; native click, listener lifecycle and real authenticated routing remain unverified. |
 | 2 — responsive UX | In progress | Existing WIP includes responsive framing and registry controls. Full mobile/landscape, touch, fallback and accessibility validation remains. |
 | 3 — workspaces | Not complete | Route and authenticated-session audit required. |
-| 4 — financial data | Not complete | Baseline domain, projection, parity, authority, hook and graph-builder tests passed; no financial calculation changes made. |
-| 5 — intelligence | Not started | Inspect existing functionality before changes. |
-| 6 — security | Not complete | Rules read; emulator authorization tests not run. |
-| 7 — PWA | In progress | Added the missing manifest and Apple PNG icons and restored production service-worker registration. Artifact checks passed; local Chrome registered a worker and returned HTTP 200 for offline shell navigation. Installation UI, update lifecycle and financial-data offline behavior remain unverified. |
+| 4 — financial data | Not complete | Domain, projection, parity, authority, hook, graph contract, engine, transform, spatial adapter and builder tests passed; no financial calculation changes made. These tests do not establish correctness for all live records. |
+| 5 — intelligence | Not complete | Initial inspection found local and optional server-side providers. `useFinancialCoach` contains hardcoded SRD text in its exported `askQuestion`; its current page caller uses only `actions`. Confirm currency requirements and add coverage before changing this path. |
+| 6 — security | Blocked | Rules inspected; demo-project emulator command produced no output and did not start within the bounded attempt. It was stopped; authorization and isolation are not verified. See security audit below. |
+| 7 — PWA | In progress | Commit `ee296f7` pushed: added the missing manifest and Apple PNG icons and restored production service-worker registration. Artifact checks passed; local Chrome registered a worker and returned HTTP 200 for offline shell navigation. Installation UI, update lifecycle and financial-data offline behavior remain unverified. |
 | 8 — release | Blocked | Native Spline interaction, authenticated flows, PWA and security release checks remain open. |
 
 Baseline checks: selection and framing tests passed; V2 app 226 assertions,
@@ -60,3 +60,31 @@ Do not mistake the registry-driven HTML controls for native 3D selection.
 
 Next executable task: validate installation and updates in supported browsers,
 then audit authenticated routes and security rules in isolated environments.
+
+## Firestore rules audit (static, not an emulator result)
+
+```json
+{
+  "score": 4,
+  "summary": "Authenticated UID ownership gates recursive user paths; document content and financial integrity are not validated by these rules. No emulator authorization result is available.",
+  "findings": [
+    {
+      "check": "Create and update validation",
+      "severity": "minor",
+      "issue": "The owner can create or update arbitrary fields and types under their own user path, including malformed financial records.",
+      "recommendation": "Define and test per-collection create and update constraints against the existing schema before changing production rules."
+    },
+    {
+      "check": "Storage abuse",
+      "severity": "minor",
+      "issue": "The recursive owner rule imposes no application-level string, array or field limits.",
+      "recommendation": "Introduce schema-aware limits with emulator coverage and an explicit migration plan."
+    }
+  ]
+}
+```
+
+The score reflects only the rules inspected and is not a complete application
+security assessment. The emulator attempt used project `demo-money-mind-e2e`,
+produced no startup output, and was stopped after a bounded wait; no production
+data or rules were changed.
