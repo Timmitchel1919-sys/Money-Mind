@@ -99,8 +99,8 @@ No other issue is claimed fixed by this scoped source and inventory pass.
 | Regression scripts total | **PASS** | 12 configured scripts completed successfully. |
 | Lint | **PASS with warnings** | Exit 0; 13 warnings in existing unrelated files. |
 | Isolated production build | **PASS** | 2,551 modules; output written to a unique temporary directory and removed. Existing large-chunk advisory remains. |
-| Firebase Hosting deployment | **PASS** | User-authorized Hosting-only release to `money-mind-90176`; Firebase reported deploy complete. Build directory was unique and removed afterward. |
-| Live Hosting response and bundle | **PASS** | `https://money-mind-90176.web.app/` returned HTTP 200; it served `/assets/index-BjBsCC21.js`, which contains both `Classic workspace` and `Return to Spatial overview`. This verifies publication, not a visual browser interaction. |
+| Firebase Hosting deployment | **PASS** | User-authorized Hosting-only release to `money-mind-90176`; final release was built from a clean detached worktree and uploaded 28 files. A first dirty-tree deploy was immediately superseded by this clean-artifact release. |
+| Live Hosting response and bundle | **PASS** | `https://money-mind-90176.web.app/` returned HTTP 200; it served `/assets/index-Brqjq3T7.js`, which contains both `Classic workspace` and `Return to Spatial overview`. This verifies publication, not a visual browser interaction. |
 | E2E script syntax, PowerShell parse, `git diff --check` | **PASS** | Completed without errors. |
 | Authenticated E2E against Auth/Firestore emulators | **BLOCKED** | Initial run: Auth `127.0.0.1:9099` returned `ECONNREFUSED`. Sandbox loopback probes were denied. A demo-only emulator startup then failed in Firestore Java with `Unable to establish loopback connection` while creating its selector. The browser suite did not create users, launch Vite, or produce Firestore Rules evidence. |
 | Deployed spatial browser view | **BLOCKED** | A separate read-only `#v2` tab redirected to `#login`; no credentials were entered. The open user tab remained on its original Classic workspace route. |
@@ -118,10 +118,12 @@ unstaged and untouched. The focused commit did not include them.
 
 Commit `096f664b3ea9002f403954a510911eef7c250b1a` was pushed to
 `origin/codex/ux-remediation-2026-11-05`. Per the user's explicit release
-request, Hosting was deployed to `money-mind-90176` from a fresh production
-build. Firestore Rules and Cloud Functions were not deployed. Existing
-unrelated deletions and untracked design assets were excluded from the commit
-and build.
+request, Hosting was deployed to `money-mind-90176` from a clean detached
+production build at pushed HEAD. The first deploy was built from the dirty
+checkout and was superseded with a clean commit artifact before completion of
+the release task. Firestore Rules and Cloud Functions were not deployed.
+Existing unrelated deletions and untracked design assets were excluded from the
+commit and final build.
 
 **Acceptance status: INCOMPLETE.** Deployment does not convert the blocked
 authenticated E2E, Rules, visual-route, responsive, navigation, or accessibility
