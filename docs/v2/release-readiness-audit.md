@@ -81,7 +81,9 @@ path was not modified or declared currency-safe.
 
 ## Release blockers
 
-The server-owned rate-limit counter path needs a validated security fix.
+An undeployed rules WIP excludes the server-owned rate-limit counter path from
+the owner grant, but emulator authorization, legitimate client workflows and
+concurrency are not validated. See `security-remediation-report.md`.
 Native Spline events and labels remain unverified; authenticated workspace and
 cross-user isolation tests did not run; actual PWA installation, update and
 financial offline behavior are unverified; dependency advisory and full secret

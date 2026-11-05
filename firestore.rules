@@ -6,8 +6,16 @@ service cloud.firestore {
     // src/services/firestoreService.js: budgets, transactions, assets,
     // liabilities, goals, debts, savingsPlans, bills, investments).
     // Only the authenticated owner of that uid may read or write any of it.
-    match /users/{userId}/{document=**} {
+    match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Server-owned rate-limit counters must never inherit the owner grant.
+      // A separate deny cannot override a matching allow in Firestore Rules.
+      match /{collectionId}/{document=**} {
+        allow read, write: if request.auth != null
+          && request.auth.uid == userId
+          && collectionId != 'moneyAIUsage';
+      }
     }
 
     // Everything else is denied by default (no matching rule).

@@ -64,6 +64,17 @@ Do not mistake the registry-driven HTML controls for native 3D selection.
 Next executable task: validate installation and updates in supported browsers,
 then audit authenticated routes and security rules in isolated environments.
 
+## Security remediation WIP
+
+The repository rules have a proposed exclusion for server-owned
+`moneyAIUsage` counters, with a fail-closed demo emulator test prepared. It has
+not been compiled or executed by the Firestore emulator. Node 22 and Node 24
+Firebase CLI version checks still produced no output within bounded attempts;
+direct Firestore emulator startup failed creating a Netty event loop because
+the local Unix-domain socket connection returned `Invalid argument: connect`.
+The security gate and release remain blocked; see `security-remediation-plan.md`
+and `security-remediation-report.md`. No production deployment occurred.
+
 ## Release-readiness audit continuation
 
 At `ca2c58d`, the current baseline suites passed again, including 303 V2 and

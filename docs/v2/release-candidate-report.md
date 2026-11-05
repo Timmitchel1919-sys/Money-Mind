@@ -10,8 +10,8 @@ its PWA artifact check, financial and spatial contract checks passed as
 described in [the readiness audit](release-readiness-audit.md). This is not
 full integration, security or release acceptance.
 
-Blocking items: protect server-owned `moneyAIUsage` rate-limit counters from
-client writes and verify the change in isolation; recover the Firebase CLI and run the demo-project Auth and
+Blocking items: validate the undeployed `moneyAIUsage` rules WIP and callable
+concurrency in isolation; recover the Firebase CLI and run the demo-project Auth and
 Firestore authorization suite; validate authenticated financial workspaces;
 resolve currency provenance in intelligence paths; verify PWA installation,
 updates and offline financial behavior; complete dependency/security review;
