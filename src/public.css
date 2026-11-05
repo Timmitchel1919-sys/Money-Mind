@@ -20,3 +20,12 @@
 .auth-legal{display:none!important}
 .google-button b{display:block;width:18px;height:18px;overflow:hidden;font-size:0;background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath fill='%234285F4' d='M17.64 9.205c0-.638-.057-1.252-.164-1.841H9v3.482h4.844a4.14 4.14 0 0 1-1.797 2.715v2.258h2.909c1.702-1.567 2.684-3.875 2.684-6.614Z'/%3E%3Cpath fill='%2334A853' d='M9 18c2.43 0 4.468-.806 5.956-2.181l-2.909-2.258c-.806.54-1.835.859-3.047.859-2.344 0-4.328-1.585-5.037-3.714H.956v2.332A9 9 0 0 0 9 18Z'/%3E%3Cpath fill='%23FBBC05' d='M3.963 10.706A5.41 5.41 0 0 1 3.682 9c0-.592.102-1.167.281-1.706V4.962H.956A9 9 0 0 0 0 9c0 1.452.347 2.827.956 4.038l3.007-2.332Z'/%3E%3Cpath fill='%23EA4335' d='M9 3.58c1.321 0 2.507.454 3.441 1.346l2.581-2.581C13.464.893 11.426 0 9 0A9 9 0 0 0 .956 4.962l3.007 2.332C4.672 5.165 6.656 3.58 9 3.58Z'/%3E%3C/svg%3E")}
 @media(max-width:760px){.public-actions>.public-segment{display:none}.hero-copy h1{font-size:clamp(40px,10vw,54px);overflow-wrap:anywhere}.hero-copy>p{overflow-wrap:anywhere}.hero-ctas{padding-inline:8px}.demo-dashboard{width:100%}}
+
+/* Keep the authentication card as the sole focus of login, registration, and reset screens. */
+.auth-page{display:flex;flex-direction:column}
+.auth-layout{display:flex;flex:1;align-items:center;justify-content:center;min-height:calc(100dvh - 88px);padding-top:0}
+.auth-form-panel{width:min(100%,640px);padding:20px}
+.auth-card{width:min(100%,520px)}
+@media(max-width:1050px){.auth-layout{display:flex;grid-template-columns:none}}
+@media(max-width:760px){.auth-layout{display:flex;min-height:calc(100dvh - 80px);padding:12px 0}.auth-form-panel{padding:16px 0}}
+@media(max-height:560px){.auth-layout{align-items:flex-start}.auth-form-panel{padding-top:12px}}

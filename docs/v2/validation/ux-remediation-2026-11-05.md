@@ -79,11 +79,28 @@ not start.
 
 No other issue is claimed fixed by this scoped source and inventory pass.
 
+## Login page follow-up
+
+### MM-UX-003 — Demo dashboard distracts from authentication
+
+The auth screen no longer renders the promotional dashboard preview and brand
+panel. The existing Money Mind logo and back-to-home control remain. Login,
+registration, and password reset share a centered form layout, with top-aligned
+content on very short viewports so the form can scroll without clipping.
+
+Validation for this follow-up: lint passed with the same 13 warnings in existing
+unrelated files; `npm run test:v2-app` passed with 223 assertions; an isolated
+production build transformed 2,551 modules and passed with the existing large
+chunk advisory. The local Playwright visual check could not complete: sandbox
+loopback access was denied, and the host browser attempt timed out before
+producing page measurements. No browser visual pass is claimed.
+
 ## Modified files
 
 - `src/layouts/DashboardLayout.jsx` — in-flow mode bridge and accessible return action.
 - `src/App.jsx` — feature flag and route-aware callback wiring.
 - `src/app/v2/v2-app.css` — removed the fixed overlay styling.
+- `src/components/PublicExperience.jsx` and `src/public.css` — remove the auth-page demo panel and center the shared auth card.
 - `scripts/v2/validate-v2-app.mjs` — mode, focus, target-size, and route-return assertions.
 - `scripts/e2e/phase1g-emulator-acceptance.mjs` — viewport, zoom-proxy, and overlap checks.
 - `docs/v2/validation/ux-remediation-2026-11-05.md` — this report.
