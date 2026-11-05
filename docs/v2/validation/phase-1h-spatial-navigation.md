@@ -1,6 +1,6 @@
 # Phase 1H — Spatial Navigation and Existing Workspace Integration
 
-**Status: Implemented and accepted for Phase 1H development validation. Not deployed.**
+**Status: Implemented, accepted, and deployed to Firebase Hosting. V2 remains off by default.**
 
 ## Scope
 
@@ -118,6 +118,19 @@ completed successfully; it emitted the existing large-chunk advisory. Node
 syntax, PowerShell parse, and `git diff --check` also passed. The isolated build
 output was removed. Phase 1H acceptance evidence is complete; unrelated dirty
 and untracked workspace files remain untouched.
+
+## Production Hosting release
+
+Commit `ab7c06a58a1c7323c915d45455be3fc5e7215528` was deployed with
+`firebase deploy --only hosting --project money-mind-90176`. The release was
+built from that clean pushed commit in an isolated worktree, with emulator mode
+false and all V2 feature flags explicitly false. Firestore Rules and Cloud
+Functions were not deployed. Firebase reported `Deploy complete!`; the live
+site `https://money-mind-90176.web.app` returned HTTP 200 and contained the
+Money Mind page title. The default Theme 4 and dark-mode Theme 13 video URLs
+also returned HTTP 200. The isolated release worktree was removed. Pending
+local media deletions and untracked design/tooling files were excluded from the
+production artifact.
 
 The first isolated startup attempt used a malformed absolute Rules path. Firebase
 CLI resolved it below the temporary directory, warned that it would otherwise
