@@ -50,8 +50,15 @@ export function MotionProvider({ children, initialSelectedId = null, motionPrefe
       setActiveTransition(null)
       return undefined
     }
-    settlementTimerRef.current = setTimeout(() => settleTransition(SCENE_STATES.overview, entryTransition), entryTransition.duration)
-    return () => { if (settlementTimerRef.current) clearTimeout(settlementTimerRef.current) }
+    const entryTimer = setTimeout(() => settleTransition(SCENE_STATES.overview, entryTransition), entryTransition.duration)
+    settlementTimerRef.current = entryTimer
+    return () => {
+      clearTimeout(entryTimer)
+      // The selection effect may replace the shared timer before this entry
+      // effect cleans up (for example when selecting a module also updates
+      // the URL). Never cancel that newer transition's settlement timer.
+      if (settlementTimerRef.current === entryTimer) settlementTimerRef.current = null
+    }
   }, [entryTransition, settleTransition])
 
   // URL/history hydration updates the existing motion state machine; it does

@@ -93,6 +93,8 @@
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(16px) saturate(140%);
 }
+/* Core content is informational; let radial module labels receive pointer input underneath it. */
+.v2-context[data-level="core"] { pointer-events: none; }
 .v2-context__module { display: flex; flex: 1; align-items: center; gap: 12px; min-width: 0; }
 .v2-context__module h2 { margin: 0; font-size: 15px; }
 .v2-context__module p { margin: 2px 0 0; color: var(--mm-v2-text-muted); font-size: 12px; line-height: 1.45; }
@@ -104,7 +106,7 @@
 .v2-tone--insight { background: rgba(195, 92, 240, 0.3); }
 .v2-tone--system { background: rgba(159, 176, 200, 0.28); }
 .v2-context__back { display: inline-flex; flex: none; align-items: center; gap: 6px; padding: 9px 12px; border: 1px solid rgba(156, 140, 255, 0.45); border-radius: 12px; background: rgba(111, 82, 255, 0.22); color: #fff; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
-.v2-context__submodules { position: absolute; z-index: 1; left: 50%; bottom: calc(100% - 18px); width: min(900px, calc(100vw - 32px)); height: 185px; transform: translateX(-50%); pointer-events: none; }
+.v2-context__submodules { position: absolute; z-index: 1; left: 50%; bottom: calc(100% - 18px); width: min(1120px, calc(100vw - 32px)); height: 185px; transform: translateX(-50%); pointer-events: none; }
 .v2-context__eyebrow { position: absolute; left: 50%; bottom: 12px; margin: 0; transform: translateX(-50%); color: #8e9bb3; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 .v2-context__submodules ul { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
 .v2-context__submodules li { padding: 0; border: 0; }
@@ -112,6 +114,13 @@
 .v2-context__submodules button:hover, .v2-context__submodules button:focus-visible, .v2-context__submodules button[aria-current="page"] { border-color: rgba(181, 200, 255, 0.5); background: rgba(255, 255, 255, 0.08); color: #fff; }
 .v2-context__submodules button:disabled { opacity: var(--mm-v2-opacity-disabled); cursor: not-allowed; }
 .v2-context__stepper { display: flex; flex: none; gap: 6px; }
+@media (max-width: 1100px) {
+  .v2-context { flex-wrap: wrap; gap: 10px; padding: 10px; }
+  .v2-context__submodules { position: static; z-index: auto; order: 4; width: 100%; height: auto; transform: none; overflow-x: auto; overflow-y: hidden; pointer-events: auto; scrollbar-width: thin; }
+  .v2-context__eyebrow { position: static; display: block; margin: 0 0 5px; transform: none; }
+  .v2-context__submodules ul { position: static; display: flex; width: max-content; gap: 6px; }
+  .v2-context__submodules button { position: static; transform: none; max-width: none; white-space: nowrap; }
+}
 @media (max-width: 760px) {
   .v2-context { flex-wrap: wrap; gap: 10px; padding: 10px; }
   .v2-context__submodules { position: static; z-index: auto; order: 4; width: 100%; height: auto; transform: none; overflow-x: auto; overflow-y: hidden; pointer-events: auto; scrollbar-width: thin; }

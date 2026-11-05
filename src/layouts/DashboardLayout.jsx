@@ -27,7 +27,7 @@ export default function DashboardLayout({
     const [moneyAIPrompt, setMoneyAIPrompt] = useState("")
 
     useEffect(() => {
-        if (moneyAIOpen) setMoneyAIOpen(true)
+        setMoneyAIOpen(moneyAIOpen)
     }, [moneyAIOpen])
 
     function handleNavigate(page) {
