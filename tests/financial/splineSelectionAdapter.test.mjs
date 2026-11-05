@@ -13,4 +13,5 @@ for (const module of MODULE_REGISTRY) {
 assert.equal(resolveSplineSelection("unknown", MODULE_REGISTRY), null)
 assert.equal(resolveSplineSelection("toString", MODULE_REGISTRY), null)
 assert.equal(resolveSplineSelection(null, MODULE_REGISTRY), null)
+assert.equal(resolveSplineSelection(MODULE_REGISTRY[0].spatial.splineObjectId, [{ ...MODULE_REGISTRY[0], availability: "unavailable" }]), null)
 console.log("Spline selection contract: passed")
