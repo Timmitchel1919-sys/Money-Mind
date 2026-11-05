@@ -81,6 +81,7 @@ export default function V2SpatialApp({ coreDetail = "", financialData = {}, init
               initialSelectedId={hydratedModuleId}
               motionPreference={resolveMotionPreference(capabilities)}
               renderingQuality="auto"
+              splineModules={featureFlags.v2Spline ? modules : null}
               overlay={({ engine }) => (
                 <ModuleContextPanel
                   coreId={MONEY_MIND_CORE_ID}
