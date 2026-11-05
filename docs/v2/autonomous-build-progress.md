@@ -64,13 +64,31 @@ Do not mistake the registry-driven HTML controls for native 3D selection.
 Next executable task: validate installation and updates in supported browsers,
 then audit authenticated routes and security rules in isolated environments.
 
+## Release-readiness audit continuation
+
+At `ca2c58d`, the current baseline suites passed again, including 303 V2 and
+238 spatial assertions and 676 graph assertions. A clean committed-source
+archive built successfully using the existing dependency installation; its
+PWA artifact checks passed and eight tracked videos were present. Production
+flags resolve V2 shell on and Spline unset. This is not a fresh-install build.
+Firebase CLI 13.35.1 still produced no output for `--version` with isolated
+configuration; npm advisory audit also timed out. Detailed evidence and the
+explicit blocked release plan are in `release-readiness-audit.md` and
+`release-candidate-report.md`. No production deployment is authorized.
+
 ## Firestore rules audit (static, not an emulator result)
 
 ```json
 {
-  "score": 4,
-  "summary": "Authenticated UID ownership gates recursive user paths; document content and financial integrity are not validated by these rules. No emulator authorization result is available.",
+  "score": 2,
+  "summary": "Authenticated UID ownership gates recursive user paths, but also permits clients to modify their own server-side Money AI rate-limit documents. This is a static finding; no emulator authorization result is available.",
   "findings": [
+    {
+      "check": "Server-controlled rate-limit authority",
+      "severity": "major",
+      "issue": "The repository's owner-writable recursive rule covers users/{uid}/moneyAIUsage/{functionName}, while repository Cloud Functions use that path for rate-limit counters. If deployed as written, a signed-in owner appears able to alter or delete their own counter and bypass that per-user control. Deployed configuration is unverified.",
+      "recommendation": "Deny client writes to server-owned usage documents with non-overlapping rules or move the counters to a server-only path, and validate the change and compatibility in the emulator before deployment."
+    },
     {
       "check": "Create and update validation",
       "severity": "minor",
