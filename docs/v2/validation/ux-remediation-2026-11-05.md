@@ -99,6 +99,8 @@ No other issue is claimed fixed by this scoped source and inventory pass.
 | Regression scripts total | **PASS** | 12 configured scripts completed successfully. |
 | Lint | **PASS with warnings** | Exit 0; 13 warnings in existing unrelated files. |
 | Isolated production build | **PASS** | 2,551 modules; output written to a unique temporary directory and removed. Existing large-chunk advisory remains. |
+| Firebase Hosting deployment | **PASS** | User-authorized Hosting-only release to `money-mind-90176`; Firebase reported deploy complete. Build directory was unique and removed afterward. |
+| Live Hosting response and bundle | **PASS** | `https://money-mind-90176.web.app/` returned HTTP 200; it served `/assets/index-BjBsCC21.js`, which contains both `Classic workspace` and `Return to Spatial overview`. This verifies publication, not a visual browser interaction. |
 | E2E script syntax, PowerShell parse, `git diff --check` | **PASS** | Completed without errors. |
 | Authenticated E2E against Auth/Firestore emulators | **BLOCKED** | Initial run: Auth `127.0.0.1:9099` returned `ECONNREFUSED`. Sandbox loopback probes were denied. A demo-only emulator startup then failed in Firestore Java with `Unable to establish loopback connection` while creating its selector. The browser suite did not create users, launch Vite, or produce Firestore Rules evidence. |
 | Deployed spatial browser view | **BLOCKED** | A separate read-only `#v2` tab redirected to `#login`; no credentials were entered. The open user tab remained on its original Classic workspace route. |
@@ -112,10 +114,17 @@ is for an earlier source state and is not evidence for this remediation branch.
 
 The focused six-file UX change excludes the checkout's unrelated tracked
 deletions and untracked design assets. Those existing user files remain
-unstaged and untouched. No production deployment was made.
+unstaged and untouched. The focused commit did not include them.
 
-**Deployment readiness: NOT READY.** Do not enable this change in production
-until the authenticated Phase 1H run and the route, responsive, navigation, and
-accessibility checks have actual results. Run the emulator-backed suite from
-ordinary Windows PowerShell with the Auth and Firestore emulators bound only
-to loopback, then record its actual output here.
+Commit `096f664b3ea9002f403954a510911eef7c250b1a` was pushed to
+`origin/codex/ux-remediation-2026-11-05`. Per the user's explicit release
+request, Hosting was deployed to `money-mind-90176` from a fresh production
+build. Firestore Rules and Cloud Functions were not deployed. Existing
+unrelated deletions and untracked design assets were excluded from the commit
+and build.
+
+**Acceptance status: INCOMPLETE.** Deployment does not convert the blocked
+authenticated E2E, Rules, visual-route, responsive, navigation, or accessibility
+checks into passing evidence. Run the emulator-backed suite from ordinary
+Windows PowerShell with Auth and Firestore bound only to loopback, then record
+its actual output here.
