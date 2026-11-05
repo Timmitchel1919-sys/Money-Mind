@@ -66,9 +66,6 @@
 .v2-primary-button { margin-top: 14px; padding: 10px 16px; border: 1px solid rgba(156, 140, 255, 0.5); border-radius: 12px; background: rgba(111, 82, 255, 0.28); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
 .v2-loading { position: absolute; inset: 50% auto auto 50%; transform: translate(-50%, -50%); color: var(--mm-v2-text-muted); }
 
-/* Classic view escape back to V2 (rendered by App, outside V1 components). */
-.v2-return-pill { position: fixed; z-index: 60; right: calc(env(safe-area-inset-right, 0px) + 18px); bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); padding: 10px 14px; border: 1px solid rgba(156, 140, 255, 0.5); border-radius: 999px; background: rgba(12, 16, 34, 0.9); color: #fff; font: inherit; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); cursor: pointer; }
-
 @media (max-width: 760px) {
   .v2-search, .v2-hide-mobile { display: none; }
   .v2-brand span { display: none; }

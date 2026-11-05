@@ -17,6 +17,8 @@ export default function DashboardLayout({
     handleLogout,
     activePage,
     setActivePage,
+    v2AppShellEnabled = false,
+    onReturnToV2,
     moneyAIProps,
     moneyAIOpen = false,
     children,
@@ -121,7 +123,26 @@ export default function DashboardLayout({
                     </div>
 
                     <main className="scrollbar-transparent min-h-0 min-w-0 flex-1 overflow-y-auto p-4 md:p-6">
-                        <div className="mx-auto w-full max-w-[1440px] space-y-6 pb-8">{children}</div>
+                        <div className="mx-auto w-full max-w-[1440px] space-y-6 pb-8">
+                            {v2AppShellEnabled && (
+                                <section
+                                    aria-label="Current view: Classic workspace"
+                                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3"
+                                    data-testid="classic-mode-bridge"
+                                >
+                                    <p className="text-sm font-semibold text-[var(--text-primary)]">Classic workspace</p>
+                                    <button
+                                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-[var(--brand-contrast)] transition-colors hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-primary)]"
+                                        data-testid="v2-return-from-classic"
+                                        onClick={onReturnToV2}
+                                        type="button"
+                                    >
+                                        Return to Spatial overview
+                                    </button>
+                                </section>
+                            )}
+                            {children}
+                        </div>
                     </main>
 
                 </div>

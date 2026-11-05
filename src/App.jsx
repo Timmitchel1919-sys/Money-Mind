@@ -661,6 +661,8 @@ export default function App() {
       settings={settingsHook.settings}
       updateSetting={settingsHook.updateSetting}
       handleLogout={auth.handleLogout}
+      v2AppShellEnabled={featureFlags.v2AppShell}
+      onReturnToV2={() => navigateToHash(navigationRoute.returnHash || spatialRoute())}
       activePage={activePage}
       setActivePage={setActivePage}
       moneyAIOpen={navigationRoute.kind === APP_ROUTE_KINDS.workspace && navigationRoute.actionId === "money-ai"}
@@ -1162,11 +1164,6 @@ export default function App() {
     <>
       {(presentation === PRESENTATIONS.legacy || presentation === PRESENTATIONS.locked) && <AppBackground themeId={resolvedTheme === "dark" ? DARK_BACKGROUND_THEME : settingsHook.settings.backgroundTheme} />}
       {content}
-      {presentation === PRESENTATIONS.legacy && featureFlags.v2AppShell ? (
-        <button className="v2-return-pill" data-testid="v2-return-from-classic" onClick={() => navigateToHash(navigationRoute.returnHash || spatialRoute())} type="button">
-          Return to Money Mind V2
-        </button>
-      ) : null}
     </>
   )
 }

@@ -231,6 +231,62 @@ async function verifyWorkspaceHeading(page, route) {
   await page.getByText(title, { exact: true }).first().waitFor({ timeout: 15_000 })
 }
 
+async function assertClassicWorkspaceBridge(page, width, height) {
+  await page.setViewportSize({ width, height })
+  const bridge = page.getByTestId("classic-mode-bridge")
+  await bridge.waitFor({ state: "visible", timeout: 10_000 })
+  await bridge.getByRole("button", { name: "Return to Spatial overview", exact: true }).waitFor({ state: "visible" })
+  const bridgeBox = await bridge.boundingBox()
+  const buttonBox = await bridge.getByTestId("v2-return-from-classic").boundingBox()
+  assert(bridgeBox && bridgeBox.x >= 0 && bridgeBox.y >= 0 && bridgeBox.x + bridgeBox.width <= width + 1, `Classic mode bridge is outside ${width}x${height}: ${JSON.stringify(bridgeBox)}`)
+  assert(buttonBox && buttonBox.height >= 44 && buttonBox.x >= bridgeBox.x && buttonBox.x + buttonBox.width <= bridgeBox.x + bridgeBox.width + 1, `Classic return target is too small or outside its bridge at ${width}x${height}: ${JSON.stringify(buttonBox)}`)
+
+  const headingBox = await page.getByRole("heading", { level: 1 }).first().boundingBox()
+  assert(headingBox && headingBox.y >= bridgeBox.y + bridgeBox.height - 1, `Classic workspace heading overlaps its mode bridge at ${width}x${height}`)
+  const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)
+  assert(!horizontalOverflow, `Classic workspace has horizontal overflow at ${width}x${height}`)
+
+  const summary = page.locator('[aria-label="Financial summary"]')
+  if (await summary.count()) {
+    const summaryCards = await summary.locator("article").all()
+    for (const card of summaryCards) {
+      const cardBox = await card.boundingBox()
+      assert(cardBox, `Financial summary card has no bounds at ${width}x${height}`)
+      const overlapX = buttonBox.x < cardBox.x + cardBox.width && buttonBox.x + buttonBox.width > cardBox.x
+      const overlapY = buttonBox.y < cardBox.y + cardBox.height && buttonBox.y + buttonBox.height > cardBox.y
+      assert(!(overlapX && overlapY), `Classic return action obscures a financial summary card at ${width}x${height}`)
+    }
+  }
+}
+
+async function verifyClassicWorkspaceResponsiveBridge(page) {
+  await page.goto(`${BASE_URL}/#workspace/dashboard/dashboard/overview`, { waitUntil: "commit" })
+  await verifyWorkspaceHeading(page, "dashboard")
+  for (const [width, height] of [[320, 568], [375, 667], [728, 446], [768, 1024], [844, 390], [1024, 768], [1440, 900], [1920, 1080]]) {
+    await assertClassicWorkspaceBridge(page, width, height)
+  }
+
+  // Browser zoom is not exposed by Playwright's viewport API. Exercise both
+  // the CSS zoom proxy and the corresponding effective CSS viewport sizes;
+  // media-query behavior is therefore covered without changing host Chrome.
+  for (const [zoom, width, height] of [["2", 720, 450], ["4", 360, 225]]) {
+    await page.setViewportSize({ width, height })
+    await page.evaluate((value) => { document.documentElement.style.zoom = value }, zoom)
+    const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)
+    const button = page.getByTestId("v2-return-from-classic")
+    const buttonBox = await button.boundingBox()
+    const summary = page.locator('[aria-label="Financial summary"]')
+    const summaryBox = await summary.boundingBox()
+    assert(!horizontalOverflow, `Classic workspace has horizontal overflow under the ${Number(zoom) * 100}% zoom proxy (${width}x${height})`)
+    assert(buttonBox && summaryBox && (buttonBox.y + buttonBox.height <= summaryBox.y || buttonBox.y >= summaryBox.y + summaryBox.height), `Classic return action overlaps financial summary at ${Number(zoom) * 100}% zoom`)
+    await page.evaluate(() => { document.documentElement.style.zoom = "" })
+  }
+
+  await page.getByTestId("v2-return-from-classic").click()
+  await page.getByTestId("v2-app").waitFor({ timeout: 20_000 })
+  await page.waitForFunction(() => window.location.hash === "#v2/dashboard/overview")
+}
+
 async function returnToSpatial(page, expectedHash) {
   await page.getByTestId("v2-return-from-classic").click()
   await page.getByTestId("v2-app").waitFor({ timeout: 20_000 })
@@ -504,6 +560,7 @@ try {
 
   await loginThroughMoneyMind(ownerPage, owner.email, password, owner.localId)
   await exerciseRegisteredWorkspaces(ownerPage)
+  await verifyClassicWorkspaceResponsiveBridge(ownerPage)
 
   // Exercise the acceptance path with real browser history: Core -> module ->
   // Transactions -> return to spatial selection, then Back/Forward and reload.
@@ -540,7 +597,7 @@ try {
   await ownerPage.getByTestId("v2-active-module").filter({ hasText: "Money Movement" }).waitFor()
   await ownerPage.getByTestId("v2-submodule-transactions").waitFor()
 
-  const viewports = [[1440, 900], [390, 844], [844, 390], [768, 1024], [1024, 768]]
+  const viewports = [[320, 568], [375, 667], [728, 446], [390, 844], [844, 390], [768, 1024], [1024, 768], [1440, 900], [1920, 1080]]
   for (const [width, height] of viewports) {
     await assertViewportNavigation(ownerPage, width, height)
     await assertSubmoduleTargetsDoNotOverlap(ownerPage, MODULE_REGISTRY.find((module) => module.id === "wealth-building"))

@@ -215,4 +215,16 @@ function throwsRegistry(fn, label) {
   assert(unavailable.kind === "spatial" && unavailable.moduleId === null && unavailable.invalid, "unavailable submodule deep link fails safe")
 }
 
+// --- UX remediation: Classic workspace mode and return affordance ---
+{
+  const layout = readFileSync(fileURLToPath(new URL("../../src/layouts/DashboardLayout.jsx", import.meta.url)), "utf8")
+  const app = readFileSync(fileURLToPath(new URL("../../src/App.jsx", import.meta.url)), "utf8")
+  const styles = readFileSync(fileURLToPath(new URL("../../src/app/v2/v2-app.css", import.meta.url)), "utf8")
+  assert(layout.includes('data-testid="classic-mode-bridge"') && layout.includes("Classic workspace"), "Classic mode is named in the V1 workspace layout")
+  assert(layout.includes('data-testid="v2-return-from-classic"') && layout.includes("Return to Spatial overview"), "Classic layout has a plainly named spatial return action")
+  assert(layout.includes("min-h-11") && layout.includes("focus-visible:outline"), "spatial return action retains a 44px target and visible keyboard focus")
+  assert(app.includes("onReturnToV2={() => navigateToHash(navigationRoute.returnHash || spatialRoute())}"), "spatial return preserves the route-specific return hash")
+  assert(!styles.includes(".v2-return-pill"), "legacy return action is no longer fixed over page content")
+}
+
 console.log(`V2 application tests: ${passed} assertions passed.`)
