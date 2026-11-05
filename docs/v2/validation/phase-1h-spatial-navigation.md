@@ -1,6 +1,6 @@
 # Phase 1H — Spatial Navigation and Existing Workspace Integration
 
-**Status: Implemented, accepted, and deployed to Firebase Hosting. V2 remains off by default.**
+**Status: Implemented and emulator-accepted. Production opts into the V2 spatial app shell through `.env.production`; V2 remains off by default in development and optional child capabilities remain disabled.**
 
 ## Scope
 
