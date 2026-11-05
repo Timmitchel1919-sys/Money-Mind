@@ -5,7 +5,7 @@
 // scrolls — main is the single scroll region everywhere now.
 export default function MoneyAIChatShell({ children }) {
   return (
-    <div className="sticky top-0 flex h-[calc(100vh-170px)] min-h-[420px] flex-col overflow-hidden rounded-3xl border border-white/10 bg-black/30 backdrop-blur-2xl">
+    <div className="sticky top-0 flex h-[calc(100vh-170px)] min-h-[420px] flex-col overflow-hidden rounded-3xl border border-white/10 bg-[var(--surface)]">
       {children}
     </div>
   )

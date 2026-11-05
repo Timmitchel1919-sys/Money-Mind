@@ -99,7 +99,7 @@ export default function DashboardLayout({
                     closes the drawer, same as Escape or picking a nav item. */}
                 {isSidebarOpen && (
                     <div
-                        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+                        className="fixed inset-0 z-40 bg-black/60 md:hidden"
                         onClick={() => setSidebarOpen(false)}
                         aria-hidden="true"
                     />

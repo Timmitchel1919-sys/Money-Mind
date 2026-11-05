@@ -1,18 +1,19 @@
 :root {
-  --mm-v2-color-accent: #66f0b3;
-  --mm-v2-background-spatial: #030712;
-  --mm-v2-surface: rgba(17, 24, 39, 0.88);
-  --mm-v2-glass: rgba(255, 255, 255, 0.07);
+  --mm-v2-color-accent: #378DF2;
+  --mm-v2-color-accent-secondary: #0BACC9;
+  --mm-v2-background-spatial: #0A0A0A;
+  --mm-v2-surface: #0D0C1D;
+  --mm-v2-glass: #0D0C1D;
   --mm-v2-border: rgba(255, 255, 255, 0.14);
-  --mm-v2-text-primary: #f8fafc;
-  --mm-v2-text-muted: #a5adb8;
+  --mm-v2-text-primary: #FFFFFF;
+  --mm-v2-text-muted: #B4BAC7;
   --mm-v2-space-1: 0.25rem;
   --mm-v2-space-2: 0.5rem;
   --mm-v2-space-4: 1rem;
   --mm-v2-space-6: 1.5rem;
   --mm-v2-radius-panel: 1rem;
   --mm-v2-shadow-panel: 0 1.5rem 4rem rgba(0, 0, 0, 0.32);
-  --mm-v2-glow-accent: 0 0 2rem rgba(102, 240, 179, 0.35);
+  --mm-v2-glow-accent: 0 0 2rem rgba(55, 141, 242, 0.28);
   --mm-v2-depth-near: 10;
   --mm-v2-depth-overlay: 100;
   --mm-v2-opacity-disabled: 0.48;
@@ -21,7 +22,7 @@
   --mm-v2-motion-camera: 700ms;
   --mm-v2-easing-standard: cubic-bezier(0.2, 0, 0, 1);
   --mm-v2-node-scale: 1;
-  --mm-v2-node-glow: 0 0 1.5rem rgba(102, 240, 179, 0.45);
+  --mm-v2-node-glow: 0 0 1.5rem rgba(55, 141, 242, 0.32);
   --mm-v2-edge-opacity: 0.45;
   --mm-v2-edge-width: 1px;
   --mm-v2-particle-density: 0;

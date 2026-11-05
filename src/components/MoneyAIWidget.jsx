@@ -29,7 +29,7 @@ export default function MoneyAIWidget({ setActivePage, isOpen, onOpenChange, ini
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-40 bg-black/60"
           onClick={() => onOpenChange(false)}
           aria-hidden="true"
         />
@@ -43,7 +43,7 @@ export default function MoneyAIWidget({ setActivePage, isOpen, onOpenChange, ini
         aria-modal="true"
         aria-label="Money AI"
       >
-        <div className="h-full overflow-y-auto rounded-3xl border border-white/10 bg-[#0E1117]/95 p-4 backdrop-blur-2xl md:p-6">
+        <div className="h-full overflow-y-auto rounded-3xl border border-white/10 bg-[var(--surface)] p-4 md:p-6">
           {isOpen && <MoneyAI {...moneyAIProps} initialQuestion={initialQuestion} setActivePage={setActivePage ? goToSettings : undefined} />}
         </div>
       </div>

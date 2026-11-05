@@ -5,13 +5,7 @@ export default function Card({
   icon = null,
 }) {
   return (
-    <div className="glass-card group relative overflow-hidden p-5 transition-colors duration-300 hover:border-[var(--border-strong)]">
-      {/* Glass Highlight */}
-      <div className="absolute inset-0 'bg-gradient-to-br' from-white/5 via-transparent to-transparent" />
-
-      {/* Metallic Glow */}
-      <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-white/5 blur-3xl" />
-
+    <div className="surface-card group relative overflow-hidden p-5 transition-colors duration-300 hover:border-[var(--border-strong)]">
       <div className="relative z-10">
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm font-medium text-[var(--text-secondary)]">

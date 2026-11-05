@@ -59,7 +59,7 @@ export default function AppLockScreen({ appLock, displayName, onForgot }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-6 backdrop-blur-2xl">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-6">
       <div className="glass-login-card w-full max-w-sm rounded-3xl p-8 text-center">
         <div className="flex justify-center">
           <img src="/money-mind-logo 2.png" alt="Money Mind" className="money-mind-logo h-16 w-auto object-contain" />

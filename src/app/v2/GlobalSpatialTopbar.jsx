@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { Bell, Globe, LogOut, Maximize2, MonitorSmartphone, Search, Settings, UserRound } from "lucide-react"
 
-// Layer 9: the V2 global control surface. Floating glass bar, no sidebar.
+// Layer 9: the V2 global control surface. Floating solid bar, no sidebar.
 // Controls are data/props-driven; spatial controls (overview, quality) only
 // appear when a runtime is present (not in the WebGL fallback).
 function Popover({ id, label, open, children }) {

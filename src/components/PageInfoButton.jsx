@@ -38,7 +38,7 @@ export default function PageInfoButton({ pageKey }) {
 
       {isOpen && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4"
           onClick={() => setIsOpen(false)}
         >
           <div
@@ -46,7 +46,7 @@ export default function PageInfoButton({ pageKey }) {
             aria-modal="true"
             aria-label={`About ${info.title}`}
             onClick={(e) => e.stopPropagation()}
-            className="scrollbar-transparent max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-[#707680]/50 bg-[#171B22]/95 p-6 shadow-2xl backdrop-blur-2xl"
+            className="scrollbar-transparent max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-[#707680]/50 bg-[var(--surface)] p-6 shadow-2xl"
           >
             <div className="flex items-start justify-between gap-4">
               <h2 className="text-2xl font-bold">{info.title}</h2>

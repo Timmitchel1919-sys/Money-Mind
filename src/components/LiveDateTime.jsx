@@ -8,7 +8,7 @@ export default function LiveDateTime({ timeFormat, dateFormat, language, classNa
 
   return (
     <div
-      className={`rounded-2xl border border-white/10 bg-black/25 px-4 py-2.5 text-right backdrop-blur-xl ${className}`}
+      className={`rounded-2xl border border-white/10 bg-[var(--surface)] px-4 py-2.5 text-right ${className}`}
     >
       <p className="font-mono text-xl font-bold tracking-wider text-white">
         <span>{hours}</span>

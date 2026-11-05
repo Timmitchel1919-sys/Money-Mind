@@ -16,7 +16,7 @@ import "./v2-app.css"
 // Layer 9: the permanent V2 Spatial Application shell.
 //
 //   V2SpatialApp
-//   ├── background (CSS gradient; in-scene atmosphere comes from the runtime)
+//   ├── background (solid theme surface; in-scene atmosphere comes from runtime)
 //   ├── SpatialAppRuntime (lazy: MotionProvider + shared SpatialStage)
 //   │    ├── GlobalSpatialTopbar (render prop, reads the motion engine)
 //   │    └── overlay layer (render prop)

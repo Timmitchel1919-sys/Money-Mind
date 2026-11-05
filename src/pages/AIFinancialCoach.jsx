@@ -216,7 +216,7 @@ export default function MoneyAI({
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.6fr)]">
       <MoneyAIChatShell>
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-black/20 px-4 py-4 backdrop-blur-xl md:px-6">
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-[var(--surface)] px-4 py-4 md:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <MoneyAIAvatar size={40} className="shrink-0" />
             <div className="min-w-0">

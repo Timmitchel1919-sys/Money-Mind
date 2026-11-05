@@ -68,7 +68,7 @@ export default function MoneyAIComposer({
   const MicIcon = isSpeaking ? Volume2 : isListening ? MicOff : Mic
 
   return (
-    <div className="shrink-0 border-t border-white/10 bg-black/20 px-4 py-4 backdrop-blur-xl md:px-6">
+    <div className="shrink-0 border-t border-white/10 bg-[var(--surface)] px-4 py-4 md:px-6">
       <div className="mx-auto w-full max-w-3xl">
         {showStatus && (
           <div className="mb-3">

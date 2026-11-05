@@ -48,27 +48,21 @@ export default function Sidebar({ activePage, handleLogout, isOpen, onClose, onN
       aria-label="Primary navigation"
       className={`navigation-glass fixed inset-y-0 left-0 z-50 flex min-h-dvh flex-col overflow-hidden transition-[width,transform] duration-200 ease-out md:translate-x-0 ${collapsed ? "md:w-[76px]" : "md:w-[272px]"} ${isOpen ? "w-[272px] translate-x-0" : "w-[272px] -translate-x-full"}`}
     >
-      <div className={`flex shrink-0 items-center border-b border-[var(--border)] ${collapsed ? "h-14 justify-center px-2" : "h-16 justify-between gap-2 px-4"}`}>
+      <div className={`flex shrink-0 items-center border-b border-[var(--border)] ${collapsed ? "h-14 justify-between gap-1 px-2" : "h-16 justify-between gap-2 px-4"}`}>
         <SidebarLogo collapsed={collapsed} markOnly />
+        <button
+          type="button"
+          onClick={() => onCollapsedChange(!collapsed)}
+          aria-label={collapsed ? "Expand navigation panel" : "Collapse navigation panel"}
+          aria-expanded={!collapsed}
+          className={`hidden shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:border-[var(--brand-primary)] hover:text-[var(--text-primary)] md:flex ${collapsed ? "h-8 w-8" : "h-11 w-11"}`}
+        >
+          <svg viewBox="0 0 6 10" aria-hidden="true" className={`h-3.5 w-2 transition-transform ${collapsed ? "rotate-180" : ""}`}>
+            <path d="M6 0 0 5l6 5z" fill="currentColor" />
+          </svg>
+        </button>
         <button type="button" onClick={onClose} aria-label="Close navigation" className="flex h-11 w-11 items-center justify-center rounded-xl md:hidden"><ChevronLeft size={20} /></button>
       </div>
-
-      {/* Collapse/expand control — belongs to the navigation panel: anchored
-          to the panel's own right edge (the <aside> is the positioning
-          context), vertically centred, and travels with the panel as it
-          animates between widths. Desktop/tablet only; on mobile the panel
-          is a drawer closed via the header button above. */}
-      <button
-        type="button"
-        onClick={() => onCollapsedChange(!collapsed)}
-        aria-label={collapsed ? "Expand navigation panel" : "Collapse navigation panel"}
-        aria-expanded={!collapsed}
-        className="absolute right-0 top-1/2 z-10 hidden h-10 w-6 -translate-y-1/2 items-center justify-center rounded-l-md border border-r-0 border-[var(--border)] bg-white/5 text-[var(--text-secondary)] hover:bg-white/10 hover:text-[var(--text-primary)] md:flex"
-      >
-        <svg viewBox="0 0 6 10" aria-hidden="true" className={`h-3.5 w-2 transition-transform ${collapsed ? "rotate-180" : ""}`}>
-          <path d="M6 0 0 5l6 5z" fill="currentColor" />
-        </svg>
-      </button>
 
       <nav className={`scrollbar-transparent min-h-0 flex-1 overflow-y-auto ${collapsed ? "px-2 pt-2 pb-4" : "px-3 py-4"}`}>
         {NAVIGATION.map((group) => {

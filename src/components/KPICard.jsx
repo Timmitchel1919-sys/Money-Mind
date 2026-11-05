@@ -12,7 +12,7 @@ export default function KPICard({
   icon,
 }) {
   return (
-    <div className="group relative overflow-hidden rounded-3xl border border-[#707680]/40 bg-[#1F242D]/70 p-6 backdrop-blur-xl transition-all duration-300 hover:border-[#C9CDD3]/50">
+    <div className="group relative overflow-hidden rounded-3xl border border-[#707680]/40 bg-[var(--surface)] p-6 transition-all duration-300 hover:border-[#C9CDD3]/50">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-medium uppercase tracking-wide text-[#A5ADB8]">{title}</p>
