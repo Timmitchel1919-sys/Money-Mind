@@ -9,11 +9,9 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      // We register the service worker ourselves via the
-      // virtual:pwa-register/react hook (see hooks/usePwaUpdate.js) so we
-      // can show our own "update available" toast instead of the
-      // plugin's silent auto-reload.
-      injectRegister: false,
+      // Register the generated worker in production. No application-owned
+      // registration hook currently exists; autoUpdate manages new versions.
+      injectRegister: 'script-defer',
       includeAssets: ['favicon.svg', 'icons.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Money Mind',

@@ -23,13 +23,13 @@
 | Phase | Status | Evidence / remaining work |
 | --- | --- | --- |
 | 0 — audit | In progress | Reviewed registry, router, motion, Spline adapter, Firestore rules, Firebase and PWA configuration. Baseline checkpoint already exists. |
-| 1 — interaction | In progress | Reject explicitly unavailable modules, show scene loading/fallback feedback, and surface missing native events in development. Browser harness at 320 and 1440 px selected Money Movement and returned to Core; native click, listener lifecycle and real authenticated routing remain unverified. |
+| 1 — interaction | In progress | Commit `22440f5` pushed: reject unavailable modules, show loading/fallback feedback, and surface missing native events in development. Browser harness at 320 and 1440 px selected Money Movement and returned to Core; native click, listener lifecycle and real authenticated routing remain unverified. |
 | 2 — responsive UX | In progress | Existing WIP includes responsive framing and registry controls. Full mobile/landscape, touch, fallback and accessibility validation remains. |
 | 3 — workspaces | Not complete | Route and authenticated-session audit required. |
 | 4 — financial data | Not complete | Baseline domain, projection, parity, authority, hook and graph-builder tests passed; no financial calculation changes made. |
 | 5 — intelligence | Not started | Inspect existing functionality before changes. |
 | 6 — security | Not complete | Rules read; emulator authorization tests not run. |
-| 7 — PWA | Not complete | Manifest references four PNG icons and an Apple icon absent from `public/`; service-worker generation alone does not establish installability. Offline and update behavior not verified. |
+| 7 — PWA | In progress | Added the missing manifest and Apple PNG icons and restored production service-worker registration. Artifact checks passed; local Chrome registered a worker and returned HTTP 200 for offline shell navigation. Installation UI, update lifecycle and financial-data offline behavior remain unverified. |
 | 8 — release | Blocked | Native Spline interaction, authenticated flows, PWA and security release checks remain open. |
 
 Baseline checks: selection and framing tests passed; V2 app 226 assertions,
@@ -58,5 +58,5 @@ Do not mistake the registry-driven HTML controls for native 3D selection.
 - [ ] Review unrelated local changes and use a clean release artifact.
 - [ ] Obtain production approval and verify the Hosting target before deployment.
 
-Next executable task: validate the interaction hardening in a real browser,
-then resolve the missing PWA icon assets without touching unrelated files.
+Next executable task: validate installation and updates in supported browsers,
+then audit authenticated routes and security rules in isolated environments.
