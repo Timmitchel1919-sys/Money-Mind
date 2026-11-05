@@ -95,6 +95,13 @@ chunk advisory. The local Playwright visual check could not complete: sandbox
 loopback access was denied, and the host browser attempt timed out before
 producing page measurements. No browser visual pass is claimed.
 
+Follow-up commit `6945bb9cd77a06fcf65499b03788a5f42df9167c` was pushed to the
+UX remediation branch and deployed to Firebase Hosting only from a clean
+worktree. The live page returned HTTP 200 and served
+`/assets/index-C3fpu6AT.js` and `/assets/index-Bc3vxRjW.css`; the JS bundle has no
+auth demo-panel markup and the CSS bundle contains the centered auth layout and
+card width rules. This verifies publication, not a visual browser interaction.
+
 ## Modified files
 
 - `src/layouts/DashboardLayout.jsx` — in-flow mode bridge and accessible return action.
