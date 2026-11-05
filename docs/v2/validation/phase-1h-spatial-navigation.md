@@ -151,6 +151,31 @@ and screenshot paths that already contain validation evidence. No typecheck
 script is defined in `package.json`. This Phase 1H acceptance does not claim
 acceptance of that separate Layer 3 harness.
 
+## Production V2 shell enablement — 2026-11-04
+
+Commit `9fdd66744181a888dc7709c6d52762298fbb4672` adds a tracked
+`.env.production` profile. Vite resolves `VITE_V2_ENABLED=true`,
+`VITE_V2_SPATIAL_UI=true`, and `VITE_V2_APP_SHELL=true` for production builds;
+development defaults remain off. Emulator mode is explicitly false. Graph,
+graph builder, motion, simulation, and AI child capabilities remain disabled.
+The Firebase runtime resolves to project `money-mind-90176`.
+
+The production profile was verified through Vite's production environment
+loader and Firebase runtime config. All 12 registered V2 and financial
+regression scripts passed, lint exited 0 with 13 existing warnings, and a
+production build completed (2,551 modules; existing large-chunk advisory). A
+second build from a clean detached worktree at the commit above passed and
+included the tracked default light and dark theme videos. Existing dirty local
+media deletions and untracked design assets were not included.
+
+Firebase CLI reported `Deploy complete!` for
+`firebase deploy --only hosting --project money-mind-90176`. The live page
+returned HTTP 200 with the Money Mind title and referenced the newly built
+`/assets/index-CEcM2iN4.js` bundle. This release changed Hosting only; Firestore
+Rules and Cloud Functions were not deployed. The authenticated browser and
+Firestore Rules acceptance remains the emulator evidence documented above; no
+production account or financial data was used for this deployment check.
+
 ## Safe Windows PowerShell run
 
 Run this in an ordinary Windows PowerShell session where the Firebase Auth and
