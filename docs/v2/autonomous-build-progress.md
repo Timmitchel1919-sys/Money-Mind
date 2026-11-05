@@ -5,6 +5,9 @@
 - Branch: `codex/ux-remediation-2026-11-05`; prior Spline WIP checkpoint `4b5a417` was pushed.
 - Spline remains disabled by default and requires the V2 master flag. The
   existing R3F spatial renderer and Classic view remain the fallback paths.
+- The tracked `.env.production` enables the V2 master, spatial UI and app
+  shell. This is newer than the default-off V2 status in `AGENTS.md`; do not
+  assume production builds are V1-only. `VITE_V2_SPLINE` is not set there.
 - Unrelated deleted media and untracked reference files were present at the
   start of the program and must not be included in commits or deployment.
 
@@ -25,11 +28,11 @@
 | 0 — audit | In progress | Reviewed registry, router, motion, Spline adapter, Firestore rules, Firebase and PWA configuration. Baseline checkpoint already exists. |
 | 1 — interaction | In progress | Commit `22440f5` pushed: reject unavailable modules, show loading/fallback feedback, and surface missing native events in development. Browser harness at 320 and 1440 px selected Money Movement and returned to Core; native click, listener lifecycle and real authenticated routing remain unverified. |
 | 2 — responsive UX | In progress | Existing WIP includes responsive framing and registry controls. Full mobile/landscape, touch, fallback and accessibility validation remains. |
-| 3 — workspaces | In progress | Registry-wide route round-trip and matching `App.jsx` workspace render-branch checks pass (303 V2 assertions total). This is static validation; authenticated sessions, permissions and real workspace operations remain unverified. |
+| 3 — workspaces | In progress | Commit `78706c5` pushed: registry-wide route round-trip and matching `App.jsx` workspace render-branch checks pass (303 V2 assertions total). This is static validation; authenticated sessions, permissions and real workspace operations remain unverified. |
 | 4 — financial data | Not complete | Domain, projection, parity, authority, hook, graph contract, engine, transform, spatial adapter and builder tests passed; no financial calculation changes made. These tests do not establish correctness for all live records. |
 | 5 — intelligence | Not complete | Initial inspection found local and optional server-side providers. `useFinancialCoach` contains hardcoded SRD text in its exported `askQuestion`; its current page caller uses only `actions`. Confirm currency requirements and add coverage before changing this path. |
 | 6 — security | Blocked | Rules inspected; demo-project emulator command produced no output and did not start within the bounded attempt. It was stopped; authorization and isolation are not verified. See security audit below. |
-| 7 — PWA | In progress | Commit `ee296f7` pushed: added the missing manifest and Apple PNG icons and restored production service-worker registration. Artifact checks passed; local Chrome registered a worker and returned HTTP 200 for offline shell navigation. Installation UI, update lifecycle and financial-data offline behavior remain unverified. |
+| 7 — PWA | In progress | Commit `ee296f7` pushed: added the missing manifest and Apple PNG icons and restored production service-worker registration. Artifact checks passed; local Chrome registered a worker, returned HTTP 200 for offline shell navigation, and reported no installability errors in a temporary non-incognito profile. Installation UI, update lifecycle and financial-data offline behavior remain unverified. |
 | 8 — release | Blocked | Native Spline interaction, authenticated flows, PWA and security release checks remain open. |
 
 Baseline checks: selection and framing tests passed; V2 app 226 assertions,
@@ -86,5 +89,6 @@ then audit authenticated routes and security rules in isolated environments.
 
 The score reflects only the rules inspected and is not a complete application
 security assessment. The emulator attempt used project `demo-money-mind-e2e`,
-produced no startup output, and was stopped after a bounded wait; no production
-data or rules were changed.
+produced no startup output, and was stopped after a bounded wait. A separate
+`firebase --version` startup check also produced no output before it was stopped;
+the CLI startup issue remains unresolved. No production data or rules were changed.
