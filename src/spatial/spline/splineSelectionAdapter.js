@@ -5,8 +5,10 @@ import { openModuleIntent, returnToCoreIntent } from "../../app/v2/navigation/sp
 export const SPLINE_CORE_OBJECT_ID = "6ebd998f-74fe-42a9-8e7b-f6e19cae3206"
 /** Resolve a Spline object ID to an existing motion intent, or fail closed. */
 export function resolveSplineSelection(objectId, visibleModules = []) {
-  if (objectId === SPLINE_CORE_OBJECT_ID) return returnToCoreIntent()
   if (typeof objectId !== "string" || !objectId) return null
-  const module = visibleModules.find((candidate) => candidate.availability !== "unavailable" && candidate.spatial?.splineObjectId === objectId)
-  return module ? openModuleIntent(module.id) : null
+  if (!Array.isArray(visibleModules)) return null
+  const matches = visibleModules.filter((candidate) => candidate?.spatial?.splineObjectId === objectId)
+  if (objectId === SPLINE_CORE_OBJECT_ID) return matches.length === 0 ? returnToCoreIntent() : null
+  if (matches.length !== 1 || matches[0].availability === "unavailable") return null
+  return openModuleIntent(matches[0].id)
 }
