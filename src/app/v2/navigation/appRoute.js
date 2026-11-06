@@ -32,7 +32,7 @@ export function parseAppRoute(hash, registry) {
   if (parts[0] === "v2") {
     if (parts.length > 3) return spatialCore(true)
     const module = registry.find((candidate) => candidate.id === parts[1])
-    if (!module) return spatialCore(true)
+    if (!module || module.availability === "unavailable") return spatialCore(true)
     if (!parts[2]) return Object.freeze({ kind: APP_ROUTE_KINDS.spatial, moduleId: module.id, submoduleId: null, invalid: false })
     const submodule = findSubmodule(registry, module.id, parts[2], { availableOnly: true })
     return submodule
@@ -43,7 +43,7 @@ export function parseAppRoute(hash, registry) {
     if (parts[1] === "action") {
       const submodule = findSubmodule(registry, parts[2], parts[3], { availableOnly: true })
       if (!submodule || submodule.destination.kind !== "action") return spatialCore(true)
-      const fallbackWorkspace = registry.flatMap((module) => module.submodules).find((candidate) => candidate.id === "overview" && candidate.destination.kind === "workspace")?.destination.route
+      const fallbackWorkspace = registry.filter((module) => module.availability !== "unavailable").flatMap((module) => module.submodules).find((candidate) => candidate.id === "overview" && candidate.availability === "available" && candidate.destination.kind === "workspace")?.destination.route
       if (!fallbackWorkspace) return spatialCore(true)
       return Object.freeze({
         kind: APP_ROUTE_KINDS.workspace,

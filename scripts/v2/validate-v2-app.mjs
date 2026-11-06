@@ -127,6 +127,7 @@ function throwsRegistry(fn, label) {
   throwsRegistry(() => validateModuleRegistry([...MODULE_REGISTRY, { ...MODULE_REGISTRY[0] }]), "duplicate id")
   throwsRegistry(() => validateModuleRegistry([MODULE_REGISTRY[0], { ...MODULE_REGISTRY[1], spatial: { slot: 0 } }]), "duplicate slot")
   throwsRegistry(() => validateModuleRegistry([{ ...MODULE_REGISTRY[0], label: "" }]), "missing label")
+  throwsRegistry(() => validateModuleRegistry([{ ...MODULE_REGISTRY[0], availability: "unknown" }]), "invalid module availability")
   throwsRegistry(() => validateModuleRegistry([{ ...MODULE_REGISTRY[0], id: "Bad Id" }]), "malformed id")
   throwsRegistry(() => validateModuleRegistry([{ ...MODULE_REGISTRY[0], submodules: [{ id: "x", label: "X" }, { id: "x", label: "Y" }] }]), "duplicate submodule")
   throwsRegistry(() => validateModuleRegistry([{ ...MODULE_REGISTRY[0], submodules: [{ ...MODULE_REGISTRY[0].submodules[0], parentModuleId: "wrong" }] }]), "submodule parent mismatch")
@@ -213,6 +214,15 @@ function throwsRegistry(fn, label) {
   const unavailableRegistry = MODULE_REGISTRY.map((module) => module.id !== "money-movement" ? module : { ...module, submodules: module.submodules.map((submodule) => submodule.id === "transactions" ? { ...submodule, availability: "unavailable" } : submodule) })
   const unavailable = parseAppRoute("#v2/money-movement/transactions", unavailableRegistry)
   assert(unavailable.kind === "spatial" && unavailable.moduleId === null && unavailable.invalid, "unavailable submodule deep link fails safe")
+  const unavailableModuleRegistry = MODULE_REGISTRY.map((module) => module.id === "money-movement" ? { ...module, availability: "unavailable" } : module)
+  assert(!resolveVisibleModules(unavailableModuleRegistry).some((module) => module.id === "money-movement"), "unavailable module is hidden")
+  for (const hash of ["#v2/money-movement", "#v2/money-movement/transactions", "#workspace/transactions/money-movement/transactions"]) {
+    assert(parseAppRoute(hash, unavailableModuleRegistry).invalid, `${hash}: unavailable parent fails safe`)
+  }
+  assert(findSubmoduleByWorkspaceRoute(unavailableModuleRegistry, "transactions", { availableOnly: true }) === null, "workspace lookup rejects unavailable parent")
+  assert(resolveSubmodule(unavailableModuleRegistry, "money-movement", "transactions") === null, "submodule resolver rejects unavailable parent")
+  const unavailableDashboard = MODULE_REGISTRY.map((module) => module.id === "dashboard" ? { ...module, availability: "unavailable" } : module)
+  assert(parseAppRoute(actionRoute(moneyAI), unavailableDashboard).invalid, "action rejects unavailable fallback workspace")
   const appSource = readFileSync(fileURLToPath(new URL("../../src/App.jsx", import.meta.url)), "utf8")
   for (const module of MODULE_REGISTRY) {
     for (const submodule of module.submodules.filter((sub) => sub.availability === "available")) {

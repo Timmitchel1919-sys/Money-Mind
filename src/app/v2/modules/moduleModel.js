@@ -29,6 +29,7 @@ export function validateModuleRegistry(registry) {
     if (ids.has(module.id)) throw new ModuleRegistryError(`Duplicate module id "${module.id}"`, { id: module.id })
     ids.add(module.id)
     if (!Number.isInteger(module.order)) throw new ModuleRegistryError(`Module "${module.id}" order must be an integer`, { id: module.id })
+    if (module.availability !== undefined && !AVAILABILITY.has(module.availability)) throw new ModuleRegistryError(`Module "${module.id}" has invalid availability`, { id: module.id })
     if (!Number.isInteger(module.spatial.slot) || module.spatial.slot < 0) throw new ModuleRegistryError(`Module "${module.id}" spatial.slot must be a non-negative integer`, { id: module.id })
     if (slots.has(module.spatial.slot)) throw new ModuleRegistryError(`Spatial slot ${module.spatial.slot} is used twice`, { id: module.id })
     slots.add(module.spatial.slot)
@@ -58,15 +59,19 @@ export function validateModuleRegistry(registry) {
 
 export function findSubmodule(registry, moduleId, submoduleId, { availableOnly = false } = {}) {
   validateModuleRegistry(registry)
-  const submodule = registry.find((module) => module.id === moduleId)?.submodules.find((candidate) => candidate.id === submoduleId) ?? null
+  const module = registry.find((candidate) => candidate.id === moduleId)
+  if (availableOnly && module?.availability === "unavailable") return null
+  const submodule = module?.submodules.find((candidate) => candidate.id === submoduleId) ?? null
   return availableOnly && submodule?.availability !== "available" ? null : submodule
 }
 
 export function findSubmoduleByWorkspaceRoute(registry, route, { availableOnly = false } = {}) {
   validateModuleRegistry(registry)
-  const matches = registry.flatMap((module) => module.submodules).filter((submodule) => submodule.destination.kind === "workspace" && submodule.destination.route === route)
+  const matches = registry.flatMap((module) => module.submodules.map((submodule) => ({ module, submodule }))).filter(({ submodule }) => submodule.destination.kind === "workspace" && submodule.destination.route === route)
   if (matches.length > 1) throw new ModuleRegistryError(`Workspace route "${route}" is mapped more than once`, { route })
-  const submodule = matches[0] ?? null
+  const match = matches[0]
+  if (availableOnly && match?.module.availability === "unavailable") return null
+  const submodule = match?.submodule ?? null
   return availableOnly && submodule?.availability !== "available" ? null : submodule
 }
 
@@ -80,6 +85,7 @@ export function resolveVisibleModules(registry, { flags = {}, capabilities = ["a
   const granted = new Set(capabilities)
   return Object.freeze(
     registry
+      .filter((module) => module.availability !== "unavailable")
       .filter((module) => !module.featureFlag || flags[module.featureFlag] === true)
       .filter((module) => module.permissions.every((permission) => granted.has(permission)))
       .slice()

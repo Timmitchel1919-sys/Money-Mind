@@ -40,6 +40,7 @@ export const returnToCoreIntent = () => resetViewIntent()
 
 export function resolveSubmodule(modules, moduleId, submoduleId) {
   const module = modules.find((candidate) => candidate.id === moduleId)
+  if (module?.availability === "unavailable") return null
   return module?.submodules.find((submodule) => submodule.id === submoduleId && submodule.availability === "available") ?? null
 }
 
