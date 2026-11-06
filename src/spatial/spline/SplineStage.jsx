@@ -37,8 +37,12 @@ function Scene({ children, modules }) {
     return () => { observer.disconnect(); runtime.current = null }
   }, [frameScene])
   const onLoad = useCallback((app) => {
+    // React StrictMode can dispose an earlier runtime while its async load is
+    // still finishing. Ignore its late callback; the active runtime follows.
+    if (app.getAllObjects().length === 0) return
     const requiredIds = [SPLINE_CORE_OBJECT_ID, ...current.current.modules.map((module) => module.spatial.splineObjectId)]
-    if (requiredIds.some((id) => !id || !app.findObjectById(id))) throw new Error("Spline scene is missing a registered object")
+    const missingIds = requiredIds.filter((id) => !id || !app.findObjectById(id))
+    if (missingIds.length) throw new Error(`Spline scene is missing registered objects: ${missingIds.join(", ")}`)
     runtime.current = app
     setNativeEventsAvailable(Object.keys(app.getSplineEvents()).length > 0)
     frameScene()
