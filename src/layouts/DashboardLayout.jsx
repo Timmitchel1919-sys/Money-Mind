@@ -18,12 +18,17 @@ export default function DashboardLayout({
     activePage,
     setActivePage,
     moneyAIProps,
+    moneyAIOpen = false,
     children,
 }) {
     const [isSidebarOpen, setSidebarOpen] = useState(false)
     const [isMoneyAIOpen, setMoneyAIOpen] = useState(false)
     const [isSidebarCollapsed, setSidebarCollapsed] = useState(initialSidebarState)
     const [moneyAIPrompt, setMoneyAIPrompt] = useState("")
+
+    useEffect(() => {
+        setMoneyAIOpen(moneyAIOpen)
+    }, [moneyAIOpen])
 
     function handleNavigate(page) {
         setActivePage(page)

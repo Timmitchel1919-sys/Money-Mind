@@ -11,6 +11,9 @@ export const NODE_PALETTE = Object.freeze({
   liability: Object.freeze({ base: "#ee4f86", emissive: "#d63a70", accent: "#fcd3e2" }), // debt: rose
   outflow: Object.freeze({ base: "#ff7a45", emissive: "#e45f2b", accent: "#ffdccd" }), // expenses: coral
   reserve: Object.freeze({ base: "#3ccf6e", emissive: "#27b058", accent: "#cdf4da" }), // savings: green
+  // Layer 11 module tones with no financial-domain colour:
+  insight: Object.freeze({ base: "#c35cf0", emissive: "#a93fd8", accent: "#f0d4fc" }), // intelligence: orchid
+  system: Object.freeze({ base: "#9fb0c8", emissive: "#6f819c", accent: "#e3e9f2" }), // settings: silver (intentionally neutral)
 })
 
 export function nodePalette(node) {

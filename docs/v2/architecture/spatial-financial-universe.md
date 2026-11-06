@@ -9,6 +9,50 @@
 - Tests: `npm run test:spatial-universe`
 - Validation: `docs/v2/validation/chapter-7-spatial-financial-universe.md`
 
+## Visual-fidelity pass (2026-11-03)
+
+Palette-only follow-up against a user-supplied radial node-graph reference
+(dark teal-black scene, warm gold connection lines, glassy selected-card glow
+— not a Money Mind asset; used for visual direction only, per the brief).
+Colour/material constants only; no scene structure, motion policy, or
+financial logic touched. Verified in the browser at `#spatial` (quality Auto,
+overview + node-select interaction, no console errors).
+
+| File | Change |
+| --- | --- |
+| `src/spatial/runtime/core/runtimeConfig.js` | Scene background `#020713` → `#050f0f` (teal-black, was navy) |
+| `src/spatial/runtime/lighting/SpatialLighting.jsx` | Ambient `#b9c8e6`→`#9fd8c9`, key `#e6efff`→`#fff2d9` (warm), rim `#5b7fd6`→`#1fae8f` (teal) |
+| `src/spatial/runtime/scene/SpatialAtmosphere.jsx` | Particle colour `#8fa6ff`→`#5eead4` (teal, was blue) |
+| `src/motion/edges/edgeMotion.js`, `src/spatial/runtime/edges/SpatialEdges.jsx` | Edge colour `#45617e`/`#a9c8ef`→`#8a7142` (rest) / `#f3cf8a` (active/selected) — warm gold, was slate blue; opacity/reveal logic unchanged |
+| `src/spatial/runtime/spatial-runtime.css` | Workspace/stage chrome re-tinted teal (`--spatial-line`, `--spatial-surface`, background gradient); selected-label glow `rgba(98,143,197,…)`→`rgba(94,234,212,…)` (teal) |
+
+`NODE_PALETTE` (`nodeMaterials.js`) is unchanged — those hues are
+luminance/saturation/hue-spacing tested and carry domain meaning.
+
+## Selection detail panel (2026-11-03, follow-up)
+
+The same reference video showed a richer selected-node detail card (icon,
+hero stat, item-count tiles) — but that video is a demo of a *different,
+unrelated third-party product* (branding/content not reproduced; see the
+chat record). What's adapted here is the layout idea only, built strictly
+from fields the adapters already emit — nothing invented:
+
+- `src/spatial/runtime/core/SpatialRuntime.jsx`: the `.spatial-inspector`
+  footer gains an icon chip (`lucide-react`, one icon per node tone/kind —
+  purely decorative), an eyebrow ("Financial domain" / "Line item" /
+  "Financial core" from `node.kind`), and a magnitude meter bar driven by
+  the adapter's existing `node.magnitude` (0–1, already clamped/floored in
+  `financialSpatialAdapter.js`). The existing `detail` string and
+  `childCount` hint are unchanged, just restyled.
+- `src/spatial/runtime/spatial-runtime.css`: new `__identity`/`__icon`/
+  `__stats`/`__meter`/`__status` rules; old generic `div`/`span`/`strong`/`p`
+  selectors scoped to the new class names so mobile breakpoints keep working.
+- No new data, no Firestore reads, no change to `financialSpatialAdapter.js`
+  / `financialGraphSpatialAdapter.js` output shape. The signed-out demo scene
+  (`createProofSpatialScene`) has no `magnitude`/`childCount`, so the panel
+  renders without them there — verified in the browser (no console errors);
+  real per-user scenes populate both.
+
 ## What changed (and what did not)
 
 Only presentation and interaction inside the existing systems:

@@ -1,0 +1,3 @@
+export type ProfileRouteState={authenticated:boolean;verified:boolean;profileLoading:boolean;onboardingCompleted:boolean|null};
+export function normalizeOnboardingStep(step:number){return Math.min(7,Math.max(1,Number.isInteger(step)?step:1));}
+export function resolveProfileRoute(state:ProfileRouteState,target:"dashboard"|"onboarding"):string|null{if(!state.authenticated)return "/login";if(!state.verified)return "/verify-email";if(state.profileLoading)return null;if(target==="dashboard"&&!state.onboardingCompleted)return "/onboarding";if(target==="onboarding"&&state.onboardingCompleted)return "/dashboard";return null;}

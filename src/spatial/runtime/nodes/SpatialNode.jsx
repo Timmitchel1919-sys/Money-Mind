@@ -2,7 +2,7 @@ import { useFrame } from "@react-three/fiber"
 import { useEffect, useMemo, useRef } from "react"
 import { Color, Mesh } from "three"
 import { useMotionEngine } from "../../../motion/core/motionContext"
-import { clearHoverIntent, hoverNodeIntent, selectNodeIntent } from "../../../motion/input/motionIntents"
+import { activateNodeIntent, clearHoverIntent, hoverNodeIntent } from "../../../motion/input/motionIntents"
 import { resolveNodeMotion } from "../../../motion/nodes/nodeMotion"
 import { dampValue } from "../../../motion/performance/animationBudget"
 import { nodeMaterialTier, nodePalette } from "./nodeMaterials"
@@ -66,7 +66,7 @@ export default function SpatialNode({ geometry, index, lighting, node }) {
       raycast={isChild && !revealed ? NO_RAYCAST : HIT_RAYCAST}
       onClick={(event) => {
         event.stopPropagation()
-        dispatchIntent(selectNodeIntent(node.id))
+        dispatchIntent(activateNodeIntent(node))
       }}
       onPointerEnter={(event) => {
         event.stopPropagation()

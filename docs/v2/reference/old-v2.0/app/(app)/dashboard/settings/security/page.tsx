@@ -1,0 +1,1 @@
+import { ModulePlaceholder } from "@/components/layout/ModulePlaceholder";export default function Page(){return <ModulePlaceholder title="Security" description="Security controls will be expanded in a later settings layer." layer={26}/>;}

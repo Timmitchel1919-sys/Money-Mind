@@ -6,6 +6,7 @@ const FLAG_DEFINITIONS = Object.freeze({
   v2Simulation: "VITE_V2_SIMULATION",
   v2AI: "VITE_V2_AI",
   v2GraphBuilder: "VITE_V2_GRAPH_BUILDER",
+  v2AppShell: "VITE_V2_APP_SHELL",
 })
 
 function readBoolean(value) {
@@ -29,6 +30,9 @@ export function resolveFeatureFlags(environment = import.meta.env) {
     // Signed-in #spatial scene from real records via the Financial Graph Builder
     // (builder -> 4B engine -> 4D adapter) instead of the KPI model adapter.
     v2GraphBuilder: v2Enabled && readBoolean(environment[FLAG_DEFINITIONS.v2GraphBuilder]),
+    // Layer 8 cutover: signed-in users land in the V2 Spatial Application
+    // instead of the V1 DashboardLayout (V1 stays reachable via Classic view).
+    v2AppShell: v2Enabled && readBoolean(environment[FLAG_DEFINITIONS.v2AppShell]),
   })
 }
 

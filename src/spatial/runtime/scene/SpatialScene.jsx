@@ -3,6 +3,7 @@ import CameraRig from "../camera/CameraRig"
 import SpatialEdges from "../edges/SpatialEdges"
 import SpatialLighting from "../lighting/SpatialLighting"
 import NodeGroup from "../nodes/NodeGroup"
+import SpatialAtmosphere from "./SpatialAtmosphere"
 import { SPATIAL_RUNTIME_CONFIG } from "../core/runtimeConfig"
 import { RadialMotionGroup } from "../../../motion/radial/RadialMotionGroup"
 
@@ -16,6 +17,7 @@ export default function SpatialScene({ quality, scene }) {
       <fog attach="fog" args={[SPATIAL_RUNTIME_CONFIG.background, 9, 18]} />
       <CameraRig nodes={scene.nodes} />
       <SpatialLighting mode={quality.lighting} />
+      {scene.atmosphere ? <SpatialAtmosphere detail={quality.detail} /> : null}
       <group scale={responsiveScale}>
         <RadialMotionGroup>
           <SpatialEdges edges={scene.edges} nodes={scene.nodes} />

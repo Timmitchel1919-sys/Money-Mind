@@ -1,0 +1,28 @@
+.mm-page { width: min(100%, var(--mm-content-max)); margin-inline: auto; padding-inline: var(--mm-page-gutter); }
+.mm-section { padding-block: clamp(3rem, 7vw, 6rem); }
+.mm-content-compact { width: min(100%, 48rem); } .mm-content-wide { width: min(100%, 76rem); }
+.mm-grid-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: var(--mm-space-4); }
+.mm-grid-analytics { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(18rem, 1fr); gap: var(--mm-space-6); }
+.mm-grid-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--mm-space-5); }
+.mm-scrollbar { scrollbar-color: rgb(101 221 184 / 28%) transparent; scrollbar-width: thin; }
+.mm-numeric { font-variant-numeric: tabular-nums lining-nums; letter-spacing: -.02em; }
+.mm-display-large { font-size: clamp(3rem,7vw,6rem); line-height: .96; letter-spacing: -.055em; font-weight: 620; } .mm-display-medium { font-size: clamp(2.5rem,5vw,4.5rem); line-height: 1; letter-spacing: -.045em; font-weight: 620; }
+.mm-heading-1 { font-size: clamp(2rem,4vw,3.5rem); line-height: 1.05; letter-spacing: -.035em; font-weight: 620; } .mm-heading-2 { font-size: clamp(1.75rem,3vw,2.5rem); line-height: 1.1; letter-spacing: -.025em; font-weight: 620; } .mm-heading-3 { font-size: 1.5rem; line-height: 1.2; letter-spacing: -.018em; font-weight: 600; } .mm-heading-4 { font-size: 1.125rem; line-height: 1.3; font-weight: 600; }
+.mm-body-large { font-size: 1.125rem; line-height: 1.7; } .mm-body { font-size: 1rem; line-height: 1.65; } .mm-body-small { font-size: .875rem; line-height: 1.55; }
+.mm-label { font-size: .8125rem; line-height: 1.25; font-weight: 600; letter-spacing: .01em; } .mm-caption { font-size: .75rem; line-height: 1.4; color: var(--mm-text-secondary); } .mm-micro { font-size: .6875rem; line-height: 1.3; letter-spacing: .08em; text-transform: uppercase; }
+.mm-financial-hero { font-size: clamp(2.75rem,6vw,5.25rem); line-height: .98; font-weight: 640; } .mm-financial-large { font-size: clamp(2rem,4vw,3.5rem); line-height: 1; font-weight: 630; } .mm-financial-medium { font-size: 1.75rem; line-height: 1.1; font-weight: 620; } .mm-financial-small { font-size: 1.125rem; line-height: 1.25; font-weight: 600; } .mm-percentage { font-size: .875rem; line-height: 1.2; font-weight: 650; } .mm-data-label { font-size: .75rem; color: var(--mm-text-secondary); letter-spacing: .04em; }
+@media (max-width: 64rem) { .mm-grid-analytics, .mm-grid-cards { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 48rem) { .mm-grid-analytics, .mm-grid-cards { grid-template-columns: minmax(0,1fr); } }
+
+.mm-app-shell { min-height: 100dvh; background: radial-gradient(circle at 82% 0%, rgb(85 216 208 / 5%), transparent 30rem), var(--mm-bg-primary); }
+.mm-app-workspace { min-width: 0; min-height: 100dvh; transition: padding-left var(--mm-motion-normal) var(--mm-ease-premium); }
+.mm-app-content { width: 100%; margin-inline: auto; padding: clamp(1.5rem, 3vw, 2.5rem) var(--mm-page-gutter) 4rem; }
+.mm-app-content[data-width="standard"] { max-width: 72rem; }
+.mm-app-content[data-width="wide"] { max-width: var(--mm-content-max); }
+.mm-app-shell > aside { position: fixed; }
+.mm-app-workspace > header { position: sticky; }
+[role="dialog"].mm-glass { position: fixed; }
+@media (min-width: 64rem) {
+  .mm-app-workspace { padding-left: var(--mm-sidebar-expanded); }
+  .mm-app-shell[data-sidebar-collapsed="true"] .mm-app-workspace { padding-left: var(--mm-sidebar-collapsed); }
+}

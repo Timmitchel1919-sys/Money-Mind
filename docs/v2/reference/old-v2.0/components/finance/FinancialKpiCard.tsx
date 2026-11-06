@@ -1,0 +1,6 @@
+import type { ReactNode } from "react";
+import { GlassCard } from "@/components/glass/GlassCard";
+import { MoneyValue, type FinancialTone } from "@/components/finance/MoneyValue";
+import { TrendIndicator } from "@/components/finance/TrendIndicator";
+import { Skeleton } from "@/components/ui/Skeleton";
+export function FinancialKpiCard({label,formattedValue,change,changeDirection="neutral",period,icon,status,loading=false,premium=false}:{label:string;value?:number;formattedValue:string;change?:string;changeDirection?:FinancialTone;period?:string;icon?:ReactNode;status?:ReactNode;loading?:boolean;premium?:boolean}){return <GlassCard level={premium?"premium":"standard"} className="min-h-48"><div className="flex items-start justify-between gap-4"><p className="mm-data-label">{label}</p>{icon&&<div className="grid h-9 w-9 place-items-center rounded-[var(--mm-radius-md)] bg-[var(--mm-surface-subtle)] text-[var(--mm-text-secondary)]">{icon}</div>}</div>{loading?<div className="mt-7 space-y-4"><Skeleton className="h-10 w-3/4"/><Skeleton className="h-4 w-1/2"/></div>:<><div className="mt-7"><MoneyValue value={formattedValue} size="medium"/></div><div className="mt-4 flex flex-wrap items-center justify-between gap-2">{change&&<TrendIndicator value={change} direction={changeDirection} label={period}/>} {status}</div></>}</GlassCard>}

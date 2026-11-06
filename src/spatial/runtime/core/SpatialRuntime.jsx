@@ -1,13 +1,39 @@
-import { useCallback, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
+import { CreditCard, Landmark, LineChart, ListTree, PiggyBank, Receipt, Sparkles, TrendingUp } from "lucide-react"
 import { MotionProvider } from "../../../motion/core/MotionProvider"
 import { useMotionEngine } from "../../../motion/core/motionContext"
 import { resetViewIntent } from "../../../motion/input/motionIntents"
-import NodeLabels from "../nodes/NodeLabels"
 import { QUALITY_OPTIONS, resolveQualityPreset } from "../quality/qualityPresets"
-import SpatialCanvas from "./SpatialCanvas"
+import SpatialStage from "./SpatialStage"
 import SpatialAIConsole from "../../../ai/spatial/SpatialAIConsole"
 import "../../../styles/v2-tokens.css"
 import "../spatial-runtime.css"
+
+// Chapter 7 visual-fidelity pass: one icon per domain tone (real field on the
+// node — see financialSpatialAdapter.js), plus core/child fallbacks. Purely
+// decorative; carries no information that isn't already in the label/kind.
+const TONE_ICON = Object.freeze({
+  positive: TrendingUp,
+  growth: LineChart,
+  stable: Landmark,
+  liability: CreditCard,
+  outflow: Receipt,
+  reserve: PiggyBank,
+})
+
+function nodeIcon(node) {
+  if (!node) return Sparkles
+  if (node.kind === "core") return Sparkles
+  if (node.kind === "child") return ListTree
+  return TONE_ICON[node.tone] || Landmark
+}
+
+function kindLabel(node) {
+  if (!node) return "Overview"
+  if (node.kind === "core") return "Financial core"
+  if (node.kind === "child") return "Line item"
+  return "Financial domain"
+}
 
 function SimField({ label, suffix, type, min, max, step, value, onChange }) {
   return (
@@ -34,11 +60,10 @@ function SimPanel({ sim }) {
 
 function SpatialWorkspace({ aiEnabled, capabilities, initialQuality, motionPreference, scene, sim }) {
   const [requestedQuality, setRequestedQuality] = useState(initialQuality)
-  const [contextState, setContextState] = useState("initializing")
-  const { activeTransition, dispatchIntent, sceneState, selectedId } = useMotionEngine()
+  const { dispatchIntent, selectedId } = useMotionEngine()
   const quality = useMemo(() => resolveQualityPreset(requestedQuality, capabilities), [capabilities, requestedQuality])
   const selectedNode = scene.nodes.find((node) => node.id === selectedId)
-  const handleContextStateChange = useCallback((state) => setContextState(state), [])
+  const SelectedIcon = nodeIcon(selectedNode)
   const capabilityState = capabilities.webGL
     ? (capabilities.mobileClass || capabilities.reducedMotion ? "Degraded" : "Supported")
     : "Unsupported"
@@ -73,38 +98,42 @@ function SpatialWorkspace({ aiEnabled, capabilities, initialQuality, motionPrefe
 
       {sim?.active ? <SimPanel sim={sim} /> : null}
 
-      <div className="spatial-stage" data-active-transition={activeTransition?.name || "none"} data-context-state={contextState} data-scene-state={sceneState} data-testid="spatial-stage">
-        <SpatialCanvas
-          onContextStateChange={handleContextStateChange}
-          quality={quality}
-          scene={scene}
-        />
-        <NodeLabels nodes={scene.nodes} />
-        <div className="spatial-stage__status" aria-live="polite">
-          <span>{capabilityState}</span>
-          <span>{quality.id} · DPR {quality.dpr[1]}</span>
-          <span>{motionPreference} motion</span>
-        </div>
-        {contextState === "lost" ? (
-          <div className="spatial-context-notice" role="alert">
-            Rendering paused while the graphics context recovers. The standard dashboard remains available.
+      <SpatialStage
+        lostMessage="Rendering paused while the graphics context recovers. The standard dashboard remains available."
+        quality={quality}
+        scene={scene}
+        status={(
+          <div className="spatial-stage__status" aria-live="polite">
+            <span>{capabilityState}</span>
+            <span>{quality.id} · DPR {quality.dpr[1]}</span>
+            <span>{motionPreference} motion</span>
           </div>
-        ) : null}
-      </div>
+        )}
+      />
 
       <footer className="spatial-inspector" aria-live="polite">
         {scene.projected ? (
           <p className="spatial-inspector__badge">Projection · +{scene.monthsForward} mo</p>
         ) : null}
-        <div>
-          <span>Current focus</span>
-          <strong>{selectedNode?.label || "Financial overview"}</strong>
+        <div className="spatial-inspector__identity">
+          <SelectedIcon aria-hidden="true" className="spatial-inspector__icon" />
+          <div>
+            <span>{kindLabel(selectedNode)}</span>
+            <strong>{selectedNode?.label || "Financial overview"}</strong>
+          </div>
         </div>
-        {selectedNode?.detail ? <p className="spatial-inspector__amount">{selectedNode.detail}</p> : null}
-        {selectedNode?.kind === "radial" && selectedNode.childCount > 0
-          ? <p className="spatial-inspector__hint">{selectedNode.childCount} {selectedNode.childCount === 1 ? "item" : "items"} — select one to inspect</p>
-          : null}
-        <p>{selectedNode ? `${selectedNode.label} is selected. Choose it again or use Overview to return.` : "Select a financial domain to test focus and camera control."}</p>
+        <div className="spatial-inspector__stats">
+          {selectedNode?.detail ? <p className="spatial-inspector__amount">{selectedNode.detail}</p> : null}
+          {typeof selectedNode?.magnitude === "number" ? (
+            <div aria-hidden="true" className="spatial-inspector__meter">
+              <span style={{ "--meter": selectedNode.magnitude }} />
+            </div>
+          ) : null}
+          {selectedNode?.kind === "radial" && selectedNode.childCount > 0
+            ? <p className="spatial-inspector__hint">{selectedNode.childCount} {selectedNode.childCount === 1 ? "item" : "items"} — select one to inspect</p>
+            : null}
+        </div>
+        <p className="spatial-inspector__status">{selectedNode ? `${selectedNode.label} is selected. Choose it again or use Overview to return.` : "Select a financial domain to test focus and camera control."}</p>
       </footer>
       {aiEnabled ? <SpatialAIConsole selectedNode={selectedNode} /> : null}
     </section>
