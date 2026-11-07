@@ -29,6 +29,7 @@ node_modules/
 dist/
 out/
 coverage/
+test-results/spline-canvas/
 
 # Environment variables
 .env
