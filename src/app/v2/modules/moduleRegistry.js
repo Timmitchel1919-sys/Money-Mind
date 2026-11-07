@@ -9,6 +9,15 @@ const action = (parentModuleId, id, label, actionId, order, icon) => ({
   destination: { kind: "action", action: actionId }, navigation: { order, restore: "spatial" },
 })
 
+// The label and indicator meshes in the Spline export can receive pointer hits.
+const splineHits = {
+  dashboard: ["721b6035-dcfd-4a58-8379-4b8ffd90a0a9", "52e74c8f-9924-4c6a-a1b4-acb5a0dd230f"],
+  "money-movement": ["6c3e3f40-d5d6-4fa9-b5ba-fff2b435e781", "d209a49a-ae03-49cc-8b50-7b30588b9950"],
+  "wealth-building": ["50ce833f-1b52-4fd6-b42c-7ef3bedb90fa", "514bc3a0-98a0-4a16-b3af-4e2f91c08f71"],
+  intelligence: ["3d5abc55-fe4f-4b5f-93d3-f5e050b58417", "3070b3ef-a2dc-45a9-af92-bb516e5f7c4f"],
+  settings: ["0deee13f-f02e-49c3-bb43-f1015202e4eb", "ada1073d-0b47-4753-b9c5-75b3b0b290b8"],
+}
+
 const registry = [
   { id: "dashboard", label: "Dashboard", icon: "LayoutDashboard", tone: "growth", order: 1, description: "Your overall financial position at a glance.", tagline: "Overview", spatial: { slot: 0, splineObjectId: "fcf26801-d51b-44f8-ac15-070fe8e24783" }, permissions: ["authenticated"], featureFlag: null,
     submodules: [workspace("dashboard", "overview", "Financial overview", "dashboard", 1, "LayoutDashboard")] },
@@ -40,6 +49,6 @@ const registry = [
 ]
 
 export const MODULE_REGISTRY = Object.freeze(registry.map((module) => Object.freeze({
-  ...module, spatial: Object.freeze(module.spatial), permissions: Object.freeze(module.permissions),
+  ...module, spatial: Object.freeze({ ...module.spatial, splineHitObjectIds: Object.freeze(splineHits[module.id] || []) }), permissions: Object.freeze(module.permissions),
   submodules: Object.freeze(module.submodules.map((submodule) => Object.freeze({ ...submodule, destination: Object.freeze(submodule.destination), navigation: Object.freeze(submodule.navigation) }))),
 })))

@@ -20,6 +20,7 @@ export function validateModuleRegistry(registry) {
   if (!Array.isArray(registry)) throw new ModuleRegistryError("Module registry must be an array")
   const ids = new Set()
   const slots = new Set()
+  const splineObjectIds = new Set()
   const workspaceRoutes = new Set()
   registry.forEach((module, index) => {
     for (const field of REQUIRED) {
@@ -33,6 +34,15 @@ export function validateModuleRegistry(registry) {
     if (!Number.isInteger(module.spatial.slot) || module.spatial.slot < 0) throw new ModuleRegistryError(`Module "${module.id}" spatial.slot must be a non-negative integer`, { id: module.id })
     if (slots.has(module.spatial.slot)) throw new ModuleRegistryError(`Spatial slot ${module.spatial.slot} is used twice`, { id: module.id })
     slots.add(module.spatial.slot)
+    const primarySplineId = module.spatial.splineObjectId
+    const hitSplineIds = module.spatial.splineHitObjectIds
+    if (primarySplineId !== undefined && (typeof primarySplineId !== "string" || !primarySplineId.trim())) throw new ModuleRegistryError(`Module "${module.id}" has an invalid Spline object ID`, { id: module.id })
+    if (hitSplineIds !== undefined && !Array.isArray(hitSplineIds)) throw new ModuleRegistryError(`Module "${module.id}" Spline hit IDs must be an array`, { id: module.id })
+    for (const splineId of [primarySplineId, ...(hitSplineIds || [])].filter((value) => value !== undefined)) {
+      if (typeof splineId !== "string" || !splineId.trim()) throw new ModuleRegistryError(`Module "${module.id}" has an invalid Spline object ID`, { id: module.id })
+      if (splineObjectIds.has(splineId)) throw new ModuleRegistryError(`Spline object ID "${splineId}" is mapped more than once`, { id: module.id })
+      splineObjectIds.add(splineId)
+    }
     if (!Array.isArray(module.permissions) || !Array.isArray(module.submodules)) throw new ModuleRegistryError(`Module "${module.id}" permissions/submodules must be arrays`, { id: module.id })
     const subIds = new Set()
     const subOrders = new Set()

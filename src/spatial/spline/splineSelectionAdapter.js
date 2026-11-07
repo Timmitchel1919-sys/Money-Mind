@@ -7,7 +7,7 @@ export const SPLINE_CORE_OBJECT_ID = "6ebd998f-74fe-42a9-8e7b-f6e19cae3206"
 export function resolveSplineSelection(objectId, visibleModules = []) {
   if (typeof objectId !== "string" || !objectId) return null
   if (!Array.isArray(visibleModules)) return null
-  const matches = visibleModules.filter((candidate) => candidate?.spatial?.splineObjectId === objectId)
+  const matches = visibleModules.filter((candidate) => candidate?.spatial?.splineObjectId === objectId || (Array.isArray(candidate?.spatial?.splineHitObjectIds) && candidate.spatial.splineHitObjectIds.includes(objectId)))
   if (objectId === SPLINE_CORE_OBJECT_ID) return matches.length === 0 ? returnToCoreIntent() : null
   if (matches.length !== 1 || matches[0].availability === "unavailable") return null
   return openModuleIntent(matches[0].id)
